@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>軍規級安全加密系統 v5.4</title>
+    <style>
+        :root {
+            --bg-color: #0a0e14;
+            --card-bg: rgba(16, 22, 32, 0.95);
+            --primary-accent: #00ff9d;
+            --warning-accent: #ff3e3e;
+            --text-gold: #d4af37;
+            --text-dim: #94a3b8;
+            --border-glow: 0 0 15px rgba(0, 255, 157, 0.2);
+        }
+
+        body, html { 
+            height: 100%; margin: 0; 
+            font-family: 'Segoe UI', 'Roboto', '微軟正黑體', sans-serif; 
+            background: var(--bg-color); 
+            color: #e2e8f0; 
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .background-grid {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(0, 255, 157, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 157, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+        }
+
+        .main-card {
+            width: 90%; max-width: 480px;
+            background: var(--card-bg);
+            padding: 35px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            box-shadow: var(--border-glow);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px; background: var(--primary-accent);
+            border-radius: 50%; display: inline-block; margin-right: 8px;
+            box-shadow: 0 0 10px var(--primary-accent);
+        }
+
+        header { margin-bottom: 25px; text-align: center; }
+        h1 { font-size: 1.4rem; margin: 10px 0; letter-spacing: 2px; color: var(--primary-accent); text-transform: uppercase; }
+        .security-banner { 
+            font-size: 0.7rem; color: var(--bg-color); background: var(--primary-accent);
+            padding: 2px 10px; border-radius: 2px; font-weight: 900;
+            min-height: 14px; display: inline-block;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(148, 163, 184, 0.3);
+            border-radius: 8px; padding: 25px; cursor: pointer;
+            transition: 0.3s; margin-bottom: 20px; text-align: center;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .upload-area:hover { border-color: var(--primary-accent); background: rgba(0, 255, 157, 0.05); }
+
+        .field { margin-bottom: 20px; }
+        label { display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        input {
+            width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(148, 163, 184, 0.3);
+            padding: 12px; border-radius: 6px; color: white; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary-accent); box-shadow: 0 0 8px rgba(0, 255, 157, 0.2); }
+
+        .btn-main {
+            width: 100%; padding: 15px; background: var(--primary-accent); color: var(--bg-color);
+            border: none; border-radius: 6px; font-weight: 900; font-size: 1rem;
+            cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-main:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-unlock { background: #3b82f6 !important; color: white !important; }
+
+        #overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 14, 20, 0.98); z-index: 1000;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .terminal-text { font-family: 'Courier New', monospace; font-size: 0.9rem; color: var(--primary-accent); text-align: center; width: 80%; }
+
+        iframe { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 2000; background: white; }
+
+        .scanline {
+            width: 100%; height: 2px; background: rgba(0, 255, 157, 0.1);
+            position: absolute; top: 0; left: 0; animation: scan 4s linear infinite;
+        }
+        @keyframes scan { from { top: 0; } to { top: 100%; } }
+    </style>
+</head>
+<body>
+    <div class="background-grid"></div>
+    
+    <div id="overlay">
+        <div class="terminal-text" id="status-msg">正在驗證軍事級別安全性...</div>
+        <div style="width: 240px; height: 4px; background: #1e293b; margin-top: 25px; border-radius: 2px; overflow: hidden;">
+            <div id="progress-bar" style="width: 0%; height: 100%; background: var(--primary-accent); transition: 0.4s ease-out;"></div>
+        </div>
+    </div>
+
+    <div class="main-card" id="ui-container">
+        <div class="scanline"></div>
+        <header>
+            <span class="security-banner">SECURE VAULT v5.4 [DUAL-KEY]</span>
+            <h1>軍規加密系統</h1>
+            <div style="font-size: 0.7rem; color: var(--text-dim);">
+                <span class="status-dot"></span> 系統狀態：待命
+            </div>
+        </header>
+
+        <div id="encrypt-view">
+            <div class="upload-area" id="drop-zone">
+                <span id="file-status" style="font-size: 0.9rem;">拖放 HTML 檔案進行軍規封裝</span>
+                <input type="file" id="file-input" accept=".html" style="display: none;">
+            </div>
+            <div class="field">
+                <label>輸出檔名（自動脫敏機制）</label>
+                <input type="text" id="output-name" placeholder="SECURE_OUTPUT.html">
+            </div>
+        </div>
+
+        <div class="field">
+            <label id="pwd-label">主存取密鑰 (Master Key)</label>
+            <input type="password" id="pwd-input" placeholder="輸入解鎖密鑰">
+        </div>
+
+        <button id="action-btn" class="btn-main">執行軍規加密</button>
+        
+        <div style="margin-top: 20px; font-size: 0.65rem; color: #475569; text-align: center;">
+            AES-256-GCM / 600K PBKDF2 / DUAL-KEY WRAPPING
+        </div>
+    </div>
+
+    <iframe id="content-viewer"></iframe>
+
+    <script id="vault-logic">
+        const CONFIG = {
+            iter: 600000,
+            admin: "362963"
+        };
+
+        const VAULT = {
+            payload: "EMPTY_PAYLOAD",
+            u_wrapped: "EMPTY_U",
+            a_wrapped: "EMPTY_A",
+            salt: "EMPTY_SALT",
+            iv: "EMPTY_IV"
+        };
+
+        const dom = {
+            btn: document.getElementById('action-btn'),
+            pwd: document.getElementById('pwd-input'),
+            file: document.getElementById('file-input'),
+            drop: document.getElementById('drop-zone'),
+            status: document.getElementById('status-msg'),
+            overlay: document.getElementById('overlay'),
+            progress: document.getElementById('progress-bar'),
+            iframe: document.getElementById('content-viewer'),
+            ui: document.getElementById('ui-container'),
+            encView: document.getElementById('encrypt-view'),
+            outName: document.getElementById('output-name'),
+            label: document.getElementById('file-status')
+        };
+
+        let fileBuffer = null;
+
+        window.onload = () => {
+            if (VAULT.payload !== "EMPTY_PAYLOAD") {
+                dom.btn.innerText = "驗證授權並開啟";
+                dom.btn.classList.add('btn-unlock');
+                dom.encView.style.display = 'none';
+                document.getElementById('pwd-label').innerText = "輸入存取密鑰或管理員密碼";
+                dom.pwd.placeholder = "存取授權碼";
+            }
+        };
+
+        if (dom.drop) {
+            dom.drop.onclick = () => dom.file.click();
+            dom.file.onchange = (e) => handleFile(e.target.files[0]);
+            dom.drop.ondragover = (e) => { e.preventDefault(); dom.drop.style.borderColor = "var(--primary-accent)"; };
+            dom.drop.ondragleave = () => { dom.drop.style.borderColor = ""; };
+            dom.drop.ondrop = (e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); };
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                fileBuffer = e.target.result;
+                dom.label.innerText = "✅ 載入成功: " + file.name;
+                dom.outName.value = maskFilename(file.name);
+            };
+            reader.readAsText(file);
+        }
+
+        function maskFilename(name) {
+            let base = name.replace(/\.html$/i, "");
+            base = base.replace(/(\d{7})([\u4e00-\u9fa5]+)/, (match, d, n) => d + n[0] + "O".repeat(n.length - 1));
+            base = base.replace(/\((.*?)\)/, (match, c) => "(" + c.split('-').map(p => p.length <= 2 ? p : p[0] + "O".repeat(p.length - 2) + p[p.length - 1]).join('-') + ")");
+            return base + ".html";
+        }
+
+        dom.btn.onclick = async () => {
+            const pwd = dom.pwd.value;
+            if (!pwd) return;
+            dom.overlay.style.display = 'flex';
+            updateUI(10, "啟動軍規加密引擎...");
+
+            setTimeout(async () => {
+                try {
+                    if (VAULT.payload === "EMPTY_PAYLOAD") {
+                        if (!fileBuffer) throw "FILE_MISSING";
+                        await encrypt(pwd);
+                    } else {
+                        await decrypt(pwd);
+                    }
+                } catch (err) {
+                    updateUI(100, "❌ 驗證失敗：拒絕存取");
+                    dom.status.style.color = "var(--warning-accent)";
+                    setTimeout(() => { dom.overlay.style.display = 'none'; dom.status.style.color = ""; }, 2000);
+                }
+            }, 200);
+        };
+
+        async function encrypt(pwd) {
+            updateUI(30, "執行雙重密鑰封裝演算 (600,000 次疊代)...");
+            const salt = crypto.getRandomValues(new Uint8Array(32));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const dek = crypto.getRandomValues(new Uint8Array(32));
+
+            // 加密本體
+            const pEnc = await aesEnc(fileBuffer, dek, iv);
+            
+            // 使用者密鑰封裝
+            const uKek = await derive(pwd, salt);
+            const uWrapped = await aesEnc(dek, uKek, iv);
+
+            // 管理員密鑰封裝
+            const aKek = await derive(CONFIG.admin, salt);
+            const aWrapped = await aesEnc(dek, aKek, iv);
+
+            updateUI(90, "導出軍規安全容器...");
+            exportResult(pEnc, uWrapped, aWrapped, salt, iv);
+        }
+
+        async function decrypt(pwd) {
+            updateUI(40, "校驗身份授權...");
+            const salt = b64ToU8(VAULT.salt);
+            const iv = b64ToU8(VAULT.iv);
+            const inputKek = await derive(pwd, salt);
+            
+            let dek = null;
+            try {
+                // 嘗試解鎖使用者封裝
+                const dec = await aesDec(b64ToU8(VAULT.u_wrapped), inputKek, iv);
+                dek = new Uint8Array(dec);
+            } catch (e) {
+                try {
+                    // 嘗試解鎖管理員封裝
+                    const dec = await aesDec(b64ToU8(VAULT.a_wrapped), inputKek, iv);
+                    dek = new Uint8Array(dec);
+                } catch (e2) {
+                    throw "INVALID_KEY";
+                }
+            }
+            
+            updateUI(80, "還原數據內容...");
+            const finalBuf = await aesDec(b64ToU8(VAULT.payload), dek, iv);
+            const html = new TextDecoder().decode(finalBuf);
+            render(html);
+        }
+
+        async function derive(p, s) {
+            const mat = await crypto.subtle.importKey("raw", new TextEncoder().encode(p), "PBKDF2", false, ["deriveKey"]);
+            return crypto.subtle.deriveKey(
+                { name: "PBKDF2", salt: s, iterations: CONFIG.iter, hash: "SHA-256" },
+                mat, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+            );
+        }
+
+        async function aesEnc(d, kR, iv) {
+            const k = (kR instanceof Uint8Array) ? await crypto.subtle.importKey("raw", kR, "AES-GCM", false, ["encrypt"]) : kR;
+            const b = (typeof d === 'string') ? new TextEncoder().encode(d) : d;
+            const e = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, b);
+            return u8ToB64(new Uint8Array(e));
+        }
+
+        async function aesDec(c, kR, iv) {
+            const k = (kR instanceof Uint8Array) ? await crypto.subtle.importKey("raw", kR, "AES-GCM", false, ["decrypt"]) : kR;
+            return await crypto.subtle.decrypt({ name: "AES-GCM", iv }, k, c);
+        }
+
+        function exportResult(p, u, a, s, i) {
+            const code = document.getElementById('vault-logic').innerHTML;
+            let nCode = code;
+            nCode = nCode.replace('payload: "EMPTY_PAYLOAD"', 'payload: "' + p + '"');
+            nCode = nCode.replace('u_wrapped: "EMPTY_U"', 'u_wrapped: "' + u + '"');
+            nCode = nCode.replace('a_wrapped: "EMPTY_A"', 'a_wrapped: "' + a + '"');
+            nCode = nCode.replace('salt: "EMPTY_SALT"', 'salt: "' + u8ToB64(s) + '"');
+            nCode = nCode.replace('iv: "EMPTY_IV"', 'iv: "' + u8ToB64(i) + '"');
+
+            const style = document.querySelector('style').innerHTML;
+            const final = [
+                '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">',
+                '<title>軍規加密容器</title><style>', style, '</style></head><body><div class="background-grid"></div>',
+                '<div id="overlay"><div class="terminal-text" id="status-msg"></div><div style="width:240px;height:4px;background:#1e293b;margin-top:25px;border-radius:2px;overflow:hidden;"><div id="progress-bar" style="width:0%;height:100%;background:var(--primary-accent);transition:0.4s ease-out;"></div></div></div>',
+                '<div class="main-card" id="ui-container"><div class="scanline"></div><header><span class="security-banner">SECURE CONTAINER [v5.4]</span><h1>軍規加密系統</h1></header>',
+                '<div class="field"><label>存取授權</label><input type="password" id="pwd-input" placeholder="請輸入密鑰或管理員密碼"></div>',
+                '<button id="action-btn" class="btn-main btn-unlock">驗證並解鎖內容</button><div style="margin-top:20px;font-size:0.65rem;color:#475569;text-align:center;">AES-256-GCM / PBKDF2 600K</div></div>',
+                '<iframe id="content-viewer"></iframe><script id="vault-logic">', nCode, '<\/script></body></html>'
+            ].join('');
+
+            const blob = new Blob([final], { type: 'text/html' });
+            const aLink = document.createElement('a');
+            aLink.href = URL.createObjectURL(blob);
+            aLink.download = dom.outName.value || "MIL_SECURE.html";
+            aLink.click();
+            updateUI(100, "✅ 加密容器導出成功");
+            setTimeout(() => dom.overlay.style.display = 'none', 1000);
+        }
+
+        function render(h) {
+            dom.ui.style.display = 'none';
+            dom.overlay.style.display = 'none';
+            dom.iframe.style.display = 'block';
+            dom.iframe.src = URL.createObjectURL(new Blob([h], { type: 'text/html' }));
+        }
+
+        function updateUI(p, m) { dom.progress.style.width = p + "%"; dom.status.innerText = m; }
+        function u8ToB64(u8) {
+            let b = "";
+            for (let i = 0; i < u8.length; i++) b += String.fromCharCode(u8[i]);
+            return btoa(b);
+        }
+        function b64ToU8(b64) {
+            const b = atob(b64);
+            const u = new Uint8Array(b.length);
+            for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i);
+            return u;
+        }
+    </script>
+</body>
+</html>
