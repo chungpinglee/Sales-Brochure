@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>保險客戶管理系統 - v33.7 欄位拖曳排序版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&display=swap');
+        
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f6f5f1; color: #444; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+        .serif-title { font-family: 'Noto Serif TC', serif; letter-spacing: 0.1em; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 10px; }
+
+        .modal-enter { animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes modalFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 卡片渲染容器 --- */
+        #renderContainer { position: fixed; left: -9999px; top: 0; }
+        .tpl-container { width: 850px; min-height: 1100px; padding: 60px; display: flex; flex-direction: column; }
+        
+        .tpl-artisanal { background: #3d2b1f; }
+        .tpl-artisanal .paper { background: #fdfaf5; padding: 80px; flex: 1; border: 1px solid #e5e0d5; }
+        .tpl-modern { background: #0f172a; color: white; padding: 0; position: relative; }
+        .tpl-modern .header-bar { height: 15px; background: #38bdf8; }
+        .tpl-modern .main-content { padding: 80px; flex: 1; }
+        .tpl-minimalist { background: #fff; border: 1px solid #f3f4f6; }
+
+        .order-input {
+            width: 45px;
+            background: #f9f8f6;
+            border: 1px solid #e7e5e4;
+            border-radius: 6px;
+            padding: 1px 2px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 11px;
+            color: #78716c;
+        }
+
+        /* 標題排序說明 */
+        .th-sortable { position: relative; }
+        .sort-tip {
+            position: absolute;
+            bottom: 115%;
+            left: 50%;
+            transform: translateX(-50%) translateY(5px);
+            background: #1f2937;
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            pointer-events: none;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4);
+            font-weight: bold;
+        }
+        .th-sortable:hover .sort-tip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+        /* 資料庫文字懸停特效：放大10%，變紅色 */
+        #clientTableBody td, #tableHeader th {
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+        #clientTableBody td:hover, #tableHeader th:hover {
+            transform: scale(1.1);
+            color: #ef4444 !important;
+            z-index: 20;
+            position: relative;
+        }
+        #clientTableBody td:hover a, 
+        #clientTableBody td:hover div, 
+        #clientTableBody td:hover span {
+            color: inherit !important;
+        }
+
+        .name-tooltip { position: relative; cursor: help; }
+        .name-tooltip::after {
+            content: attr(data-address);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+            z-index: 50;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+        }
+        .name-tooltip:hover::after { opacity: 1; visibility: visible; }
+
+        /* 搜尋重複警示 */
+        .search-duplicate-fill { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #ef4444 !important; }
+
+        .sortable-ghost { opacity: 0.4; background-color: #e0e7ff !important; }
+        .drag-handle { cursor: grab; }
+
+        /* 欄位寬度預設 */
+        .col-drag { width: 40px; }
+        .col-action { width: 70px; }
+        .col-order { width: 55px; }
+        .col-name { width: 130px; }
+        .col-age { width: 160px; }
+        .col-dynamic { min-width: 100px; }
+
+        /* --- 手機模式專屬優化 --- */
+        .mobile-mode-active #clientTableBody td,
+        .mobile-mode-active #tableHeader th {
+            padding-left: 0.25rem !important;
+            padding-right: 0.25rem !important;
+            font-size: 14px !important; 
+            letter-spacing: -0.02em;
+        }
+        .mobile-mode-active .col-age { width: 100px !important; }
+        .mobile-mode-active .col-name { width: 90px !important; }
+        .mobile-mode-active .col-order { width: 40px !important; }
+        .mobile-mode-active .col-action { width: 60px !important; }
+        .mobile-mode-active .col-drag { width: 30px !important; }
+        .mobile-mode-active tr { height: 65px; }
+        .mobile-mode-active .sort-tip { display: none !important; }
+
+        .tag-badge { transition: all 0.2s; }
+        .tag-badge:active { transform: scale(0.95); }
+
+        .menu-divider { width: 1px; height: 24px; background: #e5e7eb; margin: 0 8px; }
+
+        /* --- 選單選項動態：輕微上下跳動 --- */
+        @keyframes bounceSubtle {
+            0%, 100% { transform: translateY(0) scale(1.1); }
+            50% { transform: translateY(-4px) scale(1.1); }
+        }
+        .action-menu-item {
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .action-menu-item:hover {
+            animation: bounceSubtle 0.6s infinite ease-in-out;
+            background-color: #f0f9ff !important; 
+            z-index: 30;
+        }
+
+        /* 欄位顯示開關拖曳效果 */
+        .column-tag-ghost { opacity: 0.5; background-color: #d1fae5 !important; border: 2px dashed #10b981 !important; }
+
+        #actionMenu {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="p-1 md:p-6">
+
+    <div id="toast" class="fixed top-10 left-1/2 transform -translate-x-1/2 z-[600] bg-stone-800 text-white px-6 py-3 rounded-full shadow-2xl opacity-0 transition-opacity pointer-events-none text-sm font-medium"></div>
+
+    <div id="renderContainer">
+        <div id="tpl_artisanal" class="tpl-container tpl-artisanal"><div class="paper"><h2 class="serif-title text-5xl font-bold mb-12 text-center text-stone-800 underline underline-offset-8">保障檢視報告</h2><div class="mb-12"><p class="text-stone-400 text-3xl italic mb-4">Dear,</p><span class="tpl-name text-8xl font-bold text-stone-800"></span> <span class="tpl-title text-4xl text-stone-400"></span></div><div class="tpl-list space-y-8 text-3xl text-stone-700 font-medium border-t border-stone-100 pt-12"></div></div></div>
+        <div id="tpl_modern" class="tpl-container tpl-modern"><div class="header-bar"></div><div class="main-content"><div class="flex justify-between items-start mb-20"><div><h2 class="text-6xl font-black tracking-tighter mb-4">INSURANCE<br>REPORT</h2><div class="w-20 h-2 bg-sky-400"></div></div><div class="text-right"><p class="text-sky-400 font-bold text-xl">CLIENT PROFILE</p><p class="text-3xl font-bold"><span class="tpl-name"></span></p></div></div><div class="tpl-list space-y-6"></div></div></div>
+    </div>
+
+    <div id="mainContainer" class="max-w-[1450px] mx-auto bg-white min-h-[90vh] rounded-[2rem] md:rounded-[2.5rem] shadow-2xl border border-stone-100 flex flex-col overflow-hidden">
+        <header class="bg-white px-4 md:px-8 py-5 md:py-8 border-b border-stone-50">
+            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+                <div class="flex items-center gap-3 md:gap-5">
+                    <div class="bg-gradient-to-br from-emerald-600 to-teal-700 p-2.5 md:p-3.5 rounded-2xl shadow-lg shadow-emerald-100">
+                        <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    </div>
+                    <div>
+                        <h1 class="text-base md:text-xl font-black text-stone-800 serif-title leading-tight">保險管理系統 ✨ v33.7</h1>
+                        <p class="text-[9px] md:text-[10px] text-stone-400 font-bold uppercase tracking-[0.2em] mt-0.5">欄位自訂排序 · 模式智能切換</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="mobileToggleBtn" onclick="toggleMobileMode()" class="px-4 py-2.5 bg-orange-50 text-orange-700 rounded-xl text-xs font-black border border-orange-100 transition-all flex items-center gap-2 hover:bg-orange-500 hover:text-white hover:border-orange-500 shadow-sm active:scale-95">📱 轉手機版</button>
+                    <button onclick="openTagPanel()" class="px-4 py-2.5 bg-amber-50 text-amber-700 rounded-xl text-xs font-black border border-amber-100 transition-all flex items-center gap-2 hover:bg-orange-500 hover:text-white hover:border-orange-500 shadow-sm">🏷️ 標籤複選中心</button>
+                    <button id="btnExport" onclick="exportData()" class="px-4 py-2.5 bg-stone-50 hover:bg-orange-500 hover:text-white rounded-xl text-stone-500 font-bold text-xs border border-stone-200 transition-all shadow-sm">備份下載</button>
+                    <button id="btnImport" onclick="triggerImport()" class="px-4 py-2.5 bg-stone-800 hover:bg-orange-500 hover:text-white rounded-xl text-white font-bold text-xs shadow-md transition-all">轉入備份檔</button>
+                    <button onclick="toggleColumnMenu()" class="px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black border border-indigo-100 transition-all hover:bg-orange-500 hover:text-white hover:border-orange-500 shadow-sm">⚙️ 欄位管理</button>
+                </div>
+            </div>
+
+            <!-- 欄位管理：已加入 Sortable 拖曳排序功能 -->
+            <div id="columnMenuArea" class="hidden mt-4 p-4 md:p-5 bg-stone-50 rounded-[1.5rem] border border-stone-100 shadow-inner">
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <div class="text-[9px] md:text-[10px] font-black text-stone-400 uppercase tracking-widest">欄位排序與顯示開關 (按住按鈕可拖曳調整先後)</div>
+                    <button onclick="resetColumnOrder()" class="text-[9px] text-stone-300 hover:text-indigo-500 font-bold underline">恢復預設排序</button>
+                </div>
+                <div id="menuCheckboxes" class="flex flex-wrap gap-2 md:gap-3 text-[10px] font-bold text-stone-600"></div>
+            </div>
+
+            <div class="mt-6 flex flex-col md:flex-row md:items-center gap-4">
+                <div class="flex flex-col gap-1 w-full max-w-[300px]">
+                    <div class="relative flex items-center gap-2">
+                        <div class="relative flex-1 group">
+                            <svg class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            <input type="text" id="mainSearch" list="nameList" oninput="handleSearchLogic()" placeholder="快速檢索姓名或地址..." class="w-full bg-white border-2 border-emerald-500 rounded-xl py-2.5 pl-9 pr-10 text-xs focus:ring-4 focus:ring-emerald-50 focus:outline-none font-bold transition-all shadow-sm">
+                            <button onclick="clearSearch()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-300 hover:text-stone-500">✕</button>
+                        </div>
+                        <button id="quickAddBtn" onclick="quickAdd()" class="hidden whitespace-nowrap bg-emerald-600 text-white px-3 py-2 rounded-xl text-[10px] font-bold shadow-md">快速新增</button>
+                    </div>
+                    <p id="searchHint" class="text-[9px] font-bold px-2 h-4"></p>
+                    <datalist id="nameList"></datalist>
+                </div>
+                <div id="activeFilters" class="flex flex-wrap gap-2 items-center"></div>
+            </div>
+        </header>
+
+        <main id="mainContentArea" class="flex-1 overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-full">
+                <thead id="tableHeader"></thead>
+                <tbody id="clientTableBody" class="divide-y divide-stone-50 text-xs"></tbody>
+            </table>
+        </main>
+
+        <footer class="bg-stone-50 px-4 md:px-8 py-3 border-t border-stone-100 flex justify-between items-center text-[9px] font-black text-stone-400 tracking-wider uppercase">
+            <div id="statsCount">Total: 0 Clients</div>
+            <div>Insurance Pro v33.7 · Layout Engine Enhanced</div>
+        </footer>
+    </div>
+
+    <!-- 標籤多選中心 -->
+    <div id="tagPanel" class="hidden fixed inset-0 z-[400] bg-stone-900/40 backdrop-blur-sm flex items-end md:items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-[2rem] md:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden modal-enter">
+            <div class="px-6 md:px-8 py-5 md:py-6 border-b border-stone-50 flex justify-between items-center bg-stone-50/50">
+                <div class="flex items-center gap-3"><span class="text-xl md:text-2xl">🏷️</span><div><h2 class="text-base md:text-lg font-bold text-stone-800">標籤篩選中心</h2><p class="text-[9px] md:text-[10px] text-stone-400 font-bold uppercase tracking-widest">點選標籤進行交集篩選</p></div></div>
+                <button onclick="closeTagPanel()" class="w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center shadow-sm">✕</button>
+            </div>
+            <div class="p-6 md:p-8 max-h-[50vh] md:max-h-[60vh] overflow-y-auto custom-scrollbar"><div id="tagCloud" class="flex flex-wrap gap-2 md:gap-2.5"></div></div>
+            <div class="p-5 md:p-6 bg-stone-50 border-t border-stone-100 flex flex-col md:flex-row gap-3 md:justify-between items-center">
+                <div id="tagPanelStats" class="text-[9px] md:text-[10px] font-black text-emerald-600 uppercase tracking-wider">已選取 0 個標籤 · 符合 0 筆資料</div>
+                <div class="flex gap-3 w-full md:w-auto"><button onclick="clearTagFilter()" class="flex-1 md:flex-none text-xs font-bold text-stone-400 py-2">清除選取</button><button onclick="closeTagPanel()" class="flex-1 md:flex-none px-8 py-3 bg-stone-800 text-white rounded-xl font-bold text-xs shadow-md">確認並關閉</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 刪除確認視窗 -->
+    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[550] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden modal-enter">
+            <div class="p-8 text-center">
+                <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></div>
+                <h3 class="text-lg font-bold text-stone-800 mb-2">確定要刪除嗎？</h3><p class="text-xs text-stone-400 font-medium">此操作無法復原，該客戶資料將被永久移除。</p>
+            </div>
+            <div class="flex border-t border-stone-100"><button onclick="closeDeleteModal()" class="flex-1 py-4 text-xs font-bold text-stone-400 hover:bg-stone-50">取消</button><button onclick="confirmDelete()" class="flex-1 py-4 text-xs font-black text-red-500 hover:bg-red-50 border-l">永久刪除</button></div>
+        </div>
+    </div>
+
+    <!-- 編輯視窗 -->
+    <div id="clientModal" class="hidden fixed inset-0 z-[300] bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-6xl max-h-[95vh] rounded-[2rem] md:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden modal-enter">
+            <div class="px-6 md:px-8 py-5 md:py-6 border-b border-stone-50 flex justify-between items-center bg-stone-50/50">
+                <h2 class="text-lg md:text-xl font-bold serif-title text-stone-800">編輯詳細資料</h2>
+                <button onclick="closeClientModal()" class="w-8 h-8 md:w-10 md:h-10 flex bg-white rounded-full items-center justify-center hover:text-red-500 shadow-sm">✕</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5 md:p-8 custom-scrollbar">
+                <form id="clientForm" class="space-y-6 md:space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        <div><label class="block text-[9px] md:text-[10px] font-bold text-stone-400 mb-1 uppercase">姓名</label><input type="text" name="name" required class="w-full bg-stone-50 border-stone-100 rounded-lg px-4 py-2 text-sm font-bold"></div>
+                        <div><label class="block text-[9px] md:text-[10px] font-bold text-stone-400 mb-1 uppercase">稱謂</label><select name="title" class="w-full bg-stone-50 border-stone-100 rounded-lg px-4 py-2 text-sm"><option value="先生">先生</option><option value="小姐">小姐</option></select></div>
+                        <div><label class="block text-[9px] md:text-[10px] font-bold text-stone-400 mb-1 uppercase">生日 (民國 YYYMMDD)</label><input type="text" name="birthday" oninput="handleBirthdayInput(this.value)" class="w-full bg-stone-50 border-stone-100 rounded-lg px-4 py-2 text-sm font-mono"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                        <div class="bg-emerald-50 p-4 md:p-5 rounded-2xl border border-emerald-100"><label class="block text-[9px] md:text-[10px] font-bold text-emerald-600 mb-1">標籤管理 (逗號分隔)</label><input type="text" name="tags" class="w-full bg-white border-emerald-200 rounded-xl px-4 py-2 text-sm font-bold shadow-inner"></div>
+                        <div class="bg-indigo-50 p-4 md:p-5 rounded-2xl border border-indigo-100"><label class="block text-[9px] md:text-[10px] font-bold text-indigo-400 mb-1">計算投保年齡</label><input type="text" name="age" readonly class="w-full bg-transparent border-none p-0 text-xl text-indigo-700 font-black"></div>
+                    </div>
+                    <div><label class="block text-[9px] md:text-[10px] font-bold text-stone-400 mb-1 uppercase">地址</label><input type="text" name="address" class="w-full bg-stone-50 border-stone-100 rounded-lg px-4 py-2 text-sm"></div>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center"><h3 class="text-[9px] md:text-[10px] font-black text-stone-800 uppercase">保障數據項目</h3><button type="button" onclick="addCustomField()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-[9px] font-bold">+ 增加</button></div>
+                        <div class="border border-stone-100 rounded-xl md:rounded-2xl overflow-hidden shadow-sm">
+                            <table class="w-full text-left table-fixed text-xs"><thead class="bg-stone-50 text-[9px] font-black text-stone-400 uppercase"><tr><th class="p-3 w-[10%]">序</th><th class="p-3 w-[25%]">名稱</th><th class="p-3 w-[25%]">數值</th><th class="p-3 w-[25%]">連結</th><th class="p-3 w-[15%] text-center">刪</th></tr></thead><tbody id="customFieldsTableBody" class="divide-y divide-stone-50 bg-white"></tbody></table>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="px-6 md:px-8 py-5 md:py-6 bg-stone-50 border-t border-stone-100 flex gap-3"><button onclick="closeClientModal()" class="px-6 md:px-8 py-3 bg-white border border-stone-200 rounded-xl text-stone-400 font-bold text-xs hover:bg-stone-100 transition-all">取消</button><button onclick="saveClientData()" class="flex-1 px-6 md:px-8 py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all">儲存變更</button></div>
+        </div>
+    </div>
+
+    <!-- 報表預覽視窗 -->
+    <div id="cardModal" class="hidden fixed inset-0 z-[500] bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden modal-enter"><div class="px-6 py-5 border-b flex justify-between items-center"><h2 class="text-lg font-bold">報表預覽</h2><button onclick="closeCardModal()">✕</button></div><div class="p-4 md:p-6 bg-stone-50 flex flex-col items-center"><div id="cardPreviewContainer" class="w-full shadow-2xl rounded-lg border border-stone-100"></div></div><div class="p-5 md:p-6 border-t"><button onclick="closeCardModal()" class="w-full py-4 bg-stone-800 text-white rounded-2xl font-bold">完成</button></div></div></div>
+
+    <!-- 操作選單 -->
+    <div id="actionMenu" class="hidden fixed z-[250] bg-white shadow-2xl rounded-3xl border border-stone-50 py-6 w-72 modal-enter top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div class="px-6 py-2 text-[9px] font-bold text-stone-300 uppercase tracking-widest border-b border-stone-50 mb-3 text-center">卡片下載風格</div>
+        <button onclick="doRowAction('card_artisanal')" class="action-menu-item w-full text-left px-6 py-3 text-xs text-stone-600 font-medium flex items-center gap-3">📜 文青手工紙</button>
+        <button onclick="doRowAction('card_modern')" class="action-menu-item w-full text-left px-6 py-3 text-xs text-stone-600 font-medium flex items-center gap-3">🏙️ 摩登商務版</button>
+        <div class="h-[1px] bg-stone-50 my-3 mx-6"></div>
+        <button onclick="doRowAction('copy')" class="action-menu-item w-full text-left px-6 py-3 text-xs text-emerald-600 font-bold flex items-center gap-3">💬 複製 LINE 訊息</button>
+        <button onclick="doRowAction('edit')" class="action-menu-item w-full text-left px-6 py-3 text-xs text-stone-400 font-medium flex items-center gap-3">✏️ 編輯詳細資料</button>
+        <button onclick="doRowAction('delete')" class="action-menu-item w-full text-left px-6 py-3 text-xs text-red-500 font-bold flex items-center gap-3">🗑️ 刪除客戶</button>
+    </div>
+
+    <input type="file" id="jsonInput" accept=".json" class="hidden" onchange="handleFileImport(event)">
+
+    <script>
+        let tableData = JSON.parse(localStorage.getItem('ins_db_v30_main')) || [];
+        let columnVisibility = JSON.parse(localStorage.getItem('col_vis_v31')) || { 'drag': true, 'action': true, 'order': true, 'name': true, 'age': true, 'map': true };
+        // 欄位排序記錄
+        let columnOrder = JSON.parse(localStorage.getItem('col_order_v33')) || [];
+        
+        let activeTagFilters = []; 
+        let editingIndex = null, sortMode = 'default';
+        let isMobileMode = false; 
+
+        const fixedCols = [
+            { id: 'drag', label: '排序', class: 'col-drag text-center', sortable: false },
+            { id: 'action', label: '操作', class: 'col-action text-center', sortable: false },
+            { id: 'order', label: '編號', class: 'col-order text-center', sortable: false },
+            { id: 'name', label: '姓名', class: 'col-name', sortable: true, tip: '雙擊：導航地圖' },
+            { id: 'age', label: '保險年齡', class: 'col-age', sortable: true, tip: '雙擊：年紀排序' },
+            { id: 'map', label: '地圖', class: 'col-map text-center', sortable: false }
+        ];
+
+        function toggleMobileMode() {
+            isMobileMode = !isMobileMode;
+            const container = document.getElementById('mainContainer');
+            const btnToggle = document.getElementById('mobileToggleBtn');
+            const btnExport = document.getElementById('btnExport');
+            const btnImport = document.getElementById('btnImport');
+            if (isMobileMode) {
+                container.classList.add('mobile-mode-active');
+                btnToggle.innerText = "💻 轉電腦版";
+                btnToggle.classList.add('bg-orange-500', 'text-white');
+                btnExport.classList.add('hidden');
+                btnImport.classList.add('hidden');
+                showToast("手機模式：字體放大");
+            } else {
+                container.classList.remove('mobile-mode-active');
+                btnToggle.innerText = "📱 轉手機版";
+                btnToggle.classList.remove('bg-orange-500', 'text-white');
+                btnExport.classList.remove('hidden');
+                btnImport.classList.remove('hidden');
+                showToast("切換為電腦版");
+            }
+            renderTable();
+        }
+
+        function initSortable() {
+            const el = document.getElementById('clientTableBody');
+            Sortable.create(el, { handle: '.drag-handle', animation: 200, onEnd: (e) => {
+                const item = tableData.splice(e.oldIndex, 1)[0];
+                tableData.splice(e.newIndex, 0, item);
+                saveToLocalStorage(); renderTable();
+            }});
+        }
+
+        // --- 欄位自訂排序：初始化拖曳功能 ---
+        function initColumnSortable() {
+            const el = document.getElementById('menuCheckboxes');
+            Sortable.create(el, {
+                animation: 250,
+                ghostClass: 'column-tag-ghost',
+                onEnd: () => {
+                    // 根據目前 DOM 順序重新產出 columnOrder
+                    const newOrder = [];
+                    el.querySelectorAll('[data-col-id]').forEach(node => {
+                        newOrder.push(node.getAttribute('data-col-id'));
+                    });
+                    columnOrder = newOrder;
+                    localStorage.setItem('col_order_v33', JSON.stringify(columnOrder));
+                    renderTable(); // 即時重新整理主列表順序
+                    showToast("欄位順序已更新");
+                }
+            });
+        }
+
+        function resetColumnOrder() {
+            columnOrder = [];
+            localStorage.removeItem('col_order_v33');
+            renderColumnMenu();
+            renderTable();
+            showToast("已恢復預設順序");
+        }
+
+        function calculateInsAge(rocStr) {
+            if (!rocStr || rocStr.length < 6) return { age: "--", countdown: "--", rawAge: 0, daysLeft: 999 };
+            let s = rocStr.padStart(7, '0');
+            const year = parseInt(s.substring(0, 3)) + 1911, month = parseInt(s.substring(3, 5)) - 1, day = parseInt(s.substring(5, 7));
+            const birthDate = new Date(year, month, day);
+            if (isNaN(birthDate.getTime())) return { age: "--", countdown: "--", rawAge: 0, daysLeft: 999 };
+            const today = new Date();
+            let years = today.getFullYear() - birthDate.getFullYear(), months = today.getMonth() - birthDate.getMonth(), daysDiff = today.getDate() - birthDate.getDate();
+            if (daysDiff < 0) { months--; const lastM = new Date(today.getFullYear(), today.getMonth(), 0).getDate(); daysDiff += lastM; }
+            if (months < 0) { years--; months += 12; }
+            const insAge = (months > 6 || (months === 6 && daysDiff > 0)) ? years + 1 : years;
+            let nextJump = new Date(year, month + 6, day); nextJump.setFullYear(today.getFullYear());
+            if (today >= nextJump) nextJump.setFullYear(nextJump.getFullYear() + 1);
+            const totalDaysLeft = Math.ceil((nextJump - today) / (1000 * 60 * 60 * 24));
+            return { age: insAge + " 歲", countdown: `剩 ${Math.floor(totalDaysLeft/30)}月${totalDaysLeft%30}天增歲`, rawAge: insAge, daysLeft: totalDaysLeft };
+        }
+
+        function getDynamicNames() {
+            const dynamicNames = new Set();
+            tableData.forEach(c => c.customFields.forEach(f => { if(f.label) dynamicNames.add(f.label); }));
+            return Array.from(dynamicNames).sort();
+        }
+
+        function renderTable() {
+            const body = document.getElementById('clientTableBody'), header = document.getElementById('tableHeader'), searchVal = document.getElementById('mainSearch').value.toLowerCase();
+            const dl = document.getElementById('nameList');
+            header.innerHTML = ''; body.innerHTML = '';
+            if (dl) {
+                dl.innerHTML = '';
+                tableData.forEach(item => { const opt = document.createElement('option'); opt.value = item.name; dl.appendChild(opt); });
+            }
+            let displayList = tableData.filter(item => {
+                const matchesSearch = !searchVal || item.name.toLowerCase().includes(searchVal) || (item.address && item.address.toLowerCase().includes(searchVal));
+                const clientTags = item.tags ? item.tags.split(/[ ,，]+/).map(t => t.trim()).filter(t => t !== "") : [];
+                const matchesTags = activeTagFilters.length === 0 || activeTagFilters.every(ft => clientTags.includes(ft));
+                return matchesSearch && matchesTags;
+            });
+
+            // 排序邏輯
+            if (sortMode === 'urgency') displayList.sort((a, b) => calculateInsAge(a.birthday).daysLeft - calculateInsAge(b.birthday).daysLeft);
+            else if (sortMode === 'age') displayList.sort((a, b) => calculateInsAge(b.birthday).rawAge - calculateInsAge(a.birthday).rawAge);
+            else if (sortMode === 'surname') displayList.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+            else if (sortMode === 'correction') displayList.sort((a, b) => (b.customFields.find(f => f.label === '保單校正')?.url ? 1 : 0) - (a.customFields.find(f => f.label === '保單校正')?.url ? 1 : 0));
+            else if (sortMode === 'asset_priority') {
+                displayList.sort((a, b) => {
+                    const fieldA = (a.customFields || []).find(f => f.label === '保單資產管理');
+                    const fieldB = (b.customFields || []).find(f => f.label === '保單資產管理');
+                    const hasUrlA = (fieldA && fieldA.url && fieldA.url.trim() !== "") ? 1 : 0;
+                    const hasUrlB = (fieldB && fieldB.url && fieldB.url.trim() !== "") ? 1 : 0;
+                    return hasUrlB - hasUrlA; 
+                });
+            }
+            else if (sortMode.startsWith('dyn_')) {
+                const fName = sortMode.replace('dyn_', '');
+                displayList.sort((a, b) => {
+                    const vA = parseFloat((a.customFields.find(f => f.label === fName)?.value || "0").toString().replace(/[^0-9.]/g, '')) || 0;
+                    const vB = parseFloat((b.customFields.find(f => f.label === fName)?.value || "0").toString().replace(/[^0-9.]/g, '')) || 0;
+                    return vB - vA;
+                });
+            }
+
+            const dynamicNames = getDynamicNames();
+            let allAvailableCols = [];
+            fixedCols.forEach(c => allAvailableCols.push({ ...c, type: 'fixed' }));
+            dynamicNames.forEach(n => {
+                const tipText = (n === '保單校正' || n === '保單資產管理') ? '雙擊：連結優先' : '雙擊：大到小';
+                allAvailableCols.push({ id: n, label: n, type: 'dynamic', class: 'col-dynamic', sortable: true, tip: tipText });
+            });
+
+            // 根據 columnOrder 進行排序
+            if (columnOrder.length > 0) {
+                allAvailableCols.sort((a, b) => {
+                    let idxA = columnOrder.indexOf(a.id);
+                    let idxB = columnOrder.indexOf(b.id);
+                    if (idxA === -1) idxA = 999;
+                    if (idxB === -1) idxB = 999;
+                    return idxA - idxB;
+                });
+            }
+
+            // 只挑選顯示的欄位
+            const activeCols = allAvailableCols.filter(col => columnVisibility[col.id] !== false);
+
+            const trHead = document.createElement('tr');
+            trHead.className = "bg-stone-50/50 border-b border-stone-100";
+            activeCols.forEach(col => {
+                const th = document.createElement('th');
+                th.className = `px-3 py-4 text-[9px] font-bold text-blue-600 uppercase tracking-widest transition-colors ${col.sortable ? 'th-sortable cursor-pointer' : ''} ${col.class || ''}`;
+                th.innerText = col.label;
+                if (col.sortable) {
+                    const tip = document.createElement('div');
+                    tip.className = 'sort-tip';
+                    tip.innerText = col.tip || '雙擊排序';
+                    th.appendChild(tip);
+                    if(col.id === 'age') th.ondblclick = () => { sortMode = (sortMode === 'urgency' ? 'age' : 'urgency'); renderTable(); };
+                    else if(col.id === 'name') th.ondblclick = () => { sortMode = (sortMode === 'surname' ? 'default' : 'surname'); renderTable(); };
+                    else if(col.type === 'dynamic') th.ondblclick = () => { 
+                        if (col.label === '保單資產管理') sortMode = (sortMode === 'asset_priority' ? 'default' : 'asset_priority');
+                        else if (col.label === '保單校正') sortMode = (sortMode === 'correction' ? 'default' : 'correction');
+                        else sortMode = (sortMode === 'dyn_' + col.id ? 'default' : 'dyn_' + col.id);
+                        renderTable(); 
+                    };
+                }
+                trHead.appendChild(th);
+            });
+            header.appendChild(trHead);
+
+            displayList.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-emerald-50/20 transition-all border-b border-stone-50";
+                const ageRes = calculateInsAge(item.birthday);
+                activeCols.forEach(col => {
+                    const td = document.createElement('td');
+                    td.className = `px-3 py-4 ${col.class || ''}`;
+                    if(col.id === 'drag') td.innerHTML = `<div class="drag-handle text-stone-200 text-lg">☰</div>`;
+                    else if(col.id === 'action') td.innerHTML = `<button onclick="showActionMenu(event, ${tableData.indexOf(item)})" class="action-btn border border-stone-100 px-2.5 py-1 rounded-lg text-[9px] font-bold text-emerald-600 hover:bg-orange-500 hover:text-white transition-all">操作</button>`;
+                    else if(col.id === 'order') td.innerHTML = `<input type="number" value="${tableData.indexOf(item)+1}" class="order-input" onchange="handleManualOrder(${tableData.indexOf(item)}, this.value)">`;
+                    else if(col.id === 'name') {
+                        td.innerHTML = `<div class="name-tooltip font-bold text-stone-800 text-xs" data-address="${item.address || '未提供'}">${item.name} <span class="text-[9px] text-stone-300 font-normal">${item.title}</span></div>`;
+                        td.classList.add('cursor-pointer');
+                        td.ondblclick = () => { if(item.address) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`, '_blank'); };
+                    }
+                    else if(col.id === 'age') td.innerHTML = `<div class="text-xs font-black text-stone-700">${ageRes.age}</div><div class="text-[8px] text-orange-500 font-bold">${ageRes.countdown}</div>`;
+                    else if(col.id === 'map') td.innerHTML = item.address ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}" target="_blank" class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded-md text-[9px] font-bold hover:bg-orange-500 hover:text-white transition-colors">地圖</a>` : '--';
+                    else if(col.type === 'dynamic') {
+                        const field = item.customFields.find(f => f.label === col.id);
+                        td.innerHTML = field ? (field.url ? `<a href="${field.url}" target="_blank" class="text-indigo-600 underline font-bold">${field.value}</a>` : `<span class="text-stone-500 font-medium">${field.value}</span>`) : '--';
+                    }
+                    tr.appendChild(td);
+                });
+                body.appendChild(tr);
+            });
+            document.getElementById('statsCount').innerText = `Total: ${tableData.length} | Filtered: ${displayList.length}`;
+            updateActiveFilterUI();
+        }
+
+        function toggleColumnMenu() { 
+            const menu = document.getElementById('columnMenuArea');
+            menu.classList.toggle('hidden');
+            if (!menu.classList.contains('hidden')) {
+                renderColumnMenu();
+                initColumnSortable();
+            }
+        }
+
+        function renderColumnMenu() {
+            const c = document.getElementById('menuCheckboxes'); c.innerHTML = '';
+            
+            // 建立所有可用欄位的物件清單
+            const dynamicNames = getDynamicNames();
+            let allCols = [];
+            fixedCols.forEach(x => allCols.push({ id: x.id, label: x.label }));
+            dynamicNames.forEach(n => allCols.push({ id: n, label: n }));
+
+            // 如果有儲存順序，依照儲存順序排列按鈕
+            if (columnOrder.length > 0) {
+                allCols.sort((a, b) => {
+                    let idxA = columnOrder.indexOf(a.id);
+                    let idxB = columnOrder.indexOf(b.id);
+                    if (idxA === -1) idxA = 999;
+                    if (idxB === -1) idxB = 999;
+                    return idxA - idxB;
+                });
+            }
+
+            allCols.forEach(col => createMenuCheckbox(c, col.id, col.label));
+        }
+
+        function createMenuCheckbox(parent, id, label) {
+            const isVisible = columnVisibility[id] !== false;
+            const l = document.createElement('label');
+            l.setAttribute('data-col-id', id); // 用於拖曳後識別
+            const activeClasses = isVisible ? 'bg-emerald-600 text-white border-emerald-600 shadow-md scale-105' : 'bg-white text-stone-700 border-stone-100 opacity-60';
+            l.className = `flex items-center gap-2 cursor-grab px-4 py-2 rounded-xl border transition-all hover:brightness-95 ${activeClasses}`;
+            l.innerHTML = `<input type="checkbox" ${isVisible ? 'checked' : ''} onchange="toggleColumnVisibility('${id}', this.checked)" class="w-3.5 h-3.5 rounded text-emerald-300 focus:ring-emerald-200 border-stone-300"><span class="font-bold pointer-events-none">${label}</span>`;
+            parent.appendChild(l);
+        }
+
+        function toggleColumnVisibility(id, checked) { columnVisibility[id] = checked; localStorage.setItem('col_vis_v31', JSON.stringify(columnVisibility)); renderTable(); renderColumnMenu(); }
+        function triggerImport() { document.getElementById('jsonInput').click(); }
+        function handleFileImport(e) {
+            const files = e.target.files; if (!files || files.length === 0) return;
+            const file = files[0]; const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    let raw = ev.target.result; if (raw.charCodeAt(0) === 0xFEFF) raw = raw.substring(1);
+                    const parsed = JSON.parse(raw);
+                    let incoming = Array.isArray(parsed) ? parsed : (parsed.data && Array.isArray(parsed.data) ? parsed.data : []);
+                    if (incoming.length === 0) throw new Error();
+                    tableData = incoming; renderTable(); initSortable(); showToast(`成功轉入 ${incoming.length} 筆資料`);
+                } catch(err) { showToast("格式不符"); }
+                finally { e.target.value = ""; }
+            };
+            reader.readAsText(file, "UTF-8");
+        }
+        function handleSearchLogic() {
+            const el = document.getElementById('mainSearch'), val = el.value.trim();
+            const exists = tableData.some(d => d.name === val);
+            const addBtn = document.getElementById('quickAddBtn'), hint = document.getElementById('searchHint');
+            if (val && exists) { el.classList.add('search-duplicate-fill'); addBtn.classList.add('hidden'); hint.innerText = "⚠️ 此姓名已存在"; hint.className = "text-[9px] font-bold px-2 h-4 text-red-500"; }
+            else if (val && !exists) { el.classList.remove('search-duplicate-fill'); addBtn.classList.remove('hidden'); hint.innerText = "可快速新增"; hint.className = "text-[9px] font-bold px-2 h-4 text-emerald-600"; }
+            else { el.classList.remove('search-duplicate-fill'); addBtn.classList.add('hidden'); hint.innerText = ""; }
+            renderTable();
+        }
+        function quickAdd() {
+            const name = document.getElementById('mainSearch').value.trim(); if(!name) return;
+            tableData.unshift({ name, title: "先生", birthday: "", tags: "快速新增", address: "", customFields: [{label: "一般住院日額", value: "0", url: ""}, {label: "癌症住院日額", value: "0", url: ""}, {label: "保單校正", value: "未完成", url: ""}] });
+            saveToLocalStorage(); clearSearch(); renderTable(); showToast(`已新增：${name}`);
+        }
+        function clearSearch() { const el = document.getElementById('mainSearch'); el.value = ''; el.classList.remove('search-duplicate-fill'); document.getElementById('quickAddBtn').classList.add('hidden'); document.getElementById('searchHint').innerText = ""; renderTable(); }
+        function openTagPanel() {
+            const cloud = document.getElementById('tagCloud'), tags = new Set(), tagCounts = {}; 
+            tableData.forEach(x => { if(x.tags) { [...new Set(x.tags.split(/[ ,，]+/).map(t => t.trim()).filter(t => t))].forEach(t => { tags.add(t); tagCounts[t] = (tagCounts[t] || 0) + 1; }); } });
+            const filteredCount = tableData.filter(item => { const clientTags = item.tags ? item.tags.split(/[ ,，]+/).map(t => t.trim()).filter(t => t) : []; return activeTagFilters.every(ft => clientTags.includes(ft)); }).length;
+            cloud.innerHTML = '';
+            Array.from(tags).sort().forEach(t => {
+                const isActive = activeTagFilters.includes(t), b = document.createElement('button'); 
+                b.innerHTML = `<span>${t}</span><span class="ml-2 px-1.5 py-0.5 rounded-md text-[9px] ${isActive ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-500'} font-normal opacity-80">${tagCounts[t] || 0}</span>`;
+                b.className = `tag-badge px-4 py-2 rounded-xl text-xs font-bold border transition-all ${isActive ? 'bg-emerald-600 text-white border-emerald-600 shadow-lg' : 'bg-stone-50 text-stone-600 border-stone-100 hover:bg-orange-500 hover:text-white hover:border-orange-500'}`;
+                b.onclick = () => { if (activeTagFilters.includes(t)) activeTagFilters = activeTagFilters.filter(x => x !== t); else activeTagFilters.push(t); openTagPanel(); renderTable(); };
+                cloud.appendChild(b);
+            });
+            document.getElementById('tagPanelStats').innerText = `已選取 ${activeTagFilters.length} 個標籤 · 符合 ${filteredCount} 筆資料`;
+            document.getElementById('tagPanel').classList.remove('hidden');
+        }
+        function clearTagFilter() { activeTagFilters = []; openTagPanel(); renderTable(); }
+        function updateActiveFilterUI() {
+            const c = document.getElementById('activeFilters'); c.innerHTML = '';
+            activeTagFilters.forEach(tag => {
+                const badge = document.createElement('div'); badge.className = "bg-amber-50 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-100 text-[9px] font-black flex items-center gap-2";
+                badge.innerHTML = `<span>🏷️ ${tag}</span><button onclick="activeTagFilters = activeTagFilters.filter(t => t !== '${tag}'); renderTable();">✕</button>`;
+                c.appendChild(badge);
+            });
+        }
+        function openClientModal(idx = null) {
+            editingIndex = idx; const f = document.getElementById('clientForm'), b = document.getElementById('customFieldsTableBody');
+            f.reset(); b.innerHTML = '';
+            if (idx !== null) {
+                const d = tableData[idx]; f.name.value = d.name; f.title.value = d.title; f.birthday.value = d.birthday; f.tags.value = d.tags || ""; f.address.value = d.address || "";
+                handleBirthdayInput(d.birthday); (d.customFields || []).forEach(x => addCustomField(x.label, x.value, x.url));
+            } else { addCustomField("一般住院日額", "0"); addCustomField("癌症住院日額", "0"); addCustomField("保單校正", "未完成"); }
+            document.getElementById('clientModal').classList.remove('hidden');
+        }
+        function addCustomField(l="", v="", u="") {
+            const b = document.getElementById('customFieldsTableBody'), r = document.createElement('tr');
+            r.innerHTML = `<td class="p-3 text-stone-300 font-mono">${b.children.length+1}</td><td class="p-1"><input type="text" class="f-label w-full bg-transparent border-none py-1 text-sm font-bold" value="${l}"></td><td class="p-1"><input type="text" class="f-value w-full bg-stone-50 border-none rounded px-3 py-2 text-sm text-stone-700" value="${v}"></td><td class="p-1"><input type="text" class="f-url w-full bg-stone-50 border-none rounded px-3 py-2 text-[10px] text-indigo-500" value="${u}"></td><td class="text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-stone-300 hover:text-red-500 transition-colors">✕</button></td>`;
+            b.appendChild(r);
+        }
+        function saveClientData() {
+            const f = document.getElementById('clientForm'), d = { name: f.name.value, title: f.title.value, birthday: f.birthday.value, tags: f.tags.value, address: f.address.value, customFields: [] };
+            document.querySelectorAll('#customFieldsTableBody tr').forEach(r => { const l = r.querySelector('.f-label').value; if(l) d.customFields.push({ label: l, value: r.querySelector('.f-value').value, url: r.querySelector('.f-url').value }); });
+            if(editingIndex !== null) tableData[editingIndex] = d; else tableData.unshift(d);
+            saveToLocalStorage(); renderTable(); closeClientModal(); showToast("資料已儲存");
+        }
+        function exportData() {
+            const blob = new Blob([JSON.stringify(tableData, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `保險備份_${new Date().toISOString().split('T')[0]}.json`; a.click();
+        }
+        async function generateCard(idx, style) {
+            showToast("正在生成..."); const d = tableData[idx], t = document.getElementById(`tpl_${style}`), a = calculateInsAge(d.birthday);
+            t.querySelectorAll('.tpl-name').forEach(e => e.innerText = d.name);
+            const l = t.querySelector('.tpl-list'); l.innerHTML = '';
+            d.customFields.forEach(f => { if(f.value && f.value !== "0") { const v = document.createElement('div'); v.className = "flex justify-between items-end border-b border-stone-100 pb-4"; v.innerHTML = `<span class="text-stone-400 font-bold text-lg">${f.label}</span><span class="text-stone-800 font-black text-2xl">${f.value}</span>`; l.appendChild(v); } });
+            const c = await html2canvas(t, { scale: 2 });
+            document.getElementById('cardPreviewContainer').innerHTML = `<img src="${c.toDataURL()}" class="w-full h-auto">`;
+            document.getElementById('cardModal').classList.remove('hidden');
+        }
+
+        function showActionMenu(e, idx) { 
+            editingIndex = idx; 
+            const m = document.getElementById('actionMenu'); 
+            m.style.position = 'fixed';
+            m.style.top = '50%';
+            m.style.left = '50%';
+            m.style.transform = 'translate(-50%, -50%)';
+            m.classList.remove('hidden'); 
+        }
+
+        function doRowAction(type) {
+            document.getElementById('actionMenu').classList.add('hidden');
+            if(type.startsWith('card_')) generateCard(editingIndex, type.replace('card_', ''));
+            else if(type === 'edit') openClientModal(editingIndex);
+            else if(type === 'delete') openDeleteModal(); 
+            else if(type === 'copy') {
+                const a = calculateInsAge(tableData[editingIndex].birthday); let x = `${tableData[editingIndex].name} 您好：\n保險年齡：${a.age}\n${a.countdown}`;
+                tableData[editingIndex].customFields.forEach(f => { if(f.value !== "0") x += `\n🔹 ${f.label}: ${f.value}`; });
+                navigator.clipboard.writeText(x).then(() => showToast("已複製 LINE 文字"));
+            }
+        }
+
+        function openDeleteModal() { document.getElementById('deleteConfirmModal').classList.remove('hidden'); }
+        function closeDeleteModal() { document.getElementById('deleteConfirmModal').classList.add('hidden'); }
+        function confirmDelete() { if (editingIndex !== null) { tableData.splice(editingIndex, 1); saveToLocalStorage(); renderTable(); showToast("客戶資料已刪除"); } closeDeleteModal(); }
+        
+        function saveToLocalStorage() { localStorage.setItem('ins_db_v30_main', JSON.stringify(tableData)); }
+        function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.opacity = '1'; setTimeout(() => t.style.opacity='0', 2500); }
+        function closeClientModal() { document.getElementById('clientModal').classList.add('hidden'); }
+        function closeCardModal() { document.getElementById('cardModal').classList.add('hidden'); }
+        function closeTagPanel() { document.getElementById('tagPanel').classList.add('hidden'); }
+        function handleBirthdayInput(v) { document.querySelector('[name="age"]').value = calculateInsAge(v).age; }
+        function handleManualOrder(o, v) { let t = parseInt(v)-1; t = Math.max(0, Math.min(t, tableData.length-1)); const i = tableData.splice(o, 1)[0]; tableData.splice(t, 0, i); saveToLocalStorage(); renderTable(); }
+
+        document.addEventListener('click', (e) => { 
+            const menu = document.getElementById('actionMenu');
+            if (!e.target.closest('.action-btn') && !e.target.closest('#actionMenu') && !e.target.closest('#deleteConfirmModal')) {
+                menu.classList.add('hidden');
+            }
+        });
+        window.onload = () => { renderTable(); initSortable(); };
+    </script>
+</body>
+</html>
