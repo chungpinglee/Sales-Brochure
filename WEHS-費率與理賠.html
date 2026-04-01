@@ -15,11 +15,14 @@
             background-color: #f3f4f6; 
             color: #4b5563; 
             border: 1px solid transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .btn-base:hover {
             background-color: #16a34a !important; 
             color: white !important;
-            transform: scale(1.1);
+            transform: scale(1.05);
             z-index: 20;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
@@ -86,7 +89,7 @@
         input[type=number] { -moz-appearance: textfield; }
 
         @media (max-width: 640px) {
-            .birth-inputs input { font-size: 1rem !important; }
+            .birth-inputs input { font-size: 0.875rem !important; }
         }
     </style>
 </head>
@@ -106,20 +109,20 @@
         <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-5 mb-8 relative">
             <div class="grid grid-cols-1 md:flex md:flex-wrap items-end gap-6">
                 
-                <!-- 1. Birth Date -->
+                <!-- 1. Birth Date (寬度與計畫數按鈕一致) -->
                 <div class="flex flex-col gap-1 w-full md:w-auto">
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest">出生年月日 (民國)</label>
-                    <div class="birth-inputs grid grid-cols-3 gap-2 w-full md:w-64">
-                        <input type="number" id="rocYear" placeholder="年" class="border rounded-xl px-2 py-3 focus:ring-2 focus:ring-green-500 outline-none text-center bg-gray-50 w-full">
-                        <input type="number" id="rocMonth" placeholder="月" class="border rounded-xl px-2 py-3 focus:ring-2 focus:ring-green-500 outline-none text-center bg-gray-50 w-full">
-                        <input type="number" id="rocDay" placeholder="日" class="border rounded-xl px-2 py-3 focus:ring-2 focus:ring-green-500 outline-none text-center bg-gray-50 w-full">
+                    <div class="birth-inputs grid grid-cols-3 gap-2 w-full md:w-60">
+                        <input type="number" id="rocYear" placeholder="年" class="border rounded-lg px-1 py-2 focus:ring-1 focus:ring-green-500 outline-none text-center bg-gray-50 w-full text-sm">
+                        <input type="number" id="rocMonth" placeholder="月" class="border rounded-lg px-1 py-2 focus:ring-1 focus:ring-green-500 outline-none text-center bg-gray-50 w-full text-sm">
+                        <input type="number" id="rocDay" placeholder="日" class="border rounded-lg px-1 py-2 focus:ring-1 focus:ring-green-500 outline-none text-center bg-gray-50 w-full text-sm">
                     </div>
                 </div>
 
-                <!-- 2. Direct Age (具備錯誤背景色變化) -->
+                <!-- 2. Direct Age -->
                 <div class="w-full md:w-64">
                     <label class="block text-xs mb-1 uppercase age-label-custom">可直接輸入年齡</label>
-                    <div id="ageInputContainer" class="flex items-center border-2 border-gray-200 rounded-xl px-3 py-2.5 bg-white focus-within:ring-2 focus-within:ring-green-500 focus-within:border-green-500 transition-all shadow-sm">
+                    <div id="ageInputContainer" class="flex items-center border-2 border-gray-200 rounded-xl px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-green-500 focus-within:border-green-500 transition-all shadow-sm">
                         <span id="ageLabelTag" class="text-xs font-bold text-black mr-1 whitespace-nowrap">保險年齡:</span>
                         <input type="number" id="directAge" placeholder="0" class="w-full outline-none font-black text-blue-600 bg-transparent text-xl text-center">
                         <span id="ageSuffixTag" class="text-xs font-bold text-black ml-1 whitespace-nowrap">歲</span>
@@ -129,33 +132,33 @@
                 <!-- 3. Gender -->
                 <div class="w-full md:w-auto">
                     <label class="block text-xs font-bold text-gray-400 mb-1">性別選擇</label>
-                    <div class="flex gap-2 p-1.5 bg-gray-100 rounded-xl w-full" id="genderButtons">
-                        <button onclick="selectGender('male')" id="btnMale" class="flex-1 btn-base py-3 rounded-lg text-sm font-bold">男</button>
-                        <button onclick="selectGender('female')" id="btnFemale" class="flex-1 btn-base py-3 rounded-lg text-sm font-bold">女</button>
+                    <div class="flex gap-2 p-1 bg-gray-100 rounded-xl w-full" id="genderButtons">
+                        <button onclick="selectGender('male')" id="btnMale" class="flex-1 btn-base py-2 rounded-lg text-sm font-bold">男</button>
+                        <button onclick="selectGender('female')" id="btnFemale" class="flex-1 btn-base py-2 rounded-lg text-sm font-bold">女</button>
                     </div>
                 </div>
 
-                <!-- 4. Plan -->
+                <!-- 4. Plan (設定 md:w-60 與出生年月日一致) -->
                 <div class="w-full md:w-auto">
                     <label class="block text-xs font-bold text-gray-400 mb-1">投保計畫數</label>
-                    <div class="flex gap-2 p-1.5 bg-gray-100 rounded-xl" id="planButtons">
-                        <button onclick="selectPlan(10)" data-plan="10" class="plan-btn btn-base px-6 py-3 rounded-lg text-sm font-bold">10</button>
-                        <button onclick="selectPlan(20)" data-plan="20" class="plan-btn btn-base px-6 py-3 rounded-lg text-sm font-bold">20</button>
-                        <button onclick="selectPlan(30)" data-plan="30" class="plan-btn btn-base px-6 py-3 rounded-lg text-sm font-bold">30</button>
+                    <div class="flex gap-2 p-1 bg-gray-100 rounded-xl w-full md:w-60" id="planButtons">
+                        <button onclick="selectPlan(10)" data-plan="10" class="plan-btn btn-base flex-1 py-2 rounded-lg text-sm font-bold">10</button>
+                        <button onclick="selectPlan(20)" data-plan="20" class="plan-btn btn-base flex-1 py-2 rounded-lg text-sm font-bold">20</button>
+                        <button onclick="selectPlan(30)" data-plan="30" class="plan-btn btn-base flex-1 py-2 rounded-lg text-sm font-bold">30</button>
                     </div>
                 </div>
 
-                <!-- 5. Period -->
+                <!-- 5. Period (設定 md:w-60 與計畫數一致) -->
                 <div class="w-full md:w-auto">
                     <label class="block text-xs font-bold text-gray-400 mb-1">繳費期間</label>
-                    <div class="flex gap-2 p-1.5 bg-gray-100 rounded-xl" id="periodButtons">
-                        <button onclick="selectPeriod(10)" data-period="10" class="period-btn btn-base px-5 py-3 rounded-lg text-sm font-bold">10年</button>
-                        <button onclick="selectPeriod(20)" data-period="20" class="period-btn btn-base px-5 py-3 rounded-lg text-sm font-bold">20年</button>
-                        <button onclick="selectPeriod(30)" data-period="30" class="period-btn btn-base px-5 py-3 rounded-lg text-sm font-bold">30年</button>
+                    <div class="flex gap-2 p-1 bg-gray-100 rounded-xl w-full md:w-60" id="periodButtons">
+                        <button onclick="selectPeriod(10)" data-period="10" class="period-btn btn-base flex-1 py-2 rounded-lg text-sm font-bold">10年</button>
+                        <button onclick="selectPeriod(20)" data-period="20" class="period-btn btn-base flex-1 py-2 rounded-lg text-sm font-bold">20年</button>
+                        <button onclick="selectPeriod(30)" data-period="30" class="period-btn btn-base flex-1 py-2 rounded-lg text-sm font-bold">30年</button>
                     </div>
                 </div>
 
-                <!-- Premium Summary (具備錯誤背景色變化) -->
+                <!-- Premium Summary -->
                 <div class="w-full md:w-auto flex items-center gap-3 md:border-l md:pl-6 border-gray-200 pt-4 md:pt-0">
                     <div id="resMaleBox" class="flex-1 md:w-32 bg-blue-50 px-3 py-3 rounded-xl border-l-4 border-blue-800 shadow-sm transition-all">
                         <span id="maleLabel" class="text-[10px] font-black text-blue-900 block uppercase mb-1">男性年繳</span>
@@ -187,7 +190,6 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- Case A -->
                 <div class="claim-card">
                     <div class="case-header" id="headerA" onclick="toggleCase('caseA')">
                         <span>74歲以前 | 骨折住院案例分析</span>
@@ -203,7 +205,6 @@
                     </div>
                 </div>
 
-                <!-- Case C -->
                 <div class="claim-card">
                     <div class="case-header" id="headerC" style="background-color: #166534;" onclick="toggleCase('caseC')">
                         <span>74歲以後 | 癌症擇優案例分析</span>
@@ -226,7 +227,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Case B -->
                 <div class="claim-card">
                     <div class="case-header" id="headerB" style="background-color: #d97706;" onclick="toggleCase('caseB')">
                         <span>74歲以後 | 肺炎ICU案例分析</span>
@@ -244,7 +244,6 @@
                     </div>
                 </div>
 
-                <!-- Case D -->
                 <div id="caseD_card" class="claim-card hidden">
                     <div class="case-header" id="headerD" style="background-color: #4338ca;" onclick="toggleCase('caseD')">
                         <span>壽險功能 | 身故理賠保障分析</span>
@@ -332,7 +331,6 @@
                 if (content) content.classList.remove('hidden');
                 if (icon) icon.classList.add('rotate-180');
             });
-            // 連動展開費率表
             isTableVisible = true;
             document.getElementById('tableContainer').classList.remove('hidden');
             document.getElementById('toggleIcon').classList.add('rotate-180');
@@ -340,21 +338,21 @@
 
         function selectGender(gender) {
             currentGender = gender;
-            document.getElementById('btnMale').className = `flex-1 btn-base py-3 rounded-lg text-sm font-bold ${gender === 'male' ? 'active-male' : ''}`;
-            document.getElementById('btnFemale').className = `flex-1 btn-base py-3 rounded-lg text-sm font-bold ${gender === 'female' ? 'active-female' : ''}`;
+            document.getElementById('btnMale').className = `flex-1 btn-base py-2 rounded-lg text-sm font-bold ${gender === 'male' ? 'active-male' : ''}`;
+            document.getElementById('btnFemale').className = `flex-1 btn-base py-2 rounded-lg text-sm font-bold ${gender === 'female' ? 'active-female' : ''}`;
             updateUIVisuals();
             triggerRecalculation();
         }
 
         function selectPlan(plan) {
             currentPlan = plan;
-            document.querySelectorAll('.plan-btn').forEach(btn => btn.className = `plan-btn btn-base px-6 py-3 rounded-lg text-sm font-bold ${parseInt(btn.dataset.plan) === plan ? 'active-plan' : ''}`);
+            document.querySelectorAll('.plan-btn').forEach(btn => btn.className = `plan-btn btn-base flex-1 py-2 rounded-lg text-sm font-bold ${parseInt(btn.dataset.plan) === plan ? 'active-plan' : ''}`);
             triggerRecalculation();
         }
 
         function selectPeriod(period) {
             currentPeriod = period;
-            document.querySelectorAll('.period-btn').forEach(btn => btn.className = `period-btn btn-base px-5 py-3 rounded-lg text-sm font-bold ${parseInt(btn.dataset.period) === period ? 'active-period' : ''}`);
+            document.querySelectorAll('.period-btn').forEach(btn => btn.className = `period-btn btn-base flex-1 py-2 rounded-lg text-sm font-bold ${parseInt(btn.dataset.period) === period ? 'active-period' : ''}`);
             switchTable(period);
             triggerRecalculation();
         }
@@ -377,27 +375,25 @@
 
             if (ageVal > max) {
                 isAgeExceeded = true;
-                // 年齡輸入區：背景淡紅，文字白色
                 ageContainer.style.backgroundColor = '#fee2e2'; 
                 ageInput.style.color = 'white';
-                // 保費顯示區：背景紅色，文字白色
+                ageLabel.style.color = '#dc2626';
+                ageSuffix.style.color = '#dc2626';
                 mBox.style.backgroundColor = '#ef4444'; mBox.style.borderColor = '#b91c1c';
                 fBox.style.backgroundColor = '#ef4444'; fBox.style.borderColor = '#b91c1c';
                 [mLabel, fLabel, mVal, fVal].forEach(el => el.style.color = 'white');
-                
                 mBox.style.opacity = '1';
                 fBox.style.opacity = '1';
             } else {
                 isAgeExceeded = false;
                 ageContainer.style.backgroundColor = 'white';
-                // 數字預設藍色粗體
                 ageInput.style.color = '#2563eb'; 
-                // 恢復保費顯示原色
+                ageLabel.style.color = 'black';
+                ageSuffix.style.color = 'black';
                 mBox.style.backgroundColor = '#eff6ff'; mBox.style.borderColor = '#1e3a8a';
                 fBox.style.backgroundColor = '#fff7ed'; fBox.style.borderColor = '#ea580c';
                 mLabel.style.color = '#1e3a8a'; mVal.style.color = '#111827';
                 fLabel.style.color = '#c2410c'; fVal.style.color = '#111827';
-                
                 mBox.style.opacity = (currentGender === 'male' ? '1' : '0.4');
                 fBox.style.opacity = (currentGender === 'female' ? '1' : '0.4');
             }
@@ -417,7 +413,6 @@
 
             if (ageVal > max) {
                 if (dynamicLabel) {
-                    // 規則提示：紅白底粗體
                     dynamicLabel.className = "text-sm font-bold bg-red-600 text-white px-3 py-1 rounded-lg ml-2 shadow-sm";
                     dynamicLabel.innerHTML = `⚠️ 投保規則提示：${currentPeriod}年期上限為 ${max} 歲。 (輸入：${ageVal} 歲)`;
                 }
@@ -488,10 +483,7 @@
         function calculateFromDirectAge() {
             const age = parseInt(document.getElementById('directAge').value);
             ['rocYear', 'rocMonth', 'rocDay'].forEach(id => document.getElementById(id).value = "");
-            if (!isNaN(age)) updatePremiums(age); else {
-                clearResults();
-                updateUIVisuals();
-            }
+            if (!isNaN(age)) updatePremiums(age); else { clearResults(); updateUIVisuals(); }
         }
 
         function updatePremiums(age) {
