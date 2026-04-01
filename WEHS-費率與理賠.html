@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEHS 費率查詢與理賠分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        .bg-male { background-color: #79b8b3; }
+        .bg-female { background-color: #f2b5b5; }
+        .text-male { color: #3a7d78; }
+        .text-female { color: #c46a6a; }
+        
+        /* --- 按鈕基礎樣式 (預設為淺灰色) --- */
+        .btn-base {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: #f3f4f6; 
+            color: #4b5563; 
+            border: 1px solid transparent;
+        }
+
+        /* 統一滑鼠滑過效果：綠色、白色文字、放大 10% */
+        .btn-base:hover {
+            background-color: #16a34a !important; 
+            color: white !important;
+            transform: scale(1.1);
+            z-index: 20;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        /* --- 選取狀態 (Active) 專屬填滿顏色 --- */
+        .active-male { background-color: #78350f !important; color: white !important; transform: scale(1.05); font-weight: bold; }
+        .active-female { background-color: #f97316 !important; color: white !important; transform: scale(1.05); font-weight: bold; }
+        .active-plan { background-color: #7c3aed !important; color: white !important; transform: scale(1.05); font-weight: bold; }
+        .active-period { background-color: #2563eb !important; color: white !important; transform: scale(1.05); font-weight: bold; }
+
+        /* 「可直接輸入年齡」標籤樣式：綠色微軟正黑體 */
+        .age-label-custom {
+            color: #16a34a !important;
+            font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+            font-weight: 800;
+        }
+
+        /* 理賠案例標題：藍色底、白色文字 */
+        .case-header {
+            background-color: #1e40af; 
+            color: white !important;
+            border-radius: 8px 8px 0 0;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: center; 
+            align-items: center;
+            margin: -20px -20px 15px -20px; 
+            font-weight: 800;
+        }
+
+        /* 理賠案例敘事文字：藍色微軟正黑體 */
+        .scenario-story {
+            color: #1e40af; 
+            font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+            font-weight: 700;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        /* 專業理賠表格 */
+        .claim-table {
+            width: 100%;
+            font-size: 0.72rem;
+            border-collapse: collapse;
+            margin-top: 12px;
+            background-color: white;
+        }
+        .claim-table th, .claim-table td {
+            border: 1px solid #d1d5db;
+            padding: 8px 4px;
+            text-align: center;
+        }
+        .claim-table th { background-color: #f3f4f6; color: #374151; font-weight: 800; }
+        .claim-table .footer-row { background-color: #f9fafb; font-weight: 900; }
+        .text-red-bold { color: #ef4444; font-weight: bold; }
+        .negative-val { color: #ef4444; font-weight: bold; }
+
+        .highlight-cell { background-color: #16a34a !important; color: white !important; }
+        .tab-active { border-bottom: 3px solid #16a34a; color: #16a34a; }
+        .claim-card { border-top: 4px solid #1e40af; background-color: #fff; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); transition: all 0.3s ease; }
+        .input-error { background-color: #fee2e2 !important; border-color: #ef4444 !important; }
+
+        /* 移除 number input 的箭頭 */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        @media (max-width: 640px) {
+            .birth-inputs { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 4px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen pb-10">
+
+    <div class="max-w-[1400px] mx-auto px-3 py-4 lg:px-4">
+        
+        <div class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <h1 class="text-xl font-black text-gray-800 border-l-8 border-blue-700 pl-4">WEHS 費率查詢與各種理賠情境分析</h1>
+            <div class="flex gap-2">
+                <a href="https://drive.google.com/file/d/1pc2a2-lGJlN4L3SZhtyMDEaYR4o-hxWn/view?usp=drive_link" target="_blank" class="bg-white text-green-700 border border-green-600 px-4 py-2 rounded-full text-xs font-bold hover:bg-green-600 hover:text-white transition-all shadow-sm">📄 商品簡介</a>
+                <a href="https://drive.google.com/file/d/1mXZRxqxjNhqwgHCPydiSdvp5nCXg9q32/view" target="_blank" class="bg-white text-blue-600 border border-blue-600 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm">📄 保單條款</a>
+            </div>
+        </div>
+
+        <!-- Toolbar Section -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-5 mb-8 relative">
+            <div class="grid grid-cols-1 md:flex md:flex-wrap items-end gap-6">
+                
+                <!-- 1. Birth Date -->
+                <div class="flex flex-col gap-1 w-full md:w-auto">
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest">出生年月日 (民國)</label>
+                    <div class="birth-inputs flex md:flex md:gap-1">
+                        <input type="number" id="rocYear" placeholder="年" class="flex-[2] md:w-20 border rounded-xl px-3 py-3 focus:ring-2 focus:ring-green-500 outline-none text-center bg-gray-50">
+                        <input type="number" id="rocMonth" placeholder="月" class="flex-1 md:w-16 border rounded-xl px-3 py-3 focus:ring-2 focus:ring-green-500 outline-none text-center bg-gray-50">
+                        <input type="number" id="rocDay" placeholder="日" class="flex-1 md:w-16 border rounded-xl px-3 py-3 focus:ring-2 focus:ring-green-500 outline-none text-center bg-gray-50">
+                    </div>
+                    <div id="birthDateError" class="hidden text-[10px] text-red-600 font-bold mt-1">日期格式有誤!</div>
+                </div>
+
+                <!-- 2. Direct Age (呈現設計：保險年齡: XX歲) -->
+                <div class="w-full md:w-64">
+                    <label class="block text-xs mb-1 uppercase age-label-custom">可直接輸入年齡</label>
+                    <div class="flex items-center border-2 border-gray-200 rounded-xl px-3 py-2.5 bg-white focus-within:ring-2 focus-within:ring-green-500 focus-within:border-green-500 transition-all shadow-sm">
+                        <span class="text-xs font-bold text-black mr-1 whitespace-nowrap">保險年齡:</span>
+                        <input type="number" id="directAge" placeholder="0" class="w-full outline-none font-black text-red-600 bg-transparent text-xl text-center">
+                        <span class="text-xs font-bold text-black ml-1 whitespace-nowrap">歲</span>
+                    </div>
+                </div>
+
+                <!-- 3. Gender -->
+                <div class="w-full md:w-auto">
+                    <label class="block text-xs font-bold text-gray-400 mb-1">性別選擇</label>
+                    <div class="flex gap-2 p-1.5 bg-gray-100 rounded-xl w-full" id="genderButtons">
+                        <button onclick="selectGender('male')" id="btnMale" class="flex-1 btn-base py-3 rounded-lg text-sm font-bold">男</button>
+                        <button onclick="selectGender('female')" id="btnFemale" class="flex-1 btn-base py-3 rounded-lg text-sm font-bold">女</button>
+                    </div>
+                </div>
+
+                <!-- 4. Plan -->
+                <div class="w-full md:w-auto">
+                    <label class="block text-xs font-bold text-gray-400 mb-1">投保計畫數</label>
+                    <div class="flex gap-2 p-1.5 bg-gray-100 rounded-xl" id="planButtons">
+                        <button onclick="selectPlan(10)" data-plan="10" class="plan-btn btn-base px-6 py-3 rounded-lg text-sm font-bold">10</button>
+                        <button onclick="selectPlan(20)" data-plan="20" class="plan-btn btn-base px-6 py-3 rounded-lg text-sm font-bold">20</button>
+                        <button onclick="selectPlan(30)" data-plan="30" class="plan-btn btn-base px-6 py-3 rounded-lg text-sm font-bold">30</button>
+                    </div>
+                </div>
+
+                <!-- 5. Period -->
+                <div class="w-full md:w-auto">
+                    <label class="block text-xs font-bold text-gray-400 mb-1">繳費期間</label>
+                    <div class="flex gap-2 p-1.5 bg-gray-100 rounded-xl" id="periodButtons">
+                        <button onclick="selectPeriod(10)" data-period="10" class="period-btn btn-base px-5 py-3 rounded-lg text-sm font-bold">10年</button>
+                        <button onclick="selectPeriod(20)" data-period="20" class="period-btn btn-base px-5 py-3 rounded-lg text-sm font-bold">20年</button>
+                        <button onclick="selectPeriod(30)" data-period="30" class="period-btn btn-base px-5 py-3 rounded-lg text-sm font-bold">30年</button>
+                    </div>
+                </div>
+
+                <!-- Results Summary -->
+                <div class="w-full md:w-auto flex items-center gap-3 md:border-l md:pl-6 border-gray-200 pt-4 md:pt-0">
+                    <div id="resMaleBox" class="flex-1 md:w-32 bg-blue-50 px-3 py-3 rounded-xl border-l-4 border-blue-800 shadow-sm transition-all">
+                        <span class="text-[10px] font-black text-blue-900 block uppercase mb-1">男性年繳</span>
+                        <div id="malePremium" class="text-lg font-black text-gray-900">--</div>
+                    </div>
+                    <div id="resFemaleBox" class="flex-1 md:w-32 bg-orange-50 px-3 py-3 rounded-xl border-l-4 border-orange-600 shadow-sm transition-all opacity-40 scale-95">
+                        <span class="text-[10px] font-black text-orange-700 block uppercase mb-1">女性年繳</span>
+                        <div id="femalePremium" class="text-lg font-black text-gray-900">--</div>
+                    </div>
+                    <button onclick="toggleTableVisibility()" id="toggleBtn" class="flex-none p-3 bg-gray-800 text-white rounded-xl hover:bg-green-600 transition-all shadow-lg">
+                        <svg id="toggleIcon" class="w-6 h-6 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="actualAgeDisplay" class="mt-3 text-[0.8rem] text-amber-700 font-bold hidden"></div>
+            
+            <!-- 年齡上限提示 -->
+            <div id="ageWarning" class="hidden mt-3 p-3 bg-red-100 text-red-700 text-xs rounded-xl text-center font-bold border border-red-200">
+                此年齡無法投保該年期計畫
+            </div>
+        </div>
+
+        <!-- Claim Scenarios Section -->
+        <div class="mb-10">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-1.5 h-6 bg-green-600 rounded-full"></div>
+                    <h2 class="text-lg font-bold text-gray-800">理賠案例情境分析 (假設投保計畫 <span id="casePlanLabel">20</span>)</h2>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <!-- Case A -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 claim-card flex flex-col">
+                    <div class="case-header">74歲以前 | 骨折住院案例分析</div>
+                    <div class="scenario-story text-sm mb-4">
+                        35歲的王先生騎車不幸發生車禍，診斷為<span class="underline">脛骨開放性骨折</span>。住院5天期間，為求良好休息入住單人房（差額5,000元），由主治醫師進行復位手術。家屬自費購買了45,000元的高強度自費支架。出院後兩週內回診兩次確認傷口情形，每次支出800元。期間因家人工作繁忙，請了5天的看護照顧，<span class="font-bold text-red-600">每日支出3,000元</span>。
+                    </div>
+                    <table class="claim-table flex-grow">
+                        <thead>
+                            <tr><th>支出項目標題</th><th>支出數字</th><th>保單理賠標準</th><th>理賠金額</th></tr>
+                        </thead>
+                        <tbody id="tableA_body"></tbody>
+                        <tfoot id="tableA_foot"></tfoot>
+                    </table>
+                </div>
+
+                <!-- Case C -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 claim-card flex flex-col">
+                    <div class="case-header">74歲以後 | 癌症擇優案例分析</div>
+                    <div class="scenario-story text-sm mb-4">
+                        80歲的李奶奶確診大腸癌，住院10天接受精密
+                        <a href="https://youtu.be/Eks5tDtG_cQ?si=rufj4LcdDBuKdMZ0" target="_blank" class="text-green-600 font-bold underline underline-offset-2">達文西機械手臂手術</a> 
+                        及 
+                        <a href="https://youtu.be/14Jhc0lWfMw?si=NNcGRl3yYGEaT-R2" target="_blank" class="text-green-600 font-bold underline underline-offset-2">標靶療程</a>。
+                        手術與雜費支出共34萬，病房差額2,500元。回診頻率極高：2周內門診4次，2周後門診2次，每次支出800元。奶奶選擇WEHS癌症增額實支實付保障，大幅減輕自費負擔。
+                    </div>
+                    <table class="claim-table flex-grow">
+                        <thead>
+                            <tr><th>支出項目標題</th><th>支出數字</th><th>保單理賠標準</th><th>理賠金額</th></tr>
+                        </thead>
+                        <tbody id="tableC_body"></tbody>
+                        <tfoot id="tableC_foot"></tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Case B -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 claim-card flex flex-col border-t-amber-500">
+                    <div class="case-header" style="background-color: #d97706;">74歲以後 | 肺炎ICU案例分析</div>
+                    <div class="scenario-story text-sm mb-4">
+                        95歲的陳伯伯患嚴重肺炎，住院10天。前3天因病情危急住進<span class="underline">加護病房(ICU)</span>。轉回一般病房後入住單人房差額5,000元共7天。醫療雜費累計達32萬。因曾住ICU，WEHS啟動醫療雙帳戶機制，將病房與雜費限額倍增。
+                    </div>
+                    <table class="claim-table flex-grow">
+                        <thead>
+                            <tr><th>支出項目標題</th><th>支出數字</th><th>保單理賠標準</th><th>理賠金額</th></tr>
+                        </thead>
+                        <tbody id="tableB_body"></tbody>
+                        <tfoot id="tableB_foot"></tfoot>
+                    </table>
+                </div>
+
+                <!-- Case D -->
+                <div id="caseD_card" class="bg-white rounded-xl shadow-md border border-gray-200 p-5 claim-card flex flex-col hidden">
+                    <div class="case-header" style="background-color: #4338ca;">壽險功能 | 身故理賠保障分析</div>
+                    <div id="caseD_story" class="scenario-story text-sm mb-4">
+                        <!-- 動態填充內容 -->
+                    </div>
+                    <table class="claim-table flex-grow">
+                        <thead>
+                            <tr><th>支出項目標題</th><th>支出數字</th><th>保單理賠標準</th><th>金額計算</th></tr>
+                        </thead>
+                        <tbody id="tableD_body"></tbody>
+                        <tfoot class="footer-row" id="tableD_foot"></tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Area -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between bg-gray-50 gap-4">
+                <h2 class="text-xl font-black text-gray-800">費率總表參考</h2>
+                <div class="flex gap-2" id="periodTabsContainer">
+                    <button onclick="switchTable(10)" id="tab10" class="table-tab flex-1 md:flex-none pb-2 px-4 text-gray-400 text-sm font-bold border-b-2 border-transparent">10年期</button>
+                    <button onclick="switchTable(20)" id="tab20" class="table-tab flex-1 md:flex-none pb-2 px-4 tab-active text-sm font-bold border-b-2 border-blue-600">20年期</button>
+                    <button onclick="switchTable(30)" id="tab30" class="table-tab flex-1 md:flex-none pb-2 px-4 text-gray-400 text-sm font-bold border-b-2 border-transparent">30年期</button>
+                </div>
+            </div>
+            <div id="tableContainer" class="overflow-x-auto">
+                <table class="w-full text-center border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="bg-gray-800 text-white text-xs">
+                            <th class="py-4 px-4 border-b font-bold sticky left-0 bg-gray-800 z-10" rowspan="2">保險年齡</th>
+                            <th class="py-4 border-b font-bold border-l border-gray-700" colspan="3">男性 (計劃 10/20/30)</th>
+                            <th class="py-4 border-b font-bold border-l border-gray-700 bg-pink-900" colspan="3">女性 (計劃 10/20/30)</th>
+                        </tr>
+                        <tr class="bg-gray-700 text-gray-200 text-[11px]">
+                            <th class="py-3 border-b border-l border-gray-600">10</th><th class="py-3 border-b border-gray-600">20</th><th class="py-3 border-b border-gray-600">30</th>
+                            <th class="py-3 border-b border-l border-gray-600 bg-pink-800">10</th><th class="py-3 border-b border-gray-600 bg-pink-800">20</th><th class="py-3 border-b border-gray-600 bg-pink-800">30</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="text-sm text-gray-700"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rates = {
+            10: { male: { 0:[33930,59500,85230], 5:[37480,65250,93630], 10:[40990,70950,101990], 15:[46640,80300,115190], 20:[52300,89630,128380], 25:[58400,99330,141430], 30:[64470,109030,154480], 35:[72020,120580,170180], 40:[79590,132130,185920], 45:[90020,146200,205920], 50:[102600,162360,227210], 55:[116920,181530,253770], 60:[134260,205060,286580], 65:[149450,228990,319080], 70:[165550,254820,353300] }, female: { 0:[34170,59550,85600], 5:[37670,65250,93800], 10:[41170,70990,102020], 15:[46470,79540,112670], 20:[51770,88050,123340], 25:[57270,96750,133840], 30:[62760,105400,144340], 35:[67760,111400,155340], 40:[72710,117430,166380], 45:[80630,129270,182000], 50:[88160,141800,197830], 55:[97420,156290,218510], 60:[108140,173820,243660], 65:[117400,186790,266660], 70:[132200,203450,290990] } },
+            20: { male: { 0:[18750,32880,47350], 5:[20700,36030,52000], 10:[22650,39210,56660], 15:[25800,44360,64010], 20:[28900,49530,71320], 25:[33000,56080,79570], 30:[37050,62660,87770], 35:[39900,66860,92820], 40:[42790,71040,97850], 45:[48500,78770,109880], 50:[55100,87760,123080], 55:[63200,98660,138370], 60:[78560,119990,170990] }, female: { 0:[18880,32910,47820], 5:[20830,36060,52270], 10:[22750,39230,56680], 15:[25700,43580,62880], 20:[28610,47.960,69060], 25:[32260,52610,74610], 30:[35860,57280,80190], 35:[37660,59230,84540], 40:[39500,61160,88880], 45:[43800,67330,97430], 50:[48440,74630,104670], 55:[54120,82260,115370], 60:[62150,94470,134620] } },
+            30: { male: { 0:[13630,23890,34090], 5:[15030,26190,37340], 10:[16460,28490,40610], 15:[18260,31740,45260], 20:[20080,35000,49920], 25:[23030,39650,56220], 30:[25940,44320,62550], 35:[29640,49970,67150], 40:[33380,55650,71760], 45:[38150,61970,80580], 50:[44080,70210,97640] }, female: { 0:[13720,23910,34270], 5:[15120,26210,37470], 10:[16530,28510,40620], 15:[18230,31160,44470], 20:[19880,33800,48340], 25:[22480,37100,52640], 30:[25100,40400,56930], 35:[27150,44050,62230], 40:[29230,47700,67550], 45:[32700,52290,74050], 50:[37300,57960,82340] } }
+        };
+
+        let currentGender = 'male', currentPlan = 20, currentPeriod = 20, highlightedAge = null, isTableVisible = true;
+
+        window.onload = () => {
+            selectGender('male');
+            selectPlan(20);
+            selectPeriod(20);
+            ['rocYear', 'rocMonth', 'rocDay'].forEach(id => document.getElementById(id)?.addEventListener('input', calculateFromBirthday));
+            document.getElementById('directAge')?.addEventListener('input', calculateFromDirectAge);
+        };
+
+        function selectGender(gender) {
+            currentGender = gender;
+            document.getElementById('btnMale').className = `flex-1 btn-base py-3 rounded-lg text-sm font-bold ${gender === 'male' ? 'active-male' : ''}`;
+            document.getElementById('btnFemale').className = `flex-1 btn-base py-3 rounded-lg text-sm font-bold ${gender === 'female' ? 'active-female' : ''}`;
+            document.getElementById('resMaleBox').style.opacity = (gender === 'male' ? '1' : '0.4');
+            document.getElementById('resFemaleBox').style.opacity = (gender === 'female' ? '1' : '0.4');
+            triggerRecalculation();
+        }
+
+        function selectPlan(plan) {
+            currentPlan = plan;
+            document.querySelectorAll('.plan-btn').forEach(btn => {
+                btn.className = `plan-btn btn-base px-6 py-3 rounded-lg text-sm font-bold ${parseInt(btn.dataset.plan) === plan ? 'active-plan' : ''}`;
+            });
+            triggerRecalculation();
+        }
+
+        function selectPeriod(period) {
+            currentPeriod = period;
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.className = `period-btn btn-base px-5 py-3 rounded-lg text-sm font-bold ${parseInt(btn.dataset.period) === period ? 'active-period' : ''}`;
+            });
+            switchTable(period);
+            triggerRecalculation();
+        }
+
+        function updateClaimCases() {
+            const factor = currentPlan / 10;
+            const fmt = (n) => '$' + n.toLocaleString();
+            const getDiffClass = (val) => val < 0 ? 'negative-val' : 'text-green-600';
+            const setSafeHTML = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+
+            document.getElementById('casePlanLabel').innerText = currentPlan;
+
+            // CASE A
+            const baseDailyA = 1000 * factor;
+            const surgA = 2000 * factor;
+            const totalExpA = 111600; 
+            const totalClaimA = (baseDailyA * 5) + surgA + (250 * factor * 2);
+            setSafeHTML('tableA_body', `
+                <tr><td>單人房差額 (5天)</td><td>$25,000</td><td>住院日額 ${fmt(baseDailyA)}/天</td><td>${fmt(baseDailyA*5)}</td></tr>
+                <tr><td>脛骨復位手術費</td><td>$25,000</td><td>住院手術醫療金/次:${fmt(surgA)}</td><td>${fmt(surgA)}</td></tr>
+                <tr><td>自費特殊醫材支架</td><td>$45,000</td><td><span class="text-red-bold">未含實支實付項目</span></td><td>$0</td></tr>
+                <tr><td>2周內回診 (2次)</td><td>$1,600</td><td>每次500元以內</td><td>${fmt(250 * factor * 2)}</td></tr>
+                <tr><td>5天專業看護費</td><td>$15,000</td><td><span class="text-red-bold">不在給付範圍</span></td><td>$0</td></tr>
+            `);
+            setSafeHTML('tableA_foot', `
+                <tr class="footer-row text-red-bold"><td>支出總額</td><td colspan="3">${fmt(totalExpA)}</td></tr>
+                <tr class="footer-row"><td>理賠總計</td><td colspan="3">${fmt(totalClaimA)}</td></tr>
+                <tr class="footer-row ${getDiffClass(totalClaimA - totalExpA)}"><td>理賠與支出差額</td><td colspan="3">${fmt(totalClaimA - totalExpA)}</td></tr>
+            `);
+
+            // CASE B (肺炎 ICU - 扣除項來源)
+            const icuRoomLimit = 2000 * factor;
+            const baseIcuMisc = 100000 * factor;
+            const icuMiscLimit = baseIcuMisc * 2;
+            const claimB_Room = Math.min(35000, 2000 * factor * 7); 
+            const claimB_Misc = Math.min(320000, icuMiscLimit);
+            const calcTotalClaimB = claimB_Room + claimB_Misc;
+
+            setSafeHTML('tableB_body', `
+                <tr><td>單人房差額 (7天)</td><td>$35,000</td><td>實支上限 ${fmt(icuRoomLimit)}/天</td><td>${fmt(claimB_Room)}</td></tr>
+                <tr><td>醫療雜費與ICU藥費</td><td>$320,000</td><td>ICU:上限調高1倍至 ${fmt(icuMiscLimit)}/次</td><td>${fmt(claimB_Misc)}</td></tr>
+                <tr><td>重症期間看護費</td><td>$25,000</td><td><span class="text-red-bold">不在給付範圍</span></td><td>$0</td></tr>
+            `);
+            setSafeHTML('tableB_foot', `
+                <tr class="footer-row text-red-bold"><td>支出總額</td><td colspan="3">$380,000</td></tr>
+                <tr class="footer-row"><td>理賠總計</td><td colspan="3">${fmt(calcTotalClaimB)}</td></tr>
+                <tr class="footer-row ${getDiffClass(calcTotalClaimB - 380000)}"><td>理賠與支出差額</td><td colspan="3">${fmt(calcTotalClaimB - 380000)}</td></tr>
+            `);
+
+            // CASE C
+            const canMiscLimit = 130000 * factor;
+            const claimC_Room = Math.min(25000, 1000 * factor * 10);
+            const claimC_Misc = Math.min(340000, canMiscLimit);
+            const claimC_Out2w = Math.min(3200, 500 * 4);
+            const totalClaimC = claimC_Room + claimC_Misc + claimC_Out2w;
+
+            setSafeHTML('tableC_body', `
+                <tr><td>癌症病房差額 (10天)</td><td>$25,000</td><td>實支上限 ${fmt(1000*factor)}/天</td><td>${fmt(claimC_Room)}</td></tr>
+                <tr><td>達文西手術+標靶</td><td>$340,000</td><td>癌症上限調高1.3倍至 ${fmt(canMiscLimit)}/次</td><td>${fmt(claimC_Misc)}</td></tr>
+                <tr><td>2周內門診 (4次)</td><td>$3,200</td><td>每次500元以內實支</td><td>${fmt(claimC_Out2w)}</td></tr>
+                <tr><td>2周後門診 (2次)</td><td>$1,600</td><td><span class="text-red-bold">不在理賠範圍中</span></td><td>$0</td></tr>
+            `);
+            setSafeHTML('tableC_foot', `
+                <tr class="footer-row text-red-bold"><td>支出總額</td><td colspan="3">$372,400</td></tr>
+                <tr class="footer-row"><td>理賠總計</td><td colspan="3">${fmt(totalClaimC)}</td></tr>
+                <tr class="footer-row ${getDiffClass(totalClaimC - 372400)}"><td>理賠與支出差額</td><td colspan="3">${fmt(totalClaimC - 372400)}</td></tr>
+            `);
+
+            // CASE D (身故案例更新)
+            const daVal = document.getElementById('directAge').value;
+            const caseD = document.getElementById('caseD_card');
+            if (caseD && daVal) {
+                caseD.classList.remove('hidden');
+                const entryAge = 50; 
+                const agesAvailable = Object.keys(rates[currentPeriod].male).map(Number).sort((a,b)=>a-b);
+                let targetAgeEntry = 0; for(let a of agesAvailable) if(entryAge >= a) targetAgeEntry = a;
+                const entryPremium = rates[currentPeriod].male[targetAgeEntry][(currentPlan/10)-1];
+                const totalPaid = entryPremium * currentPeriod;
+                const finalBenefit = Math.max(0, (totalPaid * 1.06) - calcTotalClaimB);
+
+                const storyEl = document.getElementById('caseD_story');
+                if (storyEl) {
+                    storyEl.innerHTML = `承上題：95歲的陳伯伯不幸辭世。WEHS身故保險金計算方式為：年繳保費總和 X 106% X 健康係數，以確保客戶所繳的保費有去有回。本案例假設陳伯伯投保時健康係數為 1，<span class="font-bold">扣除上述案例理賠之 ${fmt(calcTotalClaimB)} 元，身故保險金: ${fmt(finalBenefit)} 元可留愛給心愛的家人</span>。`;
+                }
+
+                setSafeHTML('tableD_body', `
+                    <tr><td>投保保險年齡</td><td>${entryAge} 歲</td><td>投保計畫/年期</td><td>計畫 ${currentPlan} / ${currentPeriod} 年</td></tr>
+                    <tr><td>年繳保費總和</td><td>${fmt(totalPaid)}</td><td>1.06倍返還機制</td><td>106%</td></tr>
+                    <tr><td>扣除理賠金額</td><td>${fmt(calcTotalClaimB)}</td><td>僅扣除肺炎ICU案例之理賠金</td><td>扣除項</td></tr>
+                `);
+                setSafeHTML('tableD_foot', `<tr class="footer-row text-indigo-600"><td>身故保險金理賠</td><td colspan="3">${fmt(finalBenefit)}</td></tr>`);
+            } else if (caseD) {
+                caseD.classList.add('hidden');
+            }
+        }
+
+        function calculateFromBirthday() {
+            const yEl = document.getElementById('rocYear'), mEl = document.getElementById('rocMonth'), dEl = document.getElementById('rocDay');
+            if (!yEl || !mEl || !dEl) return;
+            const yVal = yEl.value, mVal = mEl.value, dVal = dEl.value;
+            [yEl, mEl, dEl].forEach(el => el.classList.remove('input-error'));
+            document.getElementById('birthDateError')?.classList.add('hidden');
+
+            if (yVal && mVal && dVal) {
+                const bDate = new Date(parseInt(yVal) + 1911, parseInt(mVal) - 1, parseInt(dVal));
+                const now = new Date();
+                let yrs = now.getFullYear() - bDate.getFullYear(), mos = now.getMonth() - bDate.getMonth();
+                if (now.getDate() < bDate.getDate()) mos--;
+                if (mos < 0) { yrs--; mos += 12; }
+                let age = yrs + (mos >= 6 ? 1 : 0);
+                const da = document.getElementById('directAge');
+                if (da) { da.value = age; updatePremiums(age); }
+            }
+        }
+
+        function calculateFromDirectAge() {
+            const age = parseInt(document.getElementById('directAge').value);
+            ['rocYear', 'rocMonth', 'rocDay'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+            if (!isNaN(age)) updatePremiums(age); else clearResults();
+        }
+
+        function updatePremiums(age) {
+            const warn = document.getElementById('ageWarning');
+            const mDisp = document.getElementById('malePremium'), fDisp = document.getElementById('femalePremium');
+            const max = { 10: 70, 20: 60, 30: 50 }[currentPeriod];
+
+            if (age < 0 || age > max) {
+                if (warn) {
+                    warn.classList.remove('hidden');
+                    warn.innerHTML = `⚠️ 投保規則提示：${currentPeriod}年期之保險年齡上限為 ${max} 歲。 (當前輸入：${age} 歲)`;
+                }
+                if (mDisp) mDisp.innerText = '--';
+                if (fDisp) fDisp.innerText = '--';
+                highlightedAge = null; renderTable(currentPeriod);
+                updateClaimCases();
+            } else {
+                if (warn) warn.classList.add('hidden');
+                const ages = Object.keys(rates[currentPeriod].male).map(Number).sort((a,b)=>a-b);
+                let target = 0; for (let a of ages) { if (age >= a) target = a; }
+                highlightedAge = target;
+                const idx = (currentPlan / 10) - 1;
+                if (mDisp) mDisp.innerText = '$' + rates[currentPeriod].male[target][idx].toLocaleString();
+                if (fDisp) fDisp.innerText = '$' + rates[currentPeriod].female[target][idx].toLocaleString();
+                renderTable(currentPeriod);
+                updateClaimCases();
+            }
+        }
+
+        function triggerRecalculation() {
+            const daEl = document.getElementById('directAge');
+            if (daEl && !isNaN(parseInt(daEl.value))) updatePremiums(parseInt(daEl.value));
+            else updateClaimCases();
+        }
+
+        function clearResults() {
+            document.getElementById('malePremium').innerText = '--';
+            document.getElementById('femalePremium').innerText = '--';
+            document.getElementById('ageWarning').classList.add('hidden');
+            highlightedAge = null; renderTable(currentPeriod);
+            updateClaimCases();
+        }
+
+        function toggleTableVisibility() {
+            isTableVisible = !isTableVisible;
+            document.getElementById('tableContainer').classList.toggle('hidden', !isTableVisible);
+            document.getElementById('toggleIcon').classList.toggle('rotate-180', !isTableVisible);
+        }
+
+        function switchTable(period) {
+            currentPeriod = period;
+            document.querySelectorAll('.table-tab').forEach(t => {
+                const active = t.id === 'tab' + period;
+                t.classList.toggle('tab-active', active);
+                t.classList.toggle('text-gray-400', !active);
+                t.classList.toggle('border-blue-600', active);
+            });
+            renderTable(period);
+        }
+
+        function renderTable(period) {
+            const body = document.getElementById('tableBody');
+            if (!body) return;
+            body.innerHTML = '';
+            const ages = Object.keys(rates[period].male).map(Number).sort((a,b)=>a-b);
+            const planIdx = (currentPlan / 10) - 1;
+            ages.forEach(age => {
+                const row = document.createElement('tr');
+                row.className = "hover:bg-gray-50 border-b border-gray-100 transition-colors";
+                const buildCells = (data, gender) => data.map((val, idx) => {
+                    const highlight = (age === highlightedAge && currentGender === gender && idx === planIdx) ? 'highlight-cell shadow-inner' : '';
+                    const base = gender === 'female' ? (idx === 0 ? 'border-l border-gray-100 bg-pink-50/50' : 'bg-pink-50/50') : (idx === 0 ? 'border-l border-gray-100' : '');
+                    return `<td class="py-3 ${base} ${highlight}">${val.toLocaleString()}</td>`;
+                }).join('');
+                
+                row.innerHTML = `<td class="py-3 px-4 font-bold bg-gray-50 text-gray-600 sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-left">保險年齡: ${age} 歲</td>${buildCells(rates[period].male[age], 'male')}${buildCells(rates[period].female[age], 'female')}`;
+                body.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
