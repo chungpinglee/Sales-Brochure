@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>雲端問卷系統 - 旗艦完整版</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Babel (負責在瀏覽器編譯 JSX) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    /* 全域字體設定：微軟正黑體 */
+    body {
+      font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif !important;
+    }
+
+    /* 基礎捲軸美化 */
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    
+    /* 按鈕滑鼠滑過特效 */
+    .btn-quiz-action {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-quiz-action:hover:not(:disabled) {
+      background-color: #ef4444 !important; 
+      color: white !important; 
+      transform: scale(1.05); 
+      z-index: 50;
+      box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.4);
+    }
+    .btn-quiz-action:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    /* 🚀 選擇題與題目區專用滑過效果 */
+    .choice-option-btn {
+      transition: all 0.2s ease;
+    }
+    .choice-option-btn:hover:not(:disabled) {
+      background-color: #16a34a !important; /* green-600 */
+      color: white !important;
+      border-color: #15803d !important;
+    }
+
+    /* 題目區塊滑過變綠 */
+    .question-header-hover:hover {
+      background-color: #16a34a !important;
+      color: white !important;
+    }
+    .question-header-hover:hover .question-text {
+      color: white !important;
+    }
+
+    @media (max-width: 640px) {
+      .mobile-full-height {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+      }
+      .question-box-limit {
+        max-height: 35vh;
+        overflow-y: auto;
+      }
+    }
+
+    @keyframes scale-in {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .animate-scale-in {
+      animation: scale-in 0.2s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans overflow-x-hidden">
+  <div id="root"></div>
+
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect, useRef, useMemo } from 'https://esm.sh/react@18.2.0';
+    import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+    import { 
+      Play, Square, Clock, Users, CheckCircle, ChevronRight, 
+      ChevronLeft, Eye, ListChecks, ArrowRight, UserCircle, 
+      LogOut, RefreshCw, Copy, Link as LinkIcon, Send, 
+      Download, Upload, AlertTriangle, X, FileSearch, Edit3, Save, Lock, ClipboardList, Database, EyeOff, Calendar, LayoutList, BarChart3, PieChart, TrendingUp, Award, Table2, BookOpen, Sparkles, Calculator, Settings2, Trash2, ArrowUp, ArrowDown, ArrowUpDown
+    } from 'https://esm.sh/lucide-react@0.292.0';
+
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { getFirestore, doc, setDoc, onSnapshot, collection, updateDoc, getDoc, getDocs, writeBatch } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'music-quiz-stable-v1-production';
+
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+      apiKey: "AIzaSyC4jSIve5kj15hSptVFJ2hOdEjcQ0GsR6w",
+      authDomain: "musictest-1c0fb.firebaseapp.com",
+      projectId: "musictest-1c0fb",
+      storageBucket: "musictest-1c0fb.firebasestorage.app",
+      messagingSenderId: "416438714609",
+      appId: "1:416438714609:web:806f72c2e2d40804442950",
+      measurementId: "G-8NZLQDYY1N"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const getShareableUrl = (code) => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('code', code);
+      return url.toString();
+    };
+
+    const copyToClipboard = (text) => {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return true;
+    };
+
+    const AI_PROMPT_TEMPLATE = `你是一位專業的問卷轉換助手。請將我貼上的問卷文字檔轉換為適合「雲端問卷系統」使用的 JSON 格式。
+
+規則如下：
+1. 輸出格式必須是單純的 JSON 陣列 (Array)。
+2. 選擇題：
+   - "type" 設為 "choice"
+   - "question" 為問題敘述
+   - "options" 為包含 4 個選項的陣列（需保留編號，如 "1. 選項文字"）
+   - "answer" 為正確選項的編號數字字串 (例如 "1", "2", "3", "4")
+3. 簡答/申論題：
+   - "type" 設為 "essay"
+   - "question" 為問題敘述
+   - "answer" 為參考說明文字
+4. 每一題必須包含遞增的 "id" 編號。
+
+範例輸出格式：
+[
+  {
+    "id": 1,
+    "type": "choice",
+    "question": "您對本次服務的滿意度為何？",
+    "options": ["1. 非常滿意", "2. 滿意", "3. 普通", "4. 不滿意"],
+    "answer": "1"
+  },
+  {
+    "id": 2,
+    "type": "essay",
+    "question": "請留下您寶貴的建議。",
+    "answer": "無"
+  }
+]
+
+請直接輸出 JSON 代碼塊即可，不要有其他解釋文字。請將以下問卷進行轉檔：`;
+
+    function App() {
+      const [user, setUser] = useState(null);
+      const [role, setRole] = useState(null);
+      const [sessionCode, setSessionCode] = useState('');
+      const [studentName, setStudentName] = useState('');
+      const [sessionData, setSessionData] = useState(null);
+      const [allAnswersData, setAllAnswersData] = useState([]);
+      const [errorMsg, setErrorMsg] = useState('');
+      const [toastMsg, setToastMsg] = useState('');
+      const [view, setView] = useState('main'); // 'main', 'analysis'
+      
+      const [quizBanks, setQuizBanks] = useState(() => {
+        const saved = localStorage.getItem('secure_quiz_banks_permanent');
+        return saved ? JSON.parse(saved) : {};
+      });
+
+      const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 4000); };
+
+      useEffect(() => {
+        const initAuth = async () => {
+          try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+              await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+              await signInAnonymously(auth);
+            }
+          } catch (e) {
+            setErrorMsg("連線失敗：請檢查網路。");
+          }
+        };
+        initAuth();
+        const unsubscribe = onAuthStateChanged(auth, setUser);
+        return () => unsubscribe();
+      }, []);
+
+      useEffect(() => {
+        if (!user || !sessionCode) return;
+        const sRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', sessionCode);
+        const unsubS = onSnapshot(sRef, (snap) => {
+          if (snap.exists()) { setSessionData(snap.data()); } 
+          else if (role === 'student') { setRole(null); setSessionCode(''); setErrorMsg('問卷室已關閉或代碼失效。'); }
+        }, (err) => console.error(err));
+
+        const aRef = collection(db, 'artifacts', appId, 'public', 'data', 'answers');
+        const unsubA = onSnapshot(aRef, (snap) => {
+          const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          setAllAnswersData(docs.filter(a => a.sessionId === sessionCode));
+        }, (err) => console.error(err));
+        return () => { unsubS(); unsubA(); };
+      }, [user, sessionCode, role]);
+
+      const handleCreate = async () => {
+        if (Object.keys(quizBanks).length === 0) {
+          setErrorMsg("請先匯入問卷 JSON 後再建立問卷。");
+          return;
+        }
+        const firstBankKey = Object.keys(quizBanks)[0];
+        const currentBank = quizBanks[firstBankKey];
+        const newCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+        try {
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sessions', newCode), {
+            hostId: user.uid, status: 'lobby', quizBankId: firstBankKey, quizTitle: currentBank.name || "未命名問卷",
+            questions: currentBank.questions.map(q => ({ ...q, weight: 10 })), 
+            currentQuestionIndex: 0, 
+            perQuestionUnit: 'seconds', perQuestionValue: 5,
+            totalQuizUnit: 'minutes', totalQuizValue: 5,
+            submissionUnit: 'days', submissionValue: 1,
+            revealedAnswers: [], createdAt: Date.now(),
+            gradingStep: 0, 
+            scoringMode: 'even' 
+          });
+          setSessionCode(newCode); setRole('instructor');
+        } catch (e) { setErrorMsg("建立失敗。"); }
+      };
+
+      const handleJoin = async (code, name) => {
+        if (!code || !name) return setErrorMsg('請填寫姓名與代碼');
+        const c = code.trim().toUpperCase();
+        const n = name.trim();
+        try {
+          const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sessions', c));
+          if (!snap.exists()) return setErrorMsg('找不到該代碼。');
+          const studentId = `${user.uid}_${n}`;
+          const answerRef = doc(db, 'artifacts', appId, 'public', 'data', 'answers', `${c}_${studentId}`);
+          const answerSnap = await getDoc(answerRef);
+          if (!answerSnap.exists()) {
+            await setDoc(answerRef, { sessionId: c, studentId: studentId, studentName: n, answers: {}, status: 'in_progress', joinedAt: Date.now() });
+          }
+          setSessionCode(c); setStudentName(n); setRole('student');
+        } catch (e) { setErrorMsg("加入失敗。"); }
+      };
+
+      if (!user) return <div className="h-screen flex items-center justify-center text-slate-400 font-bold animate-pulse uppercase tracking-widest">Connecting to Cloud Server...</div>;
+
+      return (
+        <div className="min-h-screen flex flex-col mobile-full-height">
+          <header className="bg-indigo-900 text-white p-3 md:p-4 shadow-lg flex justify-between items-center shrink-0 h-16 md:h-20">
+            <h1 className="font-bold flex items-center gap-2 text-sm md:text-lg"><ListChecks /> 雲端問卷系統</h1>
+            {role && (
+              <div className="bg-indigo-800 px-3 py-1 rounded-full flex gap-3 text-xs md:text-sm items-center">
+                <span>{role === 'instructor' ? '業務員管理' : studentName}</span>
+                <span className="font-mono text-yellow-300 font-bold tracking-widest">{sessionCode}</span>
+                {/* 離開按鈕：白色文字，底色紅色 */}
+                <button 
+                  onClick={()=>{setRole(null); setSessionCode(''); setView('main');}} 
+                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs font-bold btn-quiz-action transition-colors shadow-sm"
+                >
+                  離開
+                </button>
+              </div>
+            )}
+          </header>
+
+          <main className="flex-1 max-w-7xl mx-auto p-2 md:p-8 w-full overflow-y-auto custom-scrollbar">
+            {view === 'analysis' ? (
+              <AnalysisDashboard onBack={() => setView('main')} currentStudents={allAnswersData} showToast={showToast} session={sessionData} />
+            ) : (
+              <>
+                {!role && <RoleSelection onJoin={handleJoin} onCreate={handleCreate} onResume={(c)=>{setSessionCode(c.toUpperCase()); setRole('instructor');}} hasBanks={Object.keys(quizBanks).length > 0} onImport={(b)=>{setQuizBanks(b); localStorage.setItem('secure_quiz_banks_permanent', JSON.stringify(b)); showToast('問卷載入成功');}} />}
+                
+                {role === 'instructor' && sessionData && (
+                  <InstructorView code={sessionCode} session={sessionData} students={allAnswersData} db={db} showToast={showToast} quizBanks={quizBanks} setQuizBanks={(b)=>{setQuizBanks(b); localStorage.setItem('secure_quiz_banks_permanent', JSON.stringify(b));}} onGoAnalysis={() => setView('analysis')} />
+                )}
+                
+                {role === 'student' && sessionData && (
+                  <StudentDashboard 
+                    sessionData={sessionData} 
+                    myData={allAnswersData.find(a => a.studentId === `${user.uid}_${studentName}`)} 
+                    onAnswer={(idx, text) => {
+                      const ref = doc(db, 'artifacts', appId, 'public', 'data', 'answers', `${sessionCode}_${user.uid}_${studentName}`);
+                      updateDoc(ref, { [`answers.${idx}`]: text });
+                    }} 
+                    onFinalSubmit={async () => {
+                      const ref = doc(db, 'artifacts', appId, 'public', 'data', 'answers', `${sessionCode}_${user.uid}_${studentName}`);
+                      await updateDoc(ref, { status: 'submitted', submittedAt: Date.now() });
+                      showToast('回覆已成功回傳！');
+                    }}
+                    showToast={showToast}
+                  />
+                )}
+              </>
+            )}
+          </main>
+
+          {errorMsg && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]"><div className="bg-white p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl animate-scale-in"><AlertTriangle className="mx-auto text-red-500 mb-4 w-10 h-10" /><p className="font-bold">{errorMsg}</p><button onClick={()=>setErrorMsg('')} className="mt-6 bg-indigo-600 text-white px-8 py-2 rounded-xl font-bold btn-quiz-action w-full">確認</button></div></div>}
+          {toastMsg && <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-xl animate-bounce z-50 flex items-center gap-2 text-sm"><CheckCircle className="text-green-400 w-4 h-4" />{toastMsg}</div>}
+        </div>
+      );
+    }
+
+    function RoleSelection({ onJoin, onCreate, onResume, hasBanks, onImport }) {
+      const [code, setCode] = useState('');
+      const [name, setName] = useState('');
+      const [resCode, setResCode] = useState('');
+      const [isStudentLink, setIsStudentLink] = useState(false);
+
+      useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const codeFromUrl = urlParams.get('code');
+        if (codeFromUrl) {
+          setCode(codeFromUrl.toUpperCase());
+          setIsStudentLink(true);
+        }
+      }, []);
+
+      const handleImportFile = (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = JSON.parse(ev.target.result);
+            let normalized = {};
+            if (Array.isArray(data)) { normalized = { "custom": { name: file.name.replace('.json',''), questions: data } }; } 
+            else if (data.questions && Array.isArray(data.questions)) { normalized = { "custom": data }; } 
+            else { normalized = data; }
+            onImport(normalized);
+          } catch(err) { alert('JSON 格式錯誤'); }
+        };
+        reader.readAsText(file);
+      };
+
+      return (
+        <div className={`mt-4 md:mt-10 ${isStudentLink ? 'flex justify-center' : 'grid md:grid-cols-2 gap-4 md:gap-8'}`}>
+          <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 w-full max-w-md animate-scale-in">
+            <h2 className="text-xl md:text-2xl font-bold text-indigo-700 mb-6 flex items-center gap-2"><UserCircle /> 客戶登入</h2>
+            <div className="space-y-4">
+              <input type="text" placeholder="您的真實姓名" className="w-full p-3 md:p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2" value={name} onChange={e => setName(e.target.value)} />
+              <input type="text" placeholder="輸入 4 碼問卷代碼" className="w-full p-3 md:p-4 bg-slate-50 border rounded-2xl font-mono tracking-widest uppercase outline-none focus:ring-2" value={code} onChange={e => setCode(e.target.value)} />
+              <button onClick={() => onJoin(code, name)} className="w-full bg-indigo-600 text-white font-bold py-3 md:py-4 rounded-2xl shadow-lg btn-quiz-action">進入問卷室</button>
+            </div>
+          </div>
+          {!isStudentLink && (
+            <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between bg-gradient-to-br from-indigo-50/50 to-white animate-scale-in">
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2"><Users /> 業務員管理</h2>
+                <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 mb-4 text-center">
+                  <label className="bg-white border-2 border-dashed border-indigo-200 p-3 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-100 transition-colors">
+                     <Upload className="text-indigo-400 mb-1 w-5 h-5" />
+                     <span className="text-indigo-700 font-bold text-xs">{hasBanks ? '變更問卷檔案' : '按此匯入問卷 JSON'}</span>
+                     <input type="file" className="hidden" accept=".json" onChange={handleImportFile}/>
+                  </label>
+                </div>
+                <div className="space-y-2">
+                  <button onClick={onCreate} className="w-full bg-slate-800 text-white font-bold py-3 md:py-4 rounded-2xl shadow-lg btn-quiz-action">建立新問卷</button>
+                  <button onClick={() => { copyToClipboard(AI_PROMPT_TEMPLATE); alert('AI 提示詞已複製！請貼到 ChatGPT 或 Gemini 中進行轉檔。'); }} className="w-full bg-indigo-50 text-indigo-700 py-3 rounded-2xl font-bold text-xs border border-indigo-200 flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors">
+                    <Sparkles className="w-4 h-4" /> 複製 AI 轉檔提示詞 (文字轉 JSON)
+                  </button>
+                </div>
+              </div>
+              <div className="mt-6 border-t pt-4">
+                <div className="flex gap-2">
+                  <input type="text" placeholder="恢復代碼" className="flex-1 p-2 border rounded-xl font-mono uppercase text-sm outline-none" value={resCode} onChange={e => setResCode(e.target.value)} />
+                  <button onClick={() => onResume(resCode)} className="bg-indigo-100 text-indigo-700 font-bold px-4 rounded-xl btn-quiz-action text-sm">恢復</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function InstructorView({ code, session, students, db, showToast, quizBanks, setQuizBanks, onGoAnalysis }) {
+      const [showFullBankPreview, setShowFullBankPreview] = useState(false);
+      const [showResultsModal, setShowResultsModal] = useState(false);
+      const [showAiHelper, setShowAiHelper] = useState(false);
+      const [editingIndex, setEditingIndex] = useState(null);
+      const [editForm, setEditForm] = useState({ question: '', answer: '', options: [], weight: 10 });
+      
+      const sRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', code);
+
+      // 🔄 同步模式自動換題邏輯
+      useEffect(() => {
+        if (session.status === 'sync_active' && session.questionEndTime) {
+          const checkTimer = setInterval(() => {
+            const now = Date.now();
+            if (now > session.questionEndTime) {
+              const nextIdx = session.currentQuestionIndex + 1;
+              if (nextIdx < session.questions.length) {
+                // 自動跳下一題
+                const nextEndTime = now + (session.perQuestionValue * (session.perQuestionUnit === 'seconds' ? 1000 : 60000));
+                updateDoc(sRef, {
+                  currentQuestionIndex: nextIdx,
+                  questionEndTime: nextEndTime
+                });
+              } else {
+                // 全部結束，收卷
+                updateDoc(sRef, { status: 'review', totalEndTime: null, questionEndTime: null });
+              }
+            }
+          }, 1000);
+          return () => clearInterval(checkTimer);
+        }
+      }, [session.status, session.currentQuestionIndex, session.questionEndTime]);
+
+      const handleAutoGrade = async () => {
+        if (students.length === 0) return;
+        const batch = writeBatch(db);
+        const questions = session.questions;
+        const totalQ = questions.length;
+        const scoringMode = session.scoringMode || 'even';
+        const gradingStep = session.gradingStep || 0;
+
+        let totalWeights = 0;
+        if (scoringMode === 'weighted') {
+          totalWeights = questions.reduce((sum, q) => sum + (Number(q.weight) || 0), 0);
+        }
+
+        students.forEach(s => {
+          let rawScore = 0;
+          if (scoringMode === 'even') {
+            const perQScore = 100 / totalQ;
+            questions.forEach((q, idx) => {
+              if (q.type === 'choice' && s.answers?.[idx] === q.answer) rawScore += perQScore;
+            });
+          } else {
+            questions.forEach((q, idx) => {
+              if (q.type === 'choice' && s.answers?.[idx] === q.answer) {
+                rawScore += (Number(q.weight) || 0) / totalWeights * 100;
+              }
+            });
+          }
+
+          let finalScore = rawScore;
+          if (gradingStep > 0) {
+            finalScore = Math.floor(rawScore / gradingStep) * gradingStep;
+          } else {
+            finalScore = Math.round(rawScore);
+          }
+
+          const ref = doc(db, 'artifacts', appId, 'public', 'data', 'answers', s.id);
+          batch.update(ref, { score: finalScore });
+        });
+
+        await batch.commit();
+        showToast(`已完成自動計算！(模式：${scoringMode==='even'?'平分':'加權'}，級距：${gradingStep||'無'})`);
+      };
+
+      const saveEdit = async () => {
+        if (editingIndex === null) return;
+        const updatedQuestions = [...session.questions];
+        updatedQuestions[editingIndex] = { ...updatedQuestions[editingIndex], ...editForm };
+        
+        const updatedBanks = { ...quizBanks };
+        if (updatedBanks[session.quizBankId]) { 
+          updatedBanks[session.quizBankId].questions = updatedQuestions; 
+          setQuizBanks(updatedBanks); 
+        }
+        
+        try {
+          await updateDoc(sRef, { questions: updatedQuestions });
+          setEditingIndex(null); 
+          showToast('問卷內容修改成功！');
+        } catch (e) {
+          console.error(e);
+          showToast('修改失敗，請檢查網路連線。');
+        }
+      };
+
+      const exportJSON = (data, name) => {
+        const dataToExport = data.map(record => ({
+          ...record,
+          quizTitle: session.quizTitle
+        }));
+        const jsonStr = JSON.stringify(dataToExport, null, 2);
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonStr);
+        const anchor = document.createElement('a'); 
+        anchor.setAttribute("href", dataStr); 
+        anchor.setAttribute("download", `${name}.json`);
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        showToast('問卷 JSON 已匯出');
+      };
+
+      return (
+        <div className="space-y-6 animate-scale-in">
+          {showAiHelper && (
+            <div className="fixed inset-0 bg-slate-900/90 z-[300] flex items-center justify-center p-4 backdrop-blur-md">
+              <div className="bg-white w-full max-w-2xl rounded-[2.5rem] p-8 shadow-2xl animate-scale-in border border-indigo-100">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-black text-indigo-900 flex items-center gap-2"><Sparkles className="text-yellow-500" /> AI 轉檔輔助提示詞</h2>
+                  <button onClick={() => setShowAiHelper(false)} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors"><X /></button>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-2xl border mb-6 max-h-[40vh] overflow-y-auto text-sm font-mono text-slate-600 leading-relaxed custom-scrollbar whitespace-pre-wrap">
+                  {AI_PROMPT_TEMPLATE}
+                </div>
+                <div className="space-y-3">
+                  <button onClick={() => { copyToClipboard(AI_PROMPT_TEMPLATE); showToast('提示詞已複製！'); }} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg btn-quiz-action">
+                    <Copy className="w-5 h-5" /> 點此複製提示詞
+                  </button>
+                  <p className="text-center text-xs text-slate-400 font-medium">複製後請貼到 AI (如 ChatGPT) 並在下方接著貼上您的問題文字即可。</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showFullBankPreview && (
+            <div className="fixed inset-0 bg-slate-900/90 z-[200] flex items-center justify-center p-4 backdrop-blur-md">
+               <div className="bg-white w-full max-w-5xl h-full rounded-[2.5rem] flex flex-col shadow-2xl overflow-hidden animate-scale-in">
+                  <div className="p-6 md:p-8 border-b flex flex-wrap justify-between items-center bg-slate-50 gap-4">
+                    <h2 className="text-xl md:text-2xl font-black text-indigo-900 flex items-center gap-2"><FileSearch /> 問卷內容檢視與修正</h2>
+                    <div className="flex items-center gap-2">
+                       <button onClick={() => exportJSON(session.questions, `${session.quizTitle}_更新問卷`)} className="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold btn-quiz-action text-xs flex items-center gap-2 shadow-md"><Download className="w-4 h-4"/> 匯出更新後問卷 JSON</button>
+                       <button onClick={() => { setShowFullBankPreview(false); setEditingIndex(null); }} className="p-2 rounded-full hover:bg-red-50 text-slate-400 hover:text-red-500 btn-quiz-action"><X className="w-8 h-8"/></button>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar space-y-4 bg-slate-100/30">
+                    {session.questions?.map((q, idx) => (
+                      <div key={idx} className={`bg-white p-6 rounded-3xl border transition-all ${editingIndex === idx ? 'border-indigo-500 ring-4 ring-indigo-50' : 'border-slate-200'}`}>
+                        <div className="flex gap-4">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black shrink-0 ${editingIndex === idx ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700'}`}>Q{idx+1}</div>
+                          <div className="flex-1">
+                            {editingIndex === idx ? (
+                              <div className="space-y-4">
+                                <textarea className="w-full p-3 border rounded-xl h-20 outline-none font-bold text-slate-800" value={editForm.question} onChange={e=>setEditForm({...editForm, question: e.target.value})}/>
+                                {q.type === 'choice' && (
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    {[0,1,2,3].map(i => (
+                                      <input key={i} type="text" className="p-2 border rounded-lg text-sm" value={editForm.options[i] || ''} onChange={e=>{
+                                        const newOpts = [...editForm.options]; newOpts[i] = e.target.value; setEditForm({...editForm, options: newOpts});
+                                      }} placeholder={`選項 ${i+1}`} />
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="text-xs font-bold text-slate-400">參考答案/標簽</label>
+                                    <input type="text" className="w-full p-3 border rounded-xl text-emerald-700 font-bold" value={editForm.answer} onChange={e=>setEditForm({...editForm, answer: e.target.value})} placeholder="參考解答" />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-bold text-slate-400">配分權重 (數值越高佔分越重)</label>
+                                    <input type="number" className="w-full p-3 border rounded-xl text-indigo-700 font-bold" value={editForm.weight} onChange={e=>setEditForm({...editForm, weight: Number(e.target.value)})} placeholder="配分" />
+                                  </div>
+                                </div>
+                                <div className="flex gap-2"><button onClick={saveEdit} className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold btn-quiz-action">儲存修改</button><button onClick={()=>setEditingIndex(null)} className="bg-slate-200 px-6 py-2 rounded-xl btn-quiz-action">取消</button></div>
+                              </div>
+                            ) : (
+                              <div className="flex justify-between items-start">
+                                <div><p className="text-md font-bold">{q.question}</p>{q.type === 'choice' && <div className="grid grid-cols-2 gap-2 mt-2">{q.options?.map((opt, i) => <div key={i} className="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border">{opt}</div>)}</div>}<div className="mt-3 flex gap-2"><div className="text-sm text-emerald-700 bg-emerald-50 p-2 rounded-xl border border-emerald-100">參考答案：{q.answer}</div><div className="text-sm text-indigo-700 bg-indigo-50 p-2 rounded-xl border border-indigo-100">權重：{q.weight || 10}</div></div></div>
+                                <button onClick={()=> { setEditingIndex(idx); setEditForm({question:q.question, answer:q.answer, options: q.options || [], weight: q.weight || 10}); }} className="p-2 text-slate-400 hover:text-indigo-600 btn-quiz-action bg-slate-50 rounded-xl border"><Edit3 className="w-5 h-5"/></button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-6 border-t text-center"><button onClick={() => setShowFullBankPreview(false)} className="bg-slate-800 text-white px-12 py-3 rounded-2xl font-bold btn-quiz-action">結束預覽</button></div>
+               </div>
+            </div>
+          )}
+
+          {showResultsModal && (
+            <div className="fixed inset-0 bg-slate-900/95 z-[200] flex items-center justify-center p-2 backdrop-blur-md">
+               <div className="bg-white w-full max-w-7xl h-full rounded-[2rem] flex flex-col shadow-2xl overflow-hidden animate-scale-in">
+                  <div className="p-6 border-b flex justify-between items-center bg-indigo-50">
+                    <h2 className="text-xl font-black text-indigo-900 flex items-center gap-2"><ClipboardList /> 客戶填答紀錄匯總</h2>
+                    <div className="flex gap-2">
+                       <button onClick={()=>exportJSON(students, `${session.quizTitle}_客戶填答`)} className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold btn-quiz-action text-xs"><Database className="w-4 h-4 inline mr-1"/> 匯出 JSON</button>
+                       <button onClick={() => setShowResultsModal(false)} className="p-2 border rounded-full btn-quiz-action"><X /></button>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-auto p-4 custom-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[1000px]">
+                      <thead><tr className="bg-slate-800 text-white text-[10px]"><th className="p-3 sticky left-0 bg-slate-800">客戶</th><th className="p-3 text-center">狀態</th><th className="p-3 text-center">得分</th>{session.questions.map((_, i) => <th key={i} className="p-3 border-l border-slate-700">Q{i+1}</th>)}</tr></thead>
+                      <tbody>{students.map((s, idx) => (<tr key={idx} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} border-b text-xs`}><td className="p-3 font-bold sticky left-0 bg-inherit shadow-md text-indigo-800">{s.studentName}</td><td className="p-3 text-center">{s.status === 'submitted' ? '✅ 已送出' : '📝 填寫中'}</td><td className="p-3 font-black text-center">{s.score || 0}</td>{session.questions.map((_, i) => (<td key={i} className="p-3 border-l text-slate-600 truncate max-w-[200px]">{s.answers?.[i] || '-'}</td>))}</tr>))}</tbody>
+                    </table>
+                  </div>
+               </div>
+            </div>
+          )}
+
+          <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200">
+            <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
+              <h2 className="text-xl font-bold text-indigo-900 tracking-tight">主控板</h2>
+              <div className="flex gap-4">
+                <TimerDisplay endTime={session.questionEndTime} label="單題倒數" />
+                <TimerDisplay endTime={session.totalEndTime} label="總倒數" />
+              </div>
+            </div>
+
+            <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100 flex items-center gap-2 mb-6">
+              <span className="text-xs font-bold text-indigo-800 whitespace-nowrap">客戶問卷網址：</span>
+              <input type="text" readOnly className="flex-1 bg-white text-xs p-2 rounded border font-mono text-slate-400 outline-none tracking-widest" value="******** (點擊右側按鈕複製)" />
+              <button onClick={() => { copyToClipboard(getShareableUrl(code)); showToast('已複製連結!'); }} className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold btn-quiz-action whitespace-nowrap">複製連結</button>
+            </div>
+
+            {session.status === 'lobby' ? (
+              <div className="grid md:grid-cols-2 gap-6 border-t pt-4">
+                 <div className="space-y-4">
+                    <div className="flex gap-2">
+                       <button onClick={() => setShowFullBankPreview(true)} className="flex-1 bg-white border-2 border-indigo-600 text-indigo-600 p-2 rounded-xl text-xs font-black btn-quiz-action shadow-sm flex items-center justify-center gap-1"><Edit3 className="w-3 h-3"/> 問卷內容修改與配分設定</button>
+                       <button onClick={onGoAnalysis} className="flex-1 bg-indigo-100 border-2 border-indigo-300 text-indigo-700 p-2 rounded-xl text-xs font-black btn-quiz-action shadow-sm flex items-center justify-center gap-1"><BarChart3 className="w-3 h-3"/> 進入填答分析</button>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 bg-slate-50 p-4 rounded-2xl border">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">1. 計分與級距設定</label>
+                        <div className="grid grid-cols-2 gap-2">
+                           <select className="p-2 bg-white border rounded-xl text-xs font-bold" value={session.scoringMode || 'even'} onChange={e => updateDoc(sRef, { scoringMode: e.target.value })}>
+                              <option value="even">總分 100 平分</option>
+                              <option value="weighted">依問題權重計分</option>
+                           </select>
+                           <select className="p-2 bg-white border rounded-xl text-xs font-bold" value={session.gradingStep || 0} onChange={e => updateDoc(sRef, { gradingStep: Number(e.target.value) })}>
+                              <option value="0">精確給分 (不設級距)</option>
+                              <option value="5">5 分為一階 (5等分)</option>
+                              <option value="10">10 分為一階 (10等分)</option>
+                           </select>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">2. 同步：單題限時</label>
+                        <div className="flex gap-2 items-center">
+                           <select className="flex-1 p-2 bg-white border rounded-xl text-xs" value={session.perQuestionUnit || 'seconds'} onChange={e => updateDoc(sRef, { perQuestionUnit: e.target.value })}>
+                              <option value="unlimited">不設限</option>
+                              <option value="seconds">秒</option>
+                              <option value="minutes">分</option>
+                           </select>
+                           {session.perQuestionUnit !== 'unlimited' && (
+                             <div className="flex items-center gap-1 bg-white border rounded-xl px-2 shadow-inner">
+                               <input type="number" className="w-12 p-2 outline-none text-xs" value={session.perQuestionValue || 5} onChange={e => updateDoc(sRef, { perQuestionValue: Number(e.target.value) })} />
+                               <span className="text-xs font-bold text-indigo-500">{session.perQuestionUnit === 'seconds' ? '秒' : '分'}</span>
+                             </div>
+                           )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">3. 同步：問卷總時長</label>
+                        <div className="flex gap-2 items-center">
+                           <select className="flex-1 p-2 bg-white border rounded-xl text-xs" value={session.totalQuizUnit || 'minutes'} onChange={e => updateDoc(sRef, { totalQuizUnit: e.target.value })}>
+                              <option value="unlimited">不設限</option>
+                              <option value="minutes">分</option>
+                              <option value="hours">時</option>
+                           </select>
+                           {session.totalQuizUnit !== 'unlimited' && (
+                             <div className="flex items-center gap-1 bg-white border rounded-xl px-2 shadow-inner">
+                               <input type="number" className="w-12 p-2 outline-none text-xs" value={session.totalQuizValue || 5} onChange={e => updateDoc(sRef, { totalQuizValue: Number(e.target.value) })} />
+                               <span className="text-xs font-bold text-indigo-500">{session.totalQuizUnit === 'minutes' ? '分' : '時'}</span>
+                             </div>
+                           )}
+                        </div>
+                      </div>
+                    </div>
+                 </div>
+                 <div className="flex flex-col justify-center gap-3">
+                    <button onClick={() => updateDoc(sRef, { status: 'sync_active', currentQuestionIndex: 0, totalEndTime: Date.now() + (session.totalQuizValue * 60000), questionEndTime: Date.now() + (session.perQuestionValue * (session.perQuestionUnit === 'seconds' ? 1000 : 60000)) })} className="bg-indigo-600 text-white py-4 rounded-2xl font-bold btn-quiz-action text-sm shadow-lg">啟動：同步競賽模式</button>
+                    <button onClick={() => updateDoc(sRef, { status: 'submission_mode', totalEndTime: session.totalQuizUnit !== 'unlimited' ? Date.now() + (session.totalQuizValue * (session.totalQuizUnit === 'minutes' ? 60000 : 3600000)) : null })} className="bg-emerald-600 text-white py-4 rounded-2xl font-bold btn-quiz-action text-sm shadow-lg">啟動：非同步填答模式</button>
+                    <div className="flex gap-2">
+                      <button onClick={() => setShowResultsModal(true)} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-2xl font-bold btn-quiz-action text-xs">觀看客戶答案表</button>
+                      <button onClick={() => setShowAiHelper(true)} className="flex-1 bg-indigo-50 text-indigo-700 py-3 rounded-2xl font-bold btn-quiz-action text-xs flex items-center justify-center gap-1 border border-indigo-100">
+                        <Sparkles className="w-3 h-3" /> AI 轉檔助手
+                      </button>
+                    </div>
+                 </div>
+              </div>
+            ) : (
+              <div className="flex justify-between items-center bg-slate-900 text-white p-4 rounded-2xl animate-scale-in">
+                 <div className="flex flex-col"><span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">{session.status === 'submission_mode' ? '回傳模式' : '問卷進行中'}</span><p className="font-bold text-sm">{session.quizTitle}</p></div>
+                 <div className="flex gap-3">
+                   <button onClick={onGoAnalysis} className="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold btn-quiz-action text-xs flex items-center gap-1"><BarChart3 className="w-3 h-3"/> 填答分析</button>
+                   <button onClick={() => setShowResultsModal(true)} className="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold btn-quiz-action text-xs">客戶總表</button>
+                   <button onClick={() => updateDoc(sRef, { status: 'review', totalEndTime: null, questionEndTime: null })} className="bg-red-50 text-white px-6 py-2 rounded-xl font-bold btn-quiz-action text-xs">結束並收卷</button>
+                 </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="grid lg:grid-cols-3 gap-6 mt-6">
+            <div className="lg:col-span-2 bg-white p-6 rounded-3xl border shadow-sm h-fit">
+               <div className="flex justify-between items-center border-b pb-4 mb-4"><h3 className="text-lg font-bold">當前問題: Q{session.currentQuestionIndex+1}</h3></div>
+               <p className="text-2xl font-bold text-slate-700 mb-6 leading-relaxed">{session.questions?.[session.currentQuestionIndex]?.question}</p>
+               <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 text-emerald-900 font-medium whitespace-pre-wrap">參考答案：{session.questions?.[session.currentQuestionIndex]?.answer}</div>
+            </div>
+            <div className="bg-white p-6 rounded-3xl border h-[400px] overflow-y-auto custom-scrollbar">
+               <div className="flex justify-between items-center border-b pb-4 mb-4">
+                 <h3 className="text-md font-bold flex items-center gap-2 font-black text-slate-700"><Users className="text-indigo-600" /> 在線客戶 ({students.length})</h3>
+                 <button onClick={handleAutoGrade} className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold btn-quiz-action flex items-center gap-1 shadow-md"><Calculator className="w-3 h-3" /> 自動評分</button>
+               </div>
+               {students.map(s => (<div key={s.id} className="p-3 bg-slate-50 rounded-2xl border mb-2 flex justify-between items-center animate-scale-in"><span className="text-sm font-bold">{s.studentName} {s.status === 'submitted' && '✅'}</span><input type="number" className="w-12 text-center border rounded font-bold" value={s.score || 0} onChange={e => updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'answers', s.id), { score: Number(e.target.value) })} /></div>))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function AnalysisDashboard({ onBack, currentStudents, showToast, session }) {
+      const [importedData, setImportedData] = useState([]);
+      const [sortConfig, setSortConfig] = useState({ key: 'time', direction: 'desc' });
+      
+      const rawData = importedData.length > 0 ? importedData : currentStudents;
+      const questions = session?.questions || [];
+
+      const stats = useMemo(() => {
+        if (!rawData || rawData.length === 0) return { avg: 0, max: 0, min: 0, total: 0 };
+        const scores = rawData.map(s => s.score || 0);
+        const total = rawData.length;
+        const avg = (scores.reduce((a, b) => a + b, 0) / total).toFixed(1);
+        const max = Math.max(...scores);
+        const min = Math.min(...scores);
+        return { avg, max, min, total };
+      }, [rawData]);
+
+      const sortedData = useMemo(() => {
+        let items = [...rawData];
+        if (sortConfig.key) {
+          items.sort((a, b) => {
+            let valA, valB;
+            if (sortConfig.key === 'name') { valA = a.studentName || ''; valB = b.studentName || ''; }
+            else if (sortConfig.key === 'score') { valA = a.score || 0; valB = b.score || 0; }
+            else if (sortConfig.key === 'time') { valA = a.submittedAt || a.joinedAt || 0; valB = b.submittedAt || b.joinedAt || 0; }
+            else if (sortConfig.key === 'quiz') { valA = a.quizTitle || ''; valB = b.quizTitle || ''; }
+            else if (sortConfig.key.startsWith('q_')) {
+              const qIdx = parseInt(sortConfig.key.split('_')[1]);
+              valA = a.answers?.[qIdx] || ''; valB = b.answers?.[qIdx] || '';
+            }
+            if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+          });
+        }
+        return items;
+      }, [rawData, sortConfig]);
+
+      const handleExportMatrix = () => {
+        const dataToExport = sortedData.map(s => ({
+          customer: s.studentName,
+          quiz: s.quizTitle || session?.quizTitle,
+          score: s.score || 0,
+          time: new Date(s.submittedAt || s.joinedAt).toLocaleString(),
+          responses: s.answers || {}
+        }));
+        const jsonStr = JSON.stringify(dataToExport, null, 2);
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonStr);
+        const anchor = document.createElement('a'); 
+        anchor.setAttribute("href", dataStr); 
+        anchor.setAttribute("download", `客戶填答矩陣_${session?.quizTitle || '分析'}.json`);
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        showToast('矩陣填答資料已匯出');
+      };
+
+      const formatDateTime = (ts) => {
+        if (!ts) return '--';
+        const d = new Date(ts);
+        return `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+      };
+
+      const handleImport = async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        let allNewRecords = [];
+        const existingKeys = new Set(importedData.map(item => `${item.studentName}_${item.submittedAt || item.joinedAt}`));
+        for (const file of files) {
+          const reader = new FileReader();
+          const content = await new Promise((resolve) => { reader.onload = (ev) => resolve(ev.target.result); reader.readAsText(file); });
+          try {
+            const json = JSON.parse(content);
+            const list = Array.isArray(json) ? json : (json.data || []);
+            list.forEach(item => {
+              const itemTime = item.submittedAt || item.joinedAt || 0;
+              const key = `${item.studentName}_${itemTime}`;
+              if (!existingKeys.has(key)) { allNewRecords.push({ ...item, _importId: crypto.randomUUID(), _sourceFile: file.name }); existingKeys.add(key); }
+            });
+          } catch (err) { console.error(`檔案 ${file.name} 格式錯誤`); }
+        }
+        if (allNewRecords.length === 0) { showToast("選取的記錄皆已存在，未進行匯入。"); } 
+        else { setImportedData(prev => [...prev, ...allNewRecords]); showToast(`匯入完成！新增 ${allNewRecords.length} 筆不重複記錄。`); }
+      };
+
+      const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+        setSortConfig({ key, direction });
+      };
+
+      const getSortIcon = (key) => {
+        if (sortConfig.key !== key) return <ArrowUpDown className="w-3 h-3 opacity-30" />;
+        return sortConfig.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />;
+      };
+
+      return (
+        <div className="animate-scale-in space-y-6 max-w-[1600px] mx-auto pb-10">
+          <div className="flex flex-wrap justify-between items-center gap-4 bg-white p-6 rounded-3xl border shadow-sm sticky top-0 z-[60]">
+            <div>
+              <h2 className="text-2xl font-black text-indigo-900 flex items-center gap-2"><BarChart3 /> 客戶填答分析中心</h2>
+              <p className="text-sm text-slate-400 font-bold">{session?.quizTitle || '分析資料'} | {importedData.length > 0 ? `歷史記錄 (${importedData.length}筆)` : '實時模式'}</p>
+            </div>
+            <div className="flex gap-2">
+              <label className="bg-emerald-600 text-white px-5 py-2.5 rounded-2xl font-bold btn-quiz-action text-sm flex items-center gap-2 cursor-pointer shadow-lg">
+                <Upload className="w-4 h-4" /> 批次匯入填答 JSON
+                <input type="file" className="hidden" accept=".json" multiple onChange={handleImport} />
+              </label>
+              {importedData.length > 0 && (
+                <button onClick={() => { if(window.confirm('確定要清空所有匯入資料，切換回實時模式嗎？')) setImportedData([]); }} className="bg-red-50 text-red-600 px-5 py-2.5 rounded-2xl font-bold btn-quiz-action text-sm border border-red-100">清空匯入</button>
+              )}
+              <button onClick={onBack} className="bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-bold btn-quiz-action text-sm">返回管理台</button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+             <StatCard label="總填答人數" val={stats.total} unit="人" icon={<Users className="text-blue-500"/>} />
+             <StatCard label="平均評分" val={stats.avg} unit="分" icon={<TrendingUp className="text-indigo-500"/>} />
+             <StatCard label="最高分" val={stats.max} unit="分" icon={<Award className="text-yellow-500"/>} />
+             <StatCard label="最低分" val={stats.min} unit="分" icon={<AlertTriangle className="text-red-500"/>} />
+          </div>
+
+          <div className="grid lg:grid-cols-4 gap-6">
+            <div className="bg-white p-6 rounded-[2rem] border shadow-sm lg:col-span-1">
+               <h3 className="font-black text-slate-700 mb-4 flex items-center gap-2 border-b pb-3"><BookOpen className="text-indigo-600"/> 問卷題目列表</h3>
+               <div className="space-y-4 overflow-y-auto max-h-[600px] custom-scrollbar pr-2">
+                 {questions.map((q, i) => (
+                   <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 group">
+                      <span className="text-[10px] font-black text-indigo-500 uppercase">Q{i+1} ({q.type==='choice'?'選擇':'簡答'})</span>
+                      <p className="text-sm font-bold text-slate-700 leading-relaxed">{q.question}</p>
+                      <div className="mt-2 text-[10px] bg-white p-2 rounded-lg border italic text-emerald-600 font-bold">參考答案：{q.answer} | 權重：{q.weight || 10}</div>
+                   </div>
+                 ))}
+               </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-[2rem] border shadow-sm lg:col-span-3 overflow-hidden flex flex-col">
+               <div className="flex justify-between items-center border-b pb-3 mb-4">
+                  <div className="flex items-center gap-4">
+                    <h3 className="font-black text-slate-700 flex items-center gap-2"><Table2 className="text-indigo-600"/> 客戶填答矩詳情</h3>
+                    <button onClick={handleExportMatrix} className="bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-[10px] font-bold btn-quiz-action flex items-center gap-1 shadow-sm"><Download className="w-3 h-3" /> 匯出矩詳情 JSON</button>
+                  </div>
+                  <p className="text-[10px] text-slate-400">※ 點擊標題可快速排序</p>
+               </div>
+               <div className="flex-1 overflow-auto custom-scrollbar">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-slate-800 text-white text-[10px]">
+                        <th onClick={() => requestSort('name')} className="p-3 text-left sticky left-0 bg-slate-800 z-20 min-w-[100px] cursor-pointer hover:bg-slate-700 transition-colors">
+                          <div className="flex items-center gap-1">客戶姓名 {getSortIcon('name')}</div>
+                        </th>
+                        <th onClick={() => requestSort('quiz')} className="p-3 text-left min-w-[150px] cursor-pointer hover:bg-slate-700 transition-colors">
+                          <div className="flex items-center gap-1">問卷名稱 {getSortIcon('quiz')}</div>
+                        </th>
+                        <th onClick={() => requestSort('score')} className="p-3 text-center min-w-[60px] cursor-pointer hover:bg-slate-700 transition-colors">
+                          <div className="flex items-center justify-center gap-1">積分 {getSortIcon('score')}</div>
+                        </th>
+                        <th onClick={() => requestSort('time')} className="p-3 text-center min-w-[140px] cursor-pointer hover:bg-slate-700 transition-colors">
+                          <div className="flex items-center justify-center gap-1">填答時間 {getSortIcon('time')}</div>
+                        </th>
+                        {questions.map((_, i) => (
+                          <th key={i} onClick={() => requestSort(`q_${i}`)} className="p-3 border-l border-slate-700 text-center min-w-[120px] cursor-pointer hover:bg-slate-700 transition-colors">
+                            <div className="flex items-center justify-center gap-1">Q{i+1} 內容 {getSortIcon(`q_${i}`)}</div>
+                          </th>
+                        ))}
+                        <th className="p-3 text-center min-w-[60px] sticky right-0 bg-slate-800 z-20">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedData.map((s, idx) => (
+                        <tr key={s._importId || s.id || idx} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} border-b text-xs hover:bg-indigo-50/50`}>
+                          <td className="p-3 font-bold text-indigo-900 sticky left-0 bg-inherit shadow-md z-10">{s.studentName}</td>
+                          <td className="p-3 text-slate-600 font-medium">{s.quizTitle || session?.quizTitle || '--'}</td>
+                          <td className="p-3 text-center font-black text-indigo-600">{s.score || 0}</td>
+                          <td className="p-3 text-center text-slate-400 font-mono">{formatDateTime(s.submittedAt || s.joinedAt)}</td>
+                          {questions.map((q, qIdx) => {
+                            const ans = s.answers?.[qIdx];
+                            return (
+                              <td key={qIdx} className={`p-3 border-l text-center`}>
+                                <div className="max-w-[150px] truncate mx-auto" title={ans}>{ans || '--'}</div>
+                              </td>
+                            );
+                          })}
+                          <td className="p-3 text-center sticky right-0 bg-inherit shadow-[-5px_0_10px_rgba(0,0,0,0.02)] z-10">
+                            {importedData.length > 0 && (
+                              <button onClick={() => { if(window.confirm('確定刪除？')) setImportedData(prev => prev.filter(p => p._importId !== s._importId)); }} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {sortedData.length === 0 && <div className="p-20 text-center text-slate-400 font-bold">暫無填答數據</div>}
+               </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function StatCard({ label, val, unit, icon }) {
+      return (
+        <div className="bg-white p-5 rounded-3xl border shadow-sm flex flex-col justify-between hover:scale-[1.02] transition-transform">
+          <div className="flex justify-between items-start mb-2"><span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</span>{icon}</div>
+          <div className="text-2xl font-black text-slate-800">{val}<span className="text-xs ml-1 text-slate-400 font-bold">{unit}</span></div>
+        </div>
+      );
+    }
+
+    function StudentDashboard({ sessionData, myData, onAnswer, onFinalSubmit, showToast }) {
+      const [localIdx, setLocalIdx] = useState(0);
+      const [showOverview, setShowOverview] = useState(false);
+      const [text, setText] = useState('');
+      const [currentTime, setCurrentTime] = useState(Date.now());
+      const activeIdx = localIdx;
+      const q = sessionData.questions?.[activeIdx] || {};
+
+      // 即時更新現在時間，用於時限檢查
+      useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      useEffect(() => { if (myData) setText(myData.answers?.[activeIdx] || ''); }, [activeIdx, myData]);
+      useEffect(() => { if (sessionData.status === 'sync_active') { setLocalIdx(sessionData.currentQuestionIndex); setShowOverview(false); } }, [sessionData.currentQuestionIndex, sessionData.status]);
+
+      const handleSaveAndNext = () => {
+        onAnswer(activeIdx, text); 
+        if (activeIdx < sessionData.questions.length - 1) setLocalIdx(prev => prev + 1); 
+        else setShowOverview(true); 
+      };
+
+      const isSubmitted = myData?.status === 'submitted';
+      const isTotalTimeout = sessionData.totalEndTime && currentTime > sessionData.totalEndTime;
+      
+      // 計算總時長與剩餘秒數，判斷是否顯示最後1分鐘提醒
+      const remainingSeconds = sessionData.totalEndTime ? Math.floor((sessionData.totalEndTime - currentTime) / 1000) : null;
+      // 當剩餘時間在 60 秒以內且問卷尚未逾時時顯示警語
+      const showLastMinuteReminder = remainingSeconds !== null && remainingSeconds <= 60 && remainingSeconds > 0;
+
+      if (sessionData.status === 'lobby') return <div className="flex h-[60vh] flex-col items-center justify-center bg-white rounded-3xl animate-pulse"><Clock className="w-16 h-16 text-indigo-200 mb-6" /><h2 className="text-xl font-black">等待啟動問卷...</h2></div>;
+
+      // 🕒 總時限到期提示
+      if (isTotalTimeout) {
+        return (
+          <div className="max-w-2xl mx-auto mt-10 p-12 bg-white rounded-[2.5rem] shadow-2xl border-2 border-red-50 text-center animate-scale-in flex flex-col items-center">
+            <AlertTriangle className="w-20 h-20 text-red-500 mb-6 animate-bounce" />
+            <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-4 leading-relaxed">問卷回覆時限已到，謝謝您的協助!</h2>
+            <p className="text-slate-400 font-bold">本問卷已結束收件，如有疑問請洽業務人員。</p>
+          </div>
+        );
+      }
+
+      if (showOverview) {
+        return (
+          <div className="max-w-2xl mx-auto p-4 bg-white rounded-3xl shadow-xl animate-scale-in border border-slate-200 mt-4 flex flex-col h-[85vh]">
+            <h2 className="text-xl font-bold border-b pb-4 flex items-center gap-2 text-indigo-900"><LayoutList /> 檢查問卷答案</h2>
+            <div className="flex-1 overflow-y-auto space-y-3 my-4 pr-2 custom-scrollbar">
+              {sessionData.questions.map((q, i) => (
+                <div key={i} className={`p-4 rounded-2xl border transition-all ${myData?.answers?.[i] ? 'bg-indigo-50 border-indigo-100' : 'bg-red-50 border-red-100'}`}>
+                  <div className="flex justify-between items-start mb-1"><span className="font-bold text-xs text-slate-500">Q{i+1}. {q.question}</span></div>
+                  <p className="text-sm font-bold text-slate-800 bg-white/50 p-2 rounded-lg border truncate">{myData?.answers?.[i] || <span className="text-red-500 italic">尚未填寫</span>}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-4 pt-4 border-t">
+              <button onClick={() => { setLocalIdx(0); setShowOverview(false); }} className="flex-1 p-4 bg-slate-800 text-white rounded-2xl font-bold btn-quiz-action text-sm">返回檢查</button>
+              <button onClick={() => { if(window.confirm('內容一經送出，即無法再更改，確定送出?')){ onFinalSubmit(); setShowOverview(false); } }} className="flex-1 p-4 bg-red-600 text-white rounded-2xl font-bold btn-quiz-action shadow-lg text-sm flex items-center justify-center gap-2">送出回覆 <Send className="w-5 h-5"/></button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="max-w-2xl mx-auto px-2 pb-10 animate-scale-in">
+          {sessionData.status === 'review' && <div className="bg-red-600 text-white p-3 rounded-2xl text-center font-black text-sm mb-4 shadow-lg">問卷已關閉，內容已鎖定！</div>}
+          {isSubmitted && <div className="bg-emerald-600 text-white p-3 rounded-2xl text-center font-black text-sm mb-4 shadow-lg border-2 border-emerald-400">填答已成功回傳！</div>}
+          
+          {/* ⚠️ 最後一分鐘提醒區塊 (警語已更新為指定內容) */}
+          {showLastMinuteReminder && !isSubmitted && !isTotalTimeout && (
+            <div className="bg-orange-500 text-white p-3 rounded-2xl text-center font-black text-sm mb-4 shadow-xl border-2 border-orange-300 animate-pulse">
+              問卷關閉時間僅剩1分鐘，請盡速傳出問卷內容，謝謝您的協助!
+            </div>
+          )}
+
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center mb-4">
+             <div className="flex flex-col"><span className="text-[10px] font-bold text-indigo-500 uppercase tracking-tighter">{sessionData.quizTitle}</span><h2 className="text-md font-bold text-slate-800">問題 {activeIdx + 1} / {sessionData.questions.length}</h2></div>
+             <div className="flex gap-2">
+                <TimerDisplay endTime={sessionData.questionEndTime} label="單題" alertMode={true}/>
+                <TimerDisplay endTime={sessionData.totalEndTime} label="總時" alertMode={false}/>
+             </div>
+          </div>
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden mb-6 flex flex-col question-header-hover group">
+            <div className="p-6 bg-indigo-50/50 border-b question-box-limit group-hover:bg-green-600 transition-colors">
+              <div className="text-lg md:text-xl font-bold text-slate-800 leading-tight question-text">{q.question}</div>
+            </div>
+            <div className="p-6 bg-white">
+              {q.type === 'choice' ? (
+                <div className="grid grid-cols-1 gap-3">
+                  {q.options?.map((opt, i) => {
+                    return (
+                      <button key={i} disabled={sessionData.status==='review' || isSubmitted} onClick={()=>{ setText(opt); onAnswer(activeIdx, opt); }} className={`p-4 rounded-2xl border-2 text-left text-lg md:text-xl transition-all choice-option-btn ${text === opt ? 'bg-green-600 text-white border-green-700 scale-[1.02] shadow-lg' : 'bg-white border-slate-200 text-black'} btn-quiz-action`}>{opt}</button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {activeIdx === 5 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-400">快速選單：</span>
+                      <select 
+                        className="p-2 bg-slate-50 border rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                        value={text === '否' ? '否' : ''}
+                        onChange={(e) => { if(e.target.value) { setText(e.target.value); onAnswer(activeIdx, e.target.value); } }}
+                        disabled={sessionData.status === 'review' || isSubmitted}
+                      >
+                        <option value="">-- 請選擇 --</option>
+                        <option value="否">否</option>
+                      </select>
+                    </div>
+                  )}
+                  <textarea className="w-full p-4 border-2 rounded-2xl outline-none text-md h-32 disabled:bg-slate-100 disabled:text-slate-400 text-black font-medium focus:border-green-500" placeholder="請在此輸入內容..." value={text} onChange={e => setText(e.target.value)} onBlur={() => onAnswer(activeIdx, text)} disabled={sessionData.status === 'review' || isSubmitted} />
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <button onClick={() => setLocalIdx(Math.max(0, activeIdx - 1))} disabled={activeIdx === 0} className="flex-1 px-4 py-3 bg-slate-200 rounded-2xl font-bold btn-quiz-action text-sm">上一題</button>
+            <button onClick={handleSaveAndNext} className="flex-1 px-4 py-3 bg-red-600 text-white rounded-2xl font-bold btn-quiz-action shadow-lg text-sm">{activeIdx === sessionData.questions.length-1 ? '檢查問卷' : '下一題'}</button>
+          </div>
+        </div>
+      );
+    }
+
+    function TimerDisplay({ endTime, label, alertMode = false }) {
+      const [t, setT] = useState(0);
+      useEffect(() => { if(!endTime) { setT(0); return; } const tick = () => setT(Math.max(0, Math.floor((endTime - Date.now()) / 1000))); tick(); const i = setInterval(tick, 1000); return () => clearInterval(i); }, [endTime]);
+      if(!endTime) return (<div className="px-2 py-1 rounded-xl border bg-slate-50 text-slate-400 border-slate-200"><div className="text-[8px] font-bold uppercase leading-none opacity-40">{label}</div><div className="text-xs font-bold leading-tight">不設限</div></div>);
+      const m = Math.floor(t / 60).toString().padStart(2, '0');
+      const s = (t % 60).toString().padStart(2, '0');
+      return ( 
+        <div className={`px-2 py-1 rounded-xl border font-mono text-center shadow-inner ${t < 60 && t > 0 && alertMode ? 'bg-red-50 text-red-600 animate-pulse border-red-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+          <div className="text-[8px] font-bold uppercase opacity-60 tracking-tighter">{label}</div>
+          <div className="text-xs font-bold leading-tight tracking-tighter">{m}:{s}</div>
+        </div> 
+      );
+    }
+
+    const root = createRoot(document.getElementById('root')); root.render(<App />);
+  </script>
+</body>
+</html>
