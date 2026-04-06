@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>雲端問卷系統 - WEHS 旗艦版</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    /* 全域字體設定 */
+    body {
+      font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif !important;
+    }
+
+    /* 🚀 原地淡入 1.5 秒動畫 */
+    @keyframes globalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .global-fade-in {
+      animation: globalFadeIn 1.5s ease-out forwards;
+    }
+
+    /* 捲軸美化 */
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    
+    /* 按鈕特效 */
+    .btn-quiz-action {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-quiz-action:hover:not(:disabled) {
+      background-color: #ef4444 !important; 
+      color: white !important; 
+      transform: scale(1.05); 
+      z-index: 50;
+      box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.4);
+    }
+    .btn-quiz-action:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    .choice-option-btn {
+      transition: all 0.2s ease;
+    }
+    .choice-option-btn:hover:not(:disabled) {
+      background-color: #16a34a !important; 
+      color: white !important;
+      border-color: #15803d !important;
+    }
+
+    .question-header-hover:hover {
+      background-color: #16a34a !important;
+      color: white !important;
+    }
+    .question-header-hover:hover .question-text {
+      color: white !important;
+    }
+
+    @media (max-width: 640px) {
+      .mobile-full-height {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+      }
+      .question-box-limit {
+        max-height: 35vh;
+        overflow-y: auto;
+      }
+    }
+
+    @keyframes scale-in {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .animate-scale-in {
+      animation: scale-in 0.2s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans overflow-x-hidden">
+  <div id="root"></div>
+
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect, useRef, useMemo } from 'https://esm.sh/react@18.2.0';
+    import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+    import { 
+      Play, Square, Clock, Users, CheckCircle, ChevronRight, 
+      ChevronLeft, Eye, ListChecks, ArrowRight, UserCircle, 
+      LogOut, RefreshCw, Copy, Link as LinkIcon, Send, 
+      Download, Upload, AlertTriangle, X, FileSearch, Edit3, Save, Lock, ClipboardList, Database, EyeOff, Calendar, LayoutList, BarChart3, PieChart, TrendingUp, Award, Table2, BookOpen, Sparkles, Calculator, Settings2, Trash2, ArrowUp, ArrowDown, ArrowUpDown
+    } from 'https://esm.sh/lucide-react@0.292.0';
+
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { getFirestore, doc, setDoc, onSnapshot, collection, updateDoc, getDoc, getDocs, writeBatch } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'music-quiz-stable-v1-production';
+    const FIXED_CODE = "ABCD";
+
+    // --- AI 轉檔提示詞 (禁止更動) ---
+    const AI_PROMPT_TEMPLATE = `你是一位專業的問卷轉換助手。請將我貼上的問卷文字檔轉換為適合「雲端問卷系統」使用的 JSON 格式。
+
+規則如下：
+1. 輸出格式必須是單純的 JSON 陣列 (Array)。
+2. 選擇題：
+   - "type" 設為 "choice"
+   - "question" 為問題敘述
+   - "options" 為包含 4 個選項的陣列（需保留編號，如 "1. 選項文字"）
+   - "answer" 為正確選項的編號數字字串 (例如 "1", "2", "3", "4")
+3. 簡答/申論題：
+   - "type" 設為 "essay"
+   - "question" 為問題敘述
+   - "answer" 為參考說明文字
+4. 每一題必須包含遞增的 "id" 編號。
+
+範例輸出格式：
+[
+  {
+    "id": 1,
+    "type": "choice",
+    "question": "您對本次服務的滿意度為何？",
+    "options": ["1. 非常滿意", "2. 滿意", "3. 普通", "4. 不滿意"],
+    "answer": "1"
+  }
+]`;
+
+    // --- 內建 WEHS 題目 (禁止更動) ---
+    const WEHS_DEFAULT_QUESTIONS = [
+      { "id": 1, "type": "choice", "question": "您覺得剛才的文件及連結內容是否容易操作？", "options": ["1. 容易操作", "2. 尚可應付", "3. 有點困難", "4. 很難使用"], "answer": "1", "weight": 10 },
+      { "id": 2, "type": "choice", "question": "您是否清楚了解自己的實支實付醫療險只到 75 歲就終止？", "options": ["1. 是，我很清楚75歲會終止", "2. 否，我不知道會終止", "3. 我以為醫療險是終身險", "4. 我未曾想過此事"], "answer": "1", "weight": 10 },
+      { "id": 3, "type": "choice", "question": "您是否會考慮進一步延伸 75 歲以後的實支實付保障？", "options": ["1. 是的，我想進一步了解", "2. 否，目前先不用", "3. 我曾經想過此事", "4. 已經有此類保障"], "answer": "1", "weight": 10 },
+      { "id": 4, "type": "choice", "question": "請問何時方便與您聯絡討論？", "options": ["1. 1周內", "2. 1個月內", "3. 3個月內", "4. 我再另行通知"], "answer": "4", "weight": 10 },
+      { "id": 5, "type": "choice", "question": "是否需要提供您的保單校正表供您了解自己的投保內容？", "options": ["1. 是的，請提供給我", "2. 否，我目前不需要", "3. 還沒想這件事", "4. 我已經有校正表了"], "answer": "1", "weight": 10 },
+      { "id": 6, "type": "essay", "question": "其他建議或想詢問的事項：", "answer": "請在此輸入您的寶貴意見或具體需求文字。", "weight": 10 }
+    ];
+
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+      apiKey: "AIzaSyC4jSIve5kj15hSptVFJ2hOdEjcQ0GsR6w",
+      authDomain: "musictest-1c0fb.firebaseapp.com",
+      projectId: "musictest-1c0fb",
+      storageBucket: "musictest-1c0fb.firebasestorage.app",
+      messagingSenderId: "416438714609",
+      appId: "1:416438714609:web:806f72c2e2d40804442950",
+      measurementId: "G-8NZLQDYY1N"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const getShareableUrl = (code) => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('code', code);
+      return url.toString();
+    };
+
+    const copyToClipboard = (text) => {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return true;
+    };
+
+    function App() {
+      const [user, setUser] = useState(null);
+      const [role, setRole] = useState(null);
+      const [sessionCode, setSessionCode] = useState('');
+      const [studentName, setStudentName] = useState('');
+      const [sessionData, setSessionData] = useState(null);
+      const [allAnswersData, setAllAnswersData] = useState([]);
+      const [errorMsg, setErrorMsg] = useState('');
+      const [toastMsg, setToastMsg] = useState('');
+      const [view, setView] = useState('main');
+      
+      const [quizBanks, setQuizBanks] = useState(() => {
+        const saved = localStorage.getItem('secure_quiz_banks_permanent');
+        const defaultBank = { "WEHS": { name: "WEHS 客戶問卷", questions: WEHS_DEFAULT_QUESTIONS } };
+        return saved ? { ...defaultBank, ...JSON.parse(saved) } : defaultBank;
+      });
+
+      const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 4000); };
+
+      useEffect(() => {
+        const initAuth = async () => {
+          try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+              await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+              await signInAnonymously(auth);
+            }
+          } catch (e) {
+            setErrorMsg("連線失敗：請檢查網路。");
+          }
+        };
+        initAuth();
+        const unsubscribe = onAuthStateChanged(auth, setUser);
+        return () => unsubscribe();
+      }, []);
+
+      useEffect(() => {
+        if (!user || !sessionCode) return;
+        const sRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', sessionCode);
+        const unsubS = onSnapshot(sRef, (snap) => {
+          if (snap.exists()) { setSessionData(snap.data()); } 
+          else if (role === 'student') { setRole(null); setSessionCode(''); setErrorMsg('問卷室已關閉或代碼失效。'); }
+        });
+
+        const aRef = collection(db, 'artifacts', appId, 'public', 'data', 'answers');
+        const unsubA = onSnapshot(aRef, (snap) => {
+          const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          setAllAnswersData(docs.filter(a => a.sessionId === sessionCode));
+        });
+        return () => { unsubS(); unsubA(); };
+      }, [user, sessionCode, role]);
+
+      // --- 建立問卷：預設直接進入「非同步填答模式」 ---
+      const handleCreate = async () => {
+        const bankKey = quizBanks["WEHS"] ? "WEHS" : Object.keys(quizBanks)[0];
+        const currentBank = quizBanks[bankKey];
+        const newCode = FIXED_CODE;
+        try {
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sessions', newCode), {
+            hostId: user.uid, 
+            status: 'submission_mode', 
+            quizBankId: bankKey, 
+            quizTitle: currentBank.name,
+            questions: currentBank.questions, 
+            currentQuestionIndex: 0, 
+            perQuestionUnit: 'unlimited', 
+            perQuestionValue: 0,
+            totalQuizUnit: 'unlimited', 
+            totalQuizValue: 0,
+            submissionUnit: 'days', 
+            submissionValue: 1,
+            revealedAnswers: [], 
+            createdAt: Date.now(),
+            totalEndTime: null, 
+            gradingStep: 0, 
+            scoringMode: 'even' 
+          });
+          setSessionCode(newCode); setRole('instructor');
+        } catch (e) { setErrorMsg("建立失敗。"); }
+      };
+
+      const handleJoin = async (code, name) => {
+        if (!code || !name) return setErrorMsg('請填寫姓名與代碼');
+        const c = code.trim().toUpperCase();
+        const n = name.trim();
+        try {
+          const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sessions', c));
+          if (!snap.exists()) return setErrorMsg('找不到該代碼。');
+          const studentId = `${user.uid}_${n}`;
+          const answerRef = doc(db, 'artifacts', appId, 'public', 'data', 'answers', `${c}_${studentId}`);
+          const answerSnap = await getDoc(answerRef);
+          if (!answerSnap.exists()) {
+            await setDoc(answerRef, { sessionId: c, studentId: studentId, studentName: n, answers: {}, status: 'in_progress', joinedAt: Date.now() });
+          }
+          setSessionCode(c); setStudentName(n); setRole('student');
+        } catch (e) { setErrorMsg("加入失敗。"); }
+      };
+
+      if (!user) return <div className="h-screen flex items-center justify-center text-slate-400 font-bold animate-pulse uppercase tracking-widest">Connecting to Cloud...</div>;
+
+      return (
+        <div className="min-h-screen flex flex-col mobile-full-height global-fade-in">
+          <header className="bg-indigo-900 text-white p-3 md:p-4 shadow-lg flex justify-between items-center shrink-0 h-16 md:h-20">
+            <h1 className="font-bold flex items-center gap-2 text-sm md:text-lg"><ListChecks /> 雲端問卷系統</h1>
+            {role && (
+              <div className="bg-indigo-800 px-3 py-1 rounded-full flex gap-3 text-xs md:text-sm items-center">
+                <span>{role === 'instructor' ? '業務員管理' : studentName}</span>
+                <span className="font-mono text-yellow-300 font-bold tracking-widest">{sessionCode}</span>
+                <button onClick={()=>{setRole(null); setSessionCode(''); setView('main');}} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-xs font-bold btn-quiz-action transition-colors shadow-sm">離開</button>
+              </div>
+            )}
+          </header>
+
+          <main className="flex-1 max-w-7xl mx-auto p-2 md:p-8 w-full overflow-y-auto custom-scrollbar">
+            {view === 'analysis' ? (
+              <AnalysisDashboard onBack={() => setView('main')} currentStudents={allAnswersData} showToast={showToast} session={sessionData} />
+            ) : (
+              <>
+                {!role && <RoleSelection onJoin={handleJoin} onCreate={handleCreate} onResume={(c)=>{setSessionCode(c.toUpperCase()); setRole('instructor');}} onImport={(b)=>{setQuizBanks(prev=>({...prev, ...b})); localStorage.setItem('secure_quiz_banks_permanent', JSON.stringify(b)); showToast('問卷載入成功');}} />}
+                
+                {role === 'instructor' && sessionData && (
+                  <InstructorView code={sessionCode} session={sessionData} students={allAnswersData} db={db} showToast={showToast} quizBanks={quizBanks} setQuizBanks={setQuizBanks} onGoAnalysis={() => setView('analysis')} />
+                )}
+                
+                {role === 'student' && sessionData && (
+                  <StudentDashboard 
+                    sessionData={sessionData} 
+                    myData={allAnswersData.find(a => a.studentId === `${user.uid}_${studentName}`)} 
+                    onAnswer={(idx, text) => {
+                      const ref = doc(db, 'artifacts', appId, 'public', 'data', 'answers', `${sessionCode}_${user.uid}_${studentName}`);
+                      updateDoc(ref, { [`answers.${idx}`]: text });
+                    }} 
+                    onFinalSubmit={async () => {
+                      const ref = doc(db, 'artifacts', appId, 'public', 'data', 'answers', `${sessionCode}_${user.uid}_${studentName}`);
+                      await updateDoc(ref, { status: 'submitted', submittedAt: Date.now() });
+                      showToast('回覆已成功回傳！');
+                    }}
+                    showToast={showToast}
+                  />
+                )}
+              </>
+            )}
+          </main>
+
+          {errorMsg && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]"><div className="bg-white p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl animate-scale-in"><AlertTriangle className="mx-auto text-red-500 mb-4 w-10 h-10" /><p className="font-bold">{errorMsg}</p><button onClick={()=>setErrorMsg('')} className="mt-6 bg-indigo-600 text-white px-8 py-2 rounded-xl font-bold btn-quiz-action w-full">確認</button></div></div>}
+          {toastMsg && <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-xl animate-bounce z-50 flex items-center gap-2 text-sm"><CheckCircle className="text-green-400 w-4 h-4" />{toastMsg}</div>}
+        </div>
+      );
+    }
+
+    function RoleSelection({ onJoin, onCreate, onResume, onImport }) {
+      const [code, setCode] = useState(FIXED_CODE);
+      const [name, setName] = useState('');
+      const [resCode, setResCode] = useState(FIXED_CODE);
+      const [isStudentLink, setIsStudentLink] = useState(false);
+
+      useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('code')) { setCode(urlParams.get('code').toUpperCase()); setIsStudentLink(true); }
+      }, []);
+
+      return (
+        <div className={`mt-4 md:mt-10 ${isStudentLink ? 'flex justify-center' : 'grid md:grid-cols-2 gap-4 md:gap-8'}`}>
+          <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 w-full max-w-md animate-scale-in">
+            <h2 className="text-xl md:text-2xl font-bold text-indigo-700 mb-6 flex items-center gap-2"><UserCircle /> 客戶登入</h2>
+            <div className="space-y-4">
+              <input type="text" placeholder="您的真實姓名" className="w-full p-3 md:p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2" value={name} onChange={e => setName(e.target.value)} />
+              <input type="text" placeholder="輸入問卷代碼" className="w-full p-3 md:p-4 bg-slate-50 border rounded-2xl font-mono tracking-widest uppercase outline-none focus:ring-2" value={code} onChange={e => setCode(e.target.value)} />
+              <button onClick={() => onJoin(code, name)} className="w-full bg-indigo-600 text-white font-bold py-3 md:py-4 rounded-2xl shadow-lg btn-quiz-action">進入問卷室</button>
+            </div>
+          </div>
+          {!isStudentLink && (
+            <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between bg-gradient-to-br from-indigo-50/50 to-white animate-scale-in">
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2"><Users /> 業務員管理 {FIXED_CODE}</h2>
+                <div className="space-y-3">
+                  <button onClick={onCreate} className="w-full bg-slate-800 text-white font-bold py-3 md:py-4 rounded-2xl shadow-lg btn-quiz-action">建立新問卷</button>
+                  <button onClick={() => { 
+                    const fileInput = document.createElement('input'); fileInput.type = 'file'; fileInput.accept = '.json';
+                    fileInput.onchange = (e) => {
+                      const reader = new FileReader(); reader.onload = (ev) => onImport(JSON.parse(ev.target.result)); reader.readAsText(e.target.files[0]);
+                    }; fileInput.click();
+                  }} className="w-full bg-indigo-50 text-indigo-700 py-3 rounded-2xl font-bold text-xs border border-indigo-200 flex items-center justify-center gap-2">匯入 JSON</button>
+                </div>
+              </div>
+              <div className="mt-6 border-t pt-4 flex gap-2">
+                <input type="text" placeholder="恢復代碼" className="flex-1 p-2 border rounded-xl font-mono uppercase text-sm" value={resCode} onChange={e => setResCode(e.target.value)} />
+                <button onClick={() => onResume(resCode)} className="bg-indigo-100 text-indigo-700 font-bold px-4 rounded-xl text-sm">恢復</button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function InstructorView({ code, session, students, db, showToast, quizBanks, setQuizBanks, onGoAnalysis }) {
+      const [showFullBankPreview, setShowFullBankPreview] = useState(false);
+      const [showResultsModal, setShowResultsModal] = useState(false);
+      const [showAiHelper, setShowAiHelper] = useState(false);
+      const [editingIndex, setEditingIndex] = useState(null);
+      const [editForm, setEditForm] = useState({ question: '', answer: '', options: [], weight: 10 });
+      
+      const sRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', code);
+
+      useEffect(() => {
+        if (session.status === 'sync_active' && session.questionEndTime) {
+          const checkTimer = setInterval(() => {
+            const now = Date.now();
+            if (now > session.questionEndTime) {
+              const nextIdx = session.currentQuestionIndex + 1;
+              if (nextIdx < session.questions.length) {
+                const multiplier = session.perQuestionUnit === 'seconds' ? 1000 : 60000;
+                updateDoc(sRef, { currentQuestionIndex: nextIdx, questionEndTime: now + (session.perQuestionValue * multiplier) });
+              } else {
+                updateDoc(sRef, { status: 'review', totalEndTime: null, questionEndTime: null });
+              }
+            }
+          }, 1000);
+          return () => clearInterval(checkTimer);
+        }
+      }, [session.status, session.currentQuestionIndex, session.questionEndTime]);
+
+      const handleAutoGrade = async () => {
+        const batch = writeBatch(db);
+        const questions = session.questions;
+        const totalWeights = questions.reduce((sum, q) => sum + (Number(q.weight) || 0), 0);
+        students.forEach(s => {
+          let rawScore = 0;
+          questions.forEach((q, idx) => {
+             if (q.type === 'choice' && s.answers?.[idx] === q.answer) {
+                rawScore += session.scoringMode === 'even' ? (100 / questions.length) : ((Number(q.weight) || 0) / totalWeights * 100);
+             }
+          });
+          batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'answers', s.id), { score: Math.round(rawScore) });
+        });
+        await batch.commit(); showToast('評分完成');
+      };
+
+      const saveEdit = async () => {
+        const updated = [...session.questions]; updated[editingIndex] = { ...updated[editingIndex], ...editForm };
+        await updateDoc(sRef, { questions: updated }); setEditingIndex(null); showToast('修改成功');
+      };
+
+      const startSyncMode = () => {
+        let qEndTime = null;
+        if (session.perQuestionUnit !== 'unlimited') {
+           const multiplier = session.perQuestionUnit === 'seconds' ? 1000 : 60000;
+           qEndTime = Date.now() + (session.perQuestionValue * multiplier);
+        }
+        let tEndTime = null;
+        if (session.totalQuizUnit !== 'unlimited') {
+           const multiplier = session.totalQuizUnit === 'minutes' ? 60000 : (session.totalQuizUnit === 'hours' ? 3600000 : 86400000);
+           tEndTime = Date.now() + (session.totalQuizValue * multiplier);
+        }
+        updateDoc(sRef, { status: 'sync_active', currentQuestionIndex: 0, totalEndTime: tEndTime, questionEndTime: qEndTime });
+      };
+
+      const startSubmissionMode = () => {
+        let tEndTime = null;
+        if (session.totalQuizUnit !== 'unlimited') {
+           const multiplier = session.totalQuizUnit === 'minutes' ? 60000 : (session.totalQuizUnit === 'hours' ? 3600000 : 86400000);
+           tEndTime = Date.now() + (session.totalQuizValue * multiplier);
+        }
+        updateDoc(sRef, { status: 'submission_mode', totalEndTime: tEndTime });
+      };
+
+      return (
+        <div className="space-y-6 animate-scale-in">
+          {/* AI 助手視窗 */}
+          {showAiHelper && (
+            <div className="fixed inset-0 bg-slate-900/90 z-[300] flex items-center justify-center p-4 backdrop-blur-md">
+              <div className="bg-white w-full max-w-2xl rounded-[2.5rem] p-8 animate-scale-in">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-black text-indigo-900 flex items-center gap-2"><Sparkles className="text-yellow-500" /> AI 轉檔助手</h2>
+                  <button onClick={() => setShowAiHelper(false)}><X /></button>
+                </div>
+                <pre className="bg-slate-50 p-4 rounded-2xl border mb-6 text-xs overflow-y-auto max-h-[40vh] whitespace-pre-wrap">{AI_PROMPT_TEMPLATE}</pre>
+                <button onClick={() => { copyToClipboard(AI_PROMPT_TEMPLATE); showToast('提示詞已複製'); }} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold btn-quiz-action shadow-lg flex items-center justify-center gap-2"><Copy /> 複製 AI 提示詞</button>
+              </div>
+            </div>
+          )}
+
+          {/* 編輯視窗 */}
+          {showFullBankPreview && (
+            <div className="fixed inset-0 bg-slate-900/90 z-[200] flex items-center justify-center p-4 backdrop-blur-md">
+               <div className="bg-white w-full max-w-5xl h-full rounded-[2.5rem] flex flex-col shadow-2xl overflow-hidden">
+                  <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+                    <h2 className="text-xl font-black text-indigo-900 flex items-center gap-2"><FileSearch /> 修改與配分設定</h2>
+                    <button onClick={() => setShowFullBankPreview(false)}><X className="w-8 h-8"/></button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar space-y-4">
+                    {session.questions?.map((q, idx) => (
+                      <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-200">
+                        {editingIndex === idx ? (
+                          <div className="space-y-4">
+                            <textarea className="w-full p-3 border rounded-xl" value={editForm.question} onChange={e=>setEditForm({...editForm, question: e.target.value})}/>
+                            <div className="grid grid-cols-2 gap-4">
+                              <input type="text" className="p-3 border rounded-xl" value={editForm.answer} onChange={e=>setEditForm({...editForm, answer: e.target.value})} placeholder="參考答案" />
+                              <input type="number" className="p-3 border rounded-xl" value={editForm.weight} onChange={e=>setEditForm({...editForm, weight: Number(e.target.value)})} placeholder="權重" />
+                            </div>
+                            <div className="flex gap-2"><button onClick={saveEdit} className="bg-indigo-600 text-white px-6 py-2 rounded-xl">儲存</button><button onClick={()=>setEditingIndex(null)} className="bg-slate-200 px-6 py-2 rounded-xl">取消</button></div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-between items-start">
+                            <div><p className="font-bold">{q.question}</p><p className="text-xs text-emerald-600 mt-2">答案：{q.answer} | 權重：{q.weight}</p></div>
+                            <button onClick={()=> { setEditingIndex(idx); setEditForm({question:q.question, answer:q.answer, options: q.options || [], weight: q.weight || 10}); }} className="p-2 border rounded-xl"><Edit3 className="w-4 h-4"/></button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+               </div>
+            </div>
+          )}
+
+          {/* 答案總表 */}
+          {showResultsModal && (
+            <div className="fixed inset-0 bg-slate-900/95 z-[200] flex items-center justify-center p-2 backdrop-blur-md">
+               <div className="bg-white w-full max-w-7xl h-full rounded-[2rem] flex flex-col shadow-2xl overflow-hidden">
+                  <div className="p-6 border-b flex justify-between items-center bg-indigo-50">
+                    <h2 className="text-xl font-black text-indigo-900 flex items-center gap-2"><ClipboardList /> 客戶填答總表</h2>
+                    <button onClick={() => setShowResultsModal(false)}><X /></button>
+                  </div>
+                  <div className="flex-1 overflow-auto p-4">
+                    <table className="w-full text-left border-collapse min-w-[1000px]">
+                      <thead><tr className="bg-slate-800 text-white text-[10px]"><th className="p-3">客戶</th><th className="p-3">得分</th>{session.questions.map((_, i) => <th key={i} className="p-3">Q{i+1}</th>)}</tr></thead>
+                      <tbody>{students.map((s, idx) => (<tr key={idx} className="border-b text-xs"><td className="p-3 font-bold">{s.studentName}</td><td className="p-3">{s.score || 0}</td>{session.questions.map((_, i) => <td key={i} className="p-3">{s.answers?.[i] || '-'}</td>)}</tr>))}</tbody>
+                    </table>
+                  </div>
+               </div>
+            </div>
+          )}
+
+          {/* 主控板 */}
+          <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex gap-2">
+                <button onClick={() => setShowFullBankPreview(true)} className="bg-white border-2 border-indigo-600 text-indigo-600 px-6 py-2 rounded-xl text-xs font-black flex items-center gap-2 shadow-sm"><Edit3 className="w-4 h-4" /> 問卷內容修改與配分設定</button>
+                <button onClick={onGoAnalysis} className="bg-indigo-100 text-indigo-700 px-6 py-2 rounded-xl text-xs font-black flex items-center gap-2 shadow-sm"><BarChart3 className="w-4 h-4" /> 進入填答分析</button>
+              </div>
+              <div className="flex gap-4">
+                <TimerDisplay endTime={session.questionEndTime} label="單題倒數" />
+                <TimerDisplay endTime={session.totalEndTime} label="總倒數" />
+              </div>
+            </div>
+
+            {/* 客戶連結網址顯示區 (恢復) */}
+            <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100 flex items-center gap-2 mb-6">
+              <span className="text-xs font-bold text-indigo-800 whitespace-nowrap">客戶問卷網址：</span>
+              <input type="text" readOnly className="flex-1 bg-white text-xs p-2 rounded border font-mono text-slate-800 outline-none tracking-widest" value={getShareableUrl(code)} />
+              <button onClick={() => { copyToClipboard(getShareableUrl(code)); showToast('已複製連結!'); }} className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold btn-quiz-action whitespace-nowrap">複製連結</button>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 border-t pt-6">
+              <div className="space-y-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                <div>
+                  <label className="text-xs font-bold text-slate-400 block mb-2">1. 計分與級距設定</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <select className="p-3 border rounded-2xl text-sm outline-none" value={session.scoringMode} onChange={e=>updateDoc(sRef, {scoringMode: e.target.value})}>
+                      <option value="even">總分 100 平分</option>
+                      <option value="weighted">依權重計分</option>
+                    </select>
+                    <select className="p-3 border rounded-2xl text-sm outline-none" value={session.gradingStep} onChange={e=>updateDoc(sRef, {gradingStep: Number(e.target.value)})}>
+                      <option value="0">精確給分</option>
+                      <option value="10">10 分一階</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-400 block mb-2">2. 同步：單題限時</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <select className="p-3 border rounded-2xl text-sm outline-none" value={session.perQuestionUnit} onChange={e=>updateDoc(sRef, {perQuestionUnit: e.target.value})}>
+                      <option value="unlimited">不設限</option>
+                      <option value="seconds">秒</option>
+                      <option value="minutes">分</option>
+                    </select>
+                    {session.perQuestionUnit !== 'unlimited' && (
+                      <div className="relative">
+                         <input type="number" className="w-full p-3 border rounded-2xl text-sm pr-10 outline-none" value={session.perQuestionValue} onChange={e=>updateDoc(sRef, {perQuestionValue: Number(e.target.value)})}/>
+                         <span className="absolute right-3 top-3 text-xs text-indigo-400 font-bold">{session.perQuestionUnit === 'seconds' ? '秒' : '分'}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-400 block mb-2">3. 同步：問卷總時長</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <select className="p-3 border rounded-2xl text-sm outline-none" value={session.totalQuizUnit} onChange={e=>updateDoc(sRef, {totalQuizUnit: e.target.value})}>
+                      <option value="unlimited">不設限</option>
+                      <option value="minutes">分</option>
+                      <option value="hours">時</option>
+                      <option value="days">天</option>
+                    </select>
+                    {session.totalQuizUnit !== 'unlimited' && (
+                      <div className="relative">
+                         <input type="number" className="w-full p-3 border rounded-2xl text-sm pr-10 outline-none" value={session.totalQuizValue} onChange={e=>updateDoc(sRef, {totalQuizValue: Number(e.target.value)})}/>
+                         <span className="absolute right-3 top-3 text-xs text-indigo-400 font-bold">
+                           {session.totalQuizUnit === 'minutes' ? '分' : (session.totalQuizUnit === 'hours' ? '時' : '天')}
+                         </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4 justify-center">
+                <button onClick={startSyncMode} className="bg-indigo-600 text-white py-6 rounded-3xl font-bold shadow-lg btn-quiz-action text-lg">啟動：同步競賽模式</button>
+                <button onClick={startSubmissionMode} className="bg-emerald-600 text-white py-6 rounded-3xl font-bold shadow-lg btn-quiz-action text-lg">啟動：非同步填答模式</button>
+                <div className="grid grid-cols-2 gap-4">
+                  <button onClick={() => setShowResultsModal(true)} className="bg-slate-100 text-slate-700 py-4 rounded-3xl font-bold btn-quiz-action text-sm">觀看客戶答案表</button>
+                  <button onClick={() => setShowAiHelper(true)} className="bg-indigo-50 text-indigo-700 py-4 rounded-3xl font-bold btn-quiz-action text-sm flex items-center justify-center gap-2"><Sparkles className="w-4 h-4"/> AI 轉檔助手</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 bg-white p-6 rounded-3xl border shadow-sm">
+               <h3 className="text-lg font-bold mb-4">當前題目 Q{session.currentQuestionIndex+1}</h3>
+               <p className="text-2xl font-bold text-slate-700 leading-relaxed">{session.questions?.[session.currentQuestionIndex]?.question}</p>
+            </div>
+            <div className="bg-white p-6 rounded-3xl border h-[400px] overflow-y-auto custom-scrollbar">
+               <div className="flex justify-between items-center mb-4 border-b pb-2">
+                 <h3 className="text-md font-bold">在線填答進度 ({students.length})</h3>
+                 <button onClick={handleAutoGrade} className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold">自動評分</button>
+               </div>
+               {students.map(s => (<div key={s.id} className="p-3 bg-slate-50 rounded-2xl border mb-2 flex justify-between items-center"><span className="text-sm font-bold">{s.studentName} {s.status === 'submitted' ? '✅' : '📝'}</span><span className="font-black text-indigo-600">{s.score || 0}分</span></div>))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function AnalysisDashboard({ onBack, currentStudents, showToast, session }) {
+      const stats = useMemo(() => {
+        const scores = currentStudents.map(s => s.score || 0);
+        return { total: currentStudents.length, avg: scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : 0 };
+      }, [currentStudents]);
+
+      return (
+        <div className="animate-scale-in space-y-6">
+          <div className="flex justify-between items-center bg-white p-6 rounded-3xl border shadow-sm">
+            <h2 className="text-2xl font-black text-indigo-900">問卷填答統計</h2>
+            <button onClick={onBack} className="bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-bold">返回</button>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+             <div className="bg-white p-5 rounded-3xl border shadow-sm"><span className="text-xs font-bold text-slate-400">總填答人數</span><div className="text-2xl font-black">{stats.total} 人</div></div>
+             <div className="bg-white p-5 rounded-3xl border shadow-sm"><span className="text-xs font-bold text-slate-400">平均分數</span><div className="text-2xl font-black">{stats.avg} 分</div></div>
+          </div>
+          <div className="bg-white p-6 rounded-3xl border shadow-sm overflow-x-auto">
+             <table className="w-full text-left">
+                <thead><tr className="border-b"><th className="pb-3">客戶姓名</th><th className="pb-3">狀態</th><th className="pb-3">得分</th></tr></thead>
+                <tbody>{currentStudents.map(s => (
+                  <tr key={s.id} className="border-b"><td className="py-3 font-bold">{s.studentName}</td><td className="py-3">{s.status === 'submitted' ? '已送出' : '填寫中'}</td><td className="py-3">{s.score || 0}</td></tr>
+                ))}</tbody>
+             </table>
+          </div>
+        </div>
+      );
+    }
+
+    function StudentDashboard({ sessionData, myData, onAnswer, onFinalSubmit, showToast }) {
+      const [localIdx, setLocalIdx] = useState(0);
+      const [showOverview, setShowOverview] = useState(false);
+      const [text, setText] = useState('');
+      const [currentTime, setCurrentTime] = useState(Date.now());
+      const activeIdx = localIdx;
+      const q = sessionData.questions?.[activeIdx] || {};
+
+      useEffect(() => { const i = setInterval(() => setCurrentTime(Date.now()), 1000); return () => clearInterval(i); }, []);
+      useEffect(() => { if (myData) setText(myData.answers?.[activeIdx] || ''); }, [activeIdx, myData]);
+      useEffect(() => { if (sessionData.status === 'sync_active') { setLocalIdx(sessionData.currentQuestionIndex); setShowOverview(false); } }, [sessionData.currentQuestionIndex, sessionData.status]);
+
+      const handleSaveAndNext = () => {
+        onAnswer(activeIdx, text); 
+        if (activeIdx < sessionData.questions.length - 1) setLocalIdx(prev => prev + 1); 
+        else setShowOverview(true); 
+      };
+
+      if (sessionData.status === 'lobby') return <div className="flex h-[60vh] flex-col items-center justify-center bg-white rounded-3xl animate-pulse"><Clock className="w-16 h-16 text-indigo-200 mb-6" /><h2 className="text-xl font-black">等待業務員開啟問卷...</h2></div>;
+
+      const isTotalTimeout = sessionData.totalEndTime && currentTime > sessionData.totalEndTime;
+      if (isTotalTimeout) {
+        return (
+          <div className="max-w-2xl mx-auto mt-10 p-12 bg-white rounded-[2.5rem] shadow-2xl text-center">
+            <AlertTriangle className="w-20 h-20 text-red-500 mx-auto mb-6" />
+            <h2 className="text-2xl font-black mb-4">問卷已結束收件，謝謝您的協助!</h2>
+          </div>
+        );
+      }
+
+      if (showOverview) {
+        return (
+          <div className="max-w-2xl mx-auto p-6 bg-white rounded-3xl shadow-xl mt-4">
+            <h2 className="text-xl font-bold border-b pb-4 mb-4">檢查您的內容</h2>
+            <div className="space-y-3 mb-6">
+              {sessionData.questions.map((q, i) => (
+                <div key={i} className="p-3 bg-slate-50 rounded-xl border flex justify-between"><span className="text-xs font-bold text-slate-400">Q{i+1}</span><span className="text-sm font-bold truncate max-w-xs">{myData?.answers?.[i] || '尚未填寫'}</span></div>
+              ))}
+            </div>
+            <div className="flex gap-4">
+              <button onClick={() => setShowOverview(false)} className="flex-1 p-4 bg-slate-200 rounded-2xl font-bold">返回</button>
+              <button onClick={() => { if(window.confirm('確定送出？')){ onFinalSubmit(); setShowOverview(false); } }} className="flex-1 p-4 bg-red-600 text-white rounded-2xl font-bold">送出回覆</button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="max-w-2xl mx-auto px-2 pb-10">
+          <div className="bg-white p-4 rounded-2xl border mb-4 flex justify-between items-center shadow-sm">
+             <div><span className="text-[10px] font-bold text-indigo-500">{sessionData.quizTitle}</span><h2 className="font-bold">第 {activeIdx + 1} / {sessionData.questions.length} 題</h2></div>
+             <div className="flex gap-2">
+                <TimerDisplay endTime={sessionData.totalEndTime} label="倒數"/>
+             </div>
+          </div>
+          <div className="bg-white rounded-3xl shadow-xl border overflow-hidden mb-6">
+            <div className="p-6 bg-indigo-50/50 border-b"><div className="text-lg font-bold text-slate-800">{q.question}</div></div>
+            <div className="p-6">
+              {q.type === 'choice' ? (
+                <div className="grid grid-cols-1 gap-3">
+                  {q.options?.map((opt, i) => (
+                    <button key={i} disabled={myData?.status==='submitted'} onClick={()=>{ setText(opt); onAnswer(activeIdx, opt); }} className={`p-4 rounded-2xl border-2 text-left font-bold ${text === opt ? 'bg-green-600 text-white border-green-700' : 'bg-white border-slate-100 text-slate-600'}`}>{opt}</button>
+                  ))}
+                </div>
+              ) : (
+                <textarea className="w-full p-4 border-2 rounded-2xl h-32 focus:border-indigo-500 outline-none" placeholder="在此輸入您的想法..." value={text} onChange={e => setText(e.target.value)} onBlur={() => onAnswer(activeIdx, text)} disabled={myData?.status==='submitted'} />
+              )}
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <button onClick={() => setLocalIdx(Math.max(0, activeIdx - 1))} disabled={activeIdx === 0} className="flex-1 px-4 py-3 bg-slate-200 rounded-2xl font-bold">上一題</button>
+            <button onClick={handleSaveAndNext} className="flex-1 px-4 py-3 bg-red-600 text-white rounded-2xl font-bold">{activeIdx === sessionData.questions.length-1 ? '預覽檢查' : '下一題'}</button>
+          </div>
+        </div>
+      );
+    }
+
+    function TimerDisplay({ endTime, label }) {
+      const [t, setT] = useState(0);
+      useEffect(() => { if(!endTime) return; const tick = () => setT(Math.max(0, Math.floor((endTime - Date.now()) / 1000))); tick(); const i = setInterval(tick, 1000); return () => clearInterval(i); }, [endTime]);
+      
+      if(!endTime) return (
+        <div className="px-2 py-1 rounded-xl border bg-slate-50 text-slate-400 text-[8px] font-bold text-center">
+          <div className="opacity-60">{label}</div>
+          <div className="leading-tight">不設限</div>
+        </div>
+      );
+
+      const d = Math.floor(t / 86400);
+      const h = Math.floor((t % 86400) / 3600);
+      const m = Math.floor((t % 3600) / 60);
+      const s = t % 60;
+      
+      let displayTime = d > 0 ? `${d}天 ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}` : `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+      return ( 
+        <div className={`px-2 py-1 rounded-xl border text-[8px] font-bold font-mono text-center shadow-inner ${t < 60 ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-50 text-slate-600'}`}>
+          <div className="opacity-60">{label}</div>
+          <div className="leading-tight">{displayTime}</div>
+        </div> 
+      );
+    }
+
+    const root = createRoot(document.getElementById('root')); root.render(<App />);
+  </script>
+</body>
+</html>
