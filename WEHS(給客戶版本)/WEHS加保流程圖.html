@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEHS 投保資格判斷流程</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f8fafc;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        #viz-container {
+            width: 100vw;
+            height: calc(100vh - 60px);
+            cursor: grab;
+            margin-top: 60px;
+        }
+        #viz-container:active {
+            cursor: grabbing;
+        }
+        /* 頂部導覽列 */
+        #top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            z-index: 2000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        /* 可拖曳控制面板樣式 */
+        #draggable-controls {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            padding: 10px 16px;
+            user-select: none;
+            touch-action: none;
+        }
+        .drag-handle {
+            height: 6px;
+            width: 36px;
+            background-color: #cbd5e1;
+            border-radius: 3px;
+            margin: 0 auto 12px;
+            cursor: move;
+        }
+        .control-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 500px;
+        }
+        button {
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        .btn-level {
+            background-color: #f1f5f9;
+            color: #64748b;
+            min-width: 34px;
+        }
+        .btn-level:hover {
+            background-color: #e2e8f0;
+            border-color: #cbd5e1;
+        }
+        /* 啟用狀態：綠色填滿，白色文字 */
+        .btn-level.active {
+            background-color: #22c55e !important;
+            color: #ffffff !important;
+            border-color: #16a34a !important;
+            box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+        }
+        .btn-expand {
+            background-color: #2563eb;
+            color: white;
+            padding-left: 14px;
+            padding-right: 14px;
+            border: none;
+        }
+        .btn-expand:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-expand.active {
+            background-color: #22c55e !important;
+            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.4);
+        }
+        
+        /* 節點樣式 */
+        .link {
+            fill: none;
+            stroke: #cbd5e1;
+            stroke-width: 2px;
+        }
+        .node-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            line-height: 1.5;
+            font-size: 13px;
+            border-bottom: 3px solid #2563eb;
+            transition: border 0.3s;
+        }
+        .node-card.has-children {
+            border-bottom: 3px solid #94a3b8;
+        }
+        .node-card small {
+            display: block;
+            color: #64748b;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+        .final-check {
+            color: #ef4444;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 頂部導覽 -->
+<div id="top-nav">
+  <div class="flex gap-2">
+    <a href="./WEHS-心智圖+費率表.html" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all">🧠 心智圖/費率</a>
+    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md">🗺️ 投保資格流程</button>
+  </div>
+  <div class="ml-auto text-sm font-bold text-gray-500 hidden md:block">
+    南山人壽 WEHS 投保資格判斷系統
+  </div>
+</div>
+
+<div id="draggable-controls">
+    <div class="drag-handle" id="drag-header"></div>
+    <div class="control-group">
+        <span class="text-xs font-black text-slate-400 mr-1">層級</span>
+        <button class="btn-level active" data-level="1" onclick="updateToLevel(1)">1</button>
+        <button class="btn-level" data-level="2" onclick="updateToLevel(2)">2</button>
+        <button class="btn-level" data-level="3" onclick="updateToLevel(3)">3</button>
+        <button class="btn-level" data-level="4" onclick="updateToLevel(4)">4</button>
+        <button class="btn-level" data-level="5" onclick="updateToLevel(5)">5</button>
+        <button class="btn-level" data-level="6" onclick="updateToLevel(6)">6</button>
+        <button class="btn-level" data-level="7" onclick="updateToLevel(7)">7</button>
+        <button class="btn-level" data-level="8" onclick="updateToLevel(8)">8</button>
+        <button class="btn-level" data-level="9" onclick="updateToLevel(9)">9</button>
+        <button class="btn-level" data-level="10" onclick="updateToLevel(10)">10</button>
+        <div class="w-px h-6 bg-gray-200 mx-1"></div>
+        <button class="btn-expand" data-level="99" onclick="updateToLevel(99)">全部展開</button>
+    </div>
+</div>
+
+<div id="viz-container"></div>
+
+<script>
+    // --- 拖曳邏輯 ---
+    const dragBox = document.getElementById('draggable-controls');
+    let isDragging = false;
+    let dragOffset = { x: 0, y: 0 };
+
+    dragBox.addEventListener('mousedown', startDragging);
+    window.addEventListener('mousemove', drag);
+    window.addEventListener('mouseup', stopDragging);
+    dragBox.addEventListener('touchstart', (e) => startDragging(e.touches[0]));
+    window.addEventListener('touchmove', (e) => drag(e.touches[0]));
+    window.addEventListener('touchend', stopDragging);
+
+    function startDragging(e) {
+        if (e.target.closest('button')) return;
+        isDragging = true;
+        const rect = dragBox.getBoundingClientRect();
+        dragOffset.x = e.clientX - rect.left;
+        dragOffset.y = e.clientY - rect.top;
+        dragBox.style.transform = 'none';
+        dragBox.style.left = rect.left + 'px';
+        dragBox.style.top = rect.top + 'px';
+    }
+
+    function drag(e) {
+        if (!isDragging) return;
+        dragBox.style.left = (e.clientX - dragOffset.x) + 'px';
+        dragBox.style.top = (e.clientY - dragOffset.y) + 'px';
+    }
+    function stopDragging() { isDragging = false; }
+
+    // --- 資料結構 ---
+    const treeData = {
+        "content": "<strong>🧠 WEHS 投保資格判斷流程</strong>",
+        "children": [
+            {
+                "content": "<strong>👉 第一步：確認客戶現有實支實付類型</strong>",
+                "children": [
+                    {
+                        "content": "<strong>全為「一年期定期型」</strong><br><small>(南山 1HS/NHS/HSG 或同業定期)</small>",
+                        "children": [
+                            {
+                                "content": "✅ <strong>不受「遞延/終身型」限制</strong>",
+                                "children": [
+                                    {
+                                        "content": "⬇️ <strong>最終檢核：日額限額規範</strong>",
+                                        "children": [
+                                            { "content": "計畫 10 <br><small>(計入 1,000元/日)</small>" },
+                                            { "content": "計畫 20 <br><small>(計入 2,000元/日)</small>" },
+                                            { "content": "計畫 30 <br><small>(計入 3,000元/日)</small>" }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "content": "<strong>含有「遞延或終身之實支型」</strong>",
+                        "children": [
+                            {
+                                "content": "<strong>第二步：是否有「南山人壽」相關保單？</strong>",
+                                "children": [
+                                    {
+                                        "content": "<strong>【有】持有 1HSCO/EWHS/WHS</strong>",
+                                        "children": [
+                                            { "content": "❌ <strong class='final-check'>不可投保 WEHS</strong><br><small>(限投 1 張，含停效)</small>" }
+                                        ]
+                                    },
+                                    {
+                                        "content": "<strong>【無】未持有上述南山保單</strong>",
+                                        "children": [
+                                            {
+                                                "content": "<strong>第三步：檢查「同業」遞延/終身型張數</strong>",
+                                                "children": [
+                                                    {
+                                                        "content": "<strong>【 2 張 (含) 以上 】</strong>",
+                                                        "children": [ { "content": "❌ <strong class='final-check'>不可投保 WEHS</strong>" } ]
+                                                    },
+                                                    {
+                                                        "content": "<strong>【 0 張 】</strong>",
+                                                        "children": [ 
+                                                            { 
+                                                                "content": "✅ <strong>可投保 WEHS</strong>",
+                                                                "children": [
+                                                                    { "content": "⬇️ <strong>檢核日額限額</strong><br><small>(計畫 10/20/30)</small>" }
+                                                                ]
+                                                            } 
+                                                        ]
+                                                    },
+                                                    {
+                                                        "content": "<strong>【 剛好 1 張 】</strong>",
+                                                        "children": [
+                                                            {
+                                                                "content": "<strong>第四步：檢查該同業保單【生效日】</strong>",
+                                                                "children": [
+                                                                    {
+                                                                        "content": "<strong>113/7/1 「以前」</strong>",
+                                                                        "children": [ 
+                                                                            { 
+                                                                                "content": "⚠️ <strong>僅限投保「計畫 10」</strong>",
+                                                                                "children": [
+                                                                                    { "content": "⬇️ <strong>檢核日額限額</strong><br><small>(計入 1,000元/日)</small>" }
+                                                                                ]
+                                                                            } 
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        "content": "<strong>113/7/1 「(含)以後」</strong>",
+                                                                        "children": [ 
+                                                                            { 
+                                                                                "content": "✅ <strong>可投保 WEHS</strong>",
+                                                                                "children": [
+                                                                                    { "content": "⬇️ <strong>檢核日額限額</strong><br><small>(計畫 10/20/30)</small>" }
+                                                                                ]
+                                                                            } 
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    };
+
+    const nodeWidth = 220;
+    const nodeHeight = 50;
+    let root, zoom;
+
+    const svg = d3.select("#viz-container")
+        .append("svg")
+        .attr("width", "100%")
+        .attr("height", "100%");
+
+    const g = svg.append("g");
+
+    zoom = d3.zoom().on("zoom", (e) => g.attr("transform", e.transform));
+    svg.call(zoom);
+
+    const tree = d3.tree().nodeSize([nodeWidth + 40, 160]);
+
+    function init() {
+        root = d3.hierarchy(treeData);
+        root.x0 = window.innerWidth / 2;
+        root.y0 = 0;
+
+        root.descendants().forEach(d => {
+            if (d.children) {
+                d._children = d.children;
+                if (d.depth >= 1) d.children = null;
+            }
+        });
+
+        update(root);
+        centerRoot();
+    }
+
+    function refreshButtonHighlight(activeLevel) {
+        const allBtns = document.querySelectorAll('.btn-level, .btn-expand');
+        allBtns.forEach(btn => btn.classList.remove('active'));
+        const targetBtn = document.querySelector(`button[data-level="${activeLevel}"]`);
+        if (targetBtn) targetBtn.classList.add('active');
+    }
+
+    function detectMaxVisibleDepth() {
+        let maxDepth = 0;
+        root.descendants().forEach(d => {
+            if (d.children && d.depth + 1 > maxDepth) {
+                maxDepth = d.depth + 1;
+            }
+        });
+        const totalNodes = root.descendants().length;
+        const visibleNodes = root.descendants().filter(d => d.parent ? (d.parent.children && d.parent.children.includes(d)) : true).length;
+        return (visibleNodes === totalNodes && totalNodes > 15) ? 99 : (maxDepth || 1);
+    }
+
+    function update(source) {
+        const nodes = root.descendants();
+        const links = root.links();
+        tree(root);
+
+        const node = g.selectAll("g.node").data(nodes, d => d.id || (d.id = Math.random()));
+
+        const nodeEnter = node.enter().append("g")
+            .attr("class", "node")
+            .attr("transform", d => `translate(${source.x0},${source.y0})`)
+            .on("click", (e, d) => {
+                if (d.children) {
+                    // 收合
+                    d._children = d.children;
+                    d.children = null;
+                } else {
+                    // 展開：僅展開下一層
+                    d.children = d._children;
+                    if (d.children) {
+                        d.children.forEach(child => {
+                            if (child.children) {
+                                child._children = child.children;
+                                child.children = null;
+                            }
+                        });
+                    }
+                }
+                update(d);
+                refreshButtonHighlight(detectMaxVisibleDepth());
+            });
+
+        nodeEnter.append("foreignObject")
+            .attr("width", nodeWidth)
+            .attr("height", 150)
+            .attr("x", -nodeWidth / 2)
+            .attr("y", -nodeHeight / 2)
+            .append("xhtml:div")
+            .attr("class", d => `node-card ${d._children ? 'has-children' : ''}`)
+            .html(d => d.data.content);
+
+        const nodeUpdate = nodeEnter.merge(node);
+        nodeUpdate.transition().duration(500).attr("transform", d => `translate(${d.x},${d.y})`);
+
+        nodeUpdate.select(".node-card")
+            .attr("class", d => `node-card ${(d._children && !d.children) ? 'has-children' : ''}`);
+
+        node.exit().transition().duration(500)
+            .attr("transform", d => `translate(${source.x},${source.y})`).remove();
+
+        const link = g.selectAll("path.link").data(links, d => d.target.id);
+        const linkEnter = link.enter().insert("path", "g")
+            .attr("class", "link")
+            .attr("d", d => {
+                const o = { x: source.x0, y: source.y0 };
+                return diagonal(o, o);
+            });
+
+        link.merge(linkEnter).transition().duration(500).attr("d", d => diagonal(d.source, d.target));
+        link.exit().transition().duration(500).attr("d", d => {
+            const o = { x: source.x, y: source.y };
+            return diagonal(o, o);
+        }).remove();
+
+        nodes.forEach(d => { d.x0 = d.x; d.y0 = d.y; });
+    }
+
+    function diagonal(s, t) {
+        return `M ${s.x} ${s.y} C ${s.x} ${(s.y + t.y) / 2}, ${t.x} ${(s.y + t.y) / 2}, ${t.x} ${t.y}`;
+    }
+
+    function centerRoot() {
+        const transform = d3.zoomIdentity.translate(window.innerWidth / 2, 80).scale(0.85);
+        svg.transition().duration(750).call(zoom.transform, transform);
+    }
+
+    window.updateToLevel = function(level) {
+        refreshButtonHighlight(level);
+        root.each(d => {
+            if (level === 99) {
+                if (d._children) d.children = d._children;
+            } else {
+                if (d.depth < level) {
+                    if (d._children) d.children = d._children;
+                } else {
+                    if (d.children) {
+                        d._children = d.children;
+                        d.children = null;
+                    }
+                }
+            }
+        });
+        update(root);
+        let scale = 0.85;
+        if (level > 4) scale = 0.7;
+        if (level > 7 || level === 99) scale = 0.5;
+        const transform = d3.zoomIdentity.translate(window.innerWidth / 2, 80).scale(scale);
+        svg.transition().duration(750).call(zoom.transform, transform);
+    }
+
+    window.onload = init;
+</script>
+
+</body>
+</html>
