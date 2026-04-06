@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沈玉琳住院醫療開銷分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(rgba(15, 23, 42, 0.93), rgba(15, 23, 42, 0.93)), 
+                        url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=2000');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            color: #E2E8F0;
+            min-height: 100vh;
+        }
+        
+        .nordic-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            color: #1E293B;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .product-card {
+            border: 2px solid transparent;
+        }
+
+        /* 滑鼠滑過時背景變綠色，文字變白色 */
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            background-color: #10B981 !important;
+            border: 2px solid #F97316 !important;
+            backdrop-filter: none;
+        }
+
+        .product-card h3 {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: left center;
+        }
+        
+        .product-card:hover h3 {
+            color: #FFFFFF !important;
+            transform: scale(1.05);
+        }
+
+        .product-card p {
+            transition: all 0.4s ease;
+            font-size: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .product-card:hover p {
+            color: #FFFFFF !important;
+            font-size: 0.85rem;
+        }
+
+        .video-wrapper {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+            background: #000;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="pt-16 pb-8 px-6 max-w-6xl mx-auto text-center">
+        <div class="inline-block px-3 py-1 mb-4 text-[10px] font-bold tracking-[0.2em] text-blue-400 bg-blue-900/40 border border-blue-800/50 rounded-full">
+            ANALYSIS REPORT
+        </div>
+        <h1 class="text-4xl font-bold mb-3 text-white tracking-tight">沈玉琳住院醫療開銷分析</h1>
+        <p class="text-slate-400 text-sm">高品質醫療環境下的保險理賠試算</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 pb-20">
+        
+        <section class="mb-14">
+            <div class="video-wrapper">
+                <div class="video-container aspect-video">
+                    <video controls poster="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=1200" class="w-full h-full object-contain">
+                        <source src="沈玉琳.mp4" type="video/mp4">
+                        您的瀏覽器不支援影片播放。
+                    </video>
+                </div>
+                <div class="flex justify-between mt-4 px-2">
+                    <p class="text-[10px] text-slate-400 font-medium">資料來源：TVBS 電視台</p>
+                    <p class="text-[10px] text-slate-500">了解實際住院理賠案例</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-14">
+            <div class="nordic-card stats-card p-8 rounded-[2rem]">
+                <div class="flex items-center mb-6">
+                    <div class="p-2 bg-blue-50 rounded-lg text-blue-600 mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-lg font-bold text-slate-700">每月收支明細 (30天)</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                        <span class="text-slate-500 text-sm font-medium">每月病房支出</span>
+                        <span class="font-bold text-red-600">-$750,000 元</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                        <span class="text-slate-500 text-sm font-medium">每月保險理賠</span>
+                        <span class="font-bold text-emerald-600">+$900,000 元</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-3">
+                        <span class="font-bold text-slate-800 text-lg">每月淨收益</span>
+                        <span class="font-bold text-2xl text-blue-600">+$150,000 元</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nordic-card stats-card p-8 rounded-[2rem]">
+                <div class="flex items-center mb-6">
+                    <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600 mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-lg font-bold text-slate-700">7個月總額試算</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                        <span class="text-slate-500 text-sm font-medium">總病房支出</span>
+                        <span class="font-bold text-red-600">-$5,250,000 元</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                        <span class="text-slate-500 text-sm font-medium">總保險理賠</span>
+                        <span class="font-bold text-emerald-600">+$6,300,000 元</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-3">
+                        <span class="font-bold text-slate-800 text-xs">總淨收益 (不含藥費)</span>
+                        <span class="font-bold text-2xl text-blue-600">+$1,050,000 元</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold mb-10 text-center text-white">WEHS 全新商品內容</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div class="nordic-card product-card p-6 rounded-2xl flex flex-col">
+                    <h3 class="font-bold mb-3 text-slate-800">WEHS-實健溢百住院醫療終身保險 (74歲後轉向實支實付)</h3>
+                    <p class="text-slate-500 leading-relaxed mb-6 flex-grow">
+                        74歲前提供定額給付，74歲後啟動高額實支實付(最高750萬)。保費有去有回，並強化癌症與特殊醫材保障。
+                    </p>
+                    <div class="flex flex-col gap-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="WEHS-商品簡介-2026年3月A版.pdf" target="_blank" class="py-3 bg-cyan-600 text-white text-center rounded-xl font-bold hover:scale-105 transition-all text-[10px] shadow-md flex items-center justify-center">
+                                商品簡介
+                            </a>
+                            <a href="https://drive.google.com/file/d/1mEIUH4aWpR6znnuIhbFmpv_dv7CR69iM/view?usp=drive_link" target="_blank" class="py-3 bg-white text-cyan-600 text-center rounded-xl font-bold hover:scale-105 transition-all text-[10px] border border-cyan-200 flex items-center justify-center">
+                                影音說明
+                            </a>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="https://youtu.be/TwlRBGnL6xw?si=oPs5ldNu1Ot26-yd_" target="_blank" class="py-3 bg-red-50 text-red-600 text-center rounded-xl font-bold hover:scale-105 transition-all text-[10px] border border-red-100 flex items-center justify-center">
+                                實支實付說明
+                            </a>
+                            <a href="../WEHS-理賠情境分析.html" target="_blank" class="py-3 bg-orange-50 text-orange-600 text-center rounded-xl font-bold hover:scale-105 transition-all text-[10px] border border-orange-100 flex items-center justify-center">
+                                各種理賠情境
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="bg-blue-600 rounded-[2rem] p-12 text-center text-white relative overflow-hidden shadow-2xl">
+            <div class="relative z-10">
+                <h2 class="text-2xl font-bold mb-6">請填寫問卷給仲平一些您的想法</h2>
+                <div class="flex justify-center">
+                    <!-- 已更新問卷連結，代碼更改為 73UE -->
+                    <a href="https://chungpinglee.github.io/Sales-Brochure/%E9%9B%B2%E7%AB%AF%E5%95%8F%E5%8D%B7-WEHS.html?code=73UE" 
+                       target="_blank" 
+                       class="inline-block py-4 px-10 bg-white text-blue-600 rounded-full font-bold hover:bg-blue-50 transition-all shadow-lg text-lg transform hover:scale-105">
+                        立即點擊連結填寫問卷
+                    </a>
+                </div>
+            </div>
+            <div class="absolute -top-10 -left-10 w-48 h-48 bg-blue-500 rounded-full opacity-20"></div>
+            <div class="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-400 rounded-full opacity-10"></div>
+        </section>
+
+    </main>
+
+    <footer class="py-12 text-center text-slate-500 text-[10px] tracking-widest uppercase bg-black/20 backdrop-blur-md">
+        &copy; 2026 Professional Insurance Planning | 數據僅供參考，實際理賠依保單條款為準
+    </footer>
+
+</body>
+</html>
