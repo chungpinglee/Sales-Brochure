@@ -1,142 +1,459 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系統連線中</title>
+    <title>金平安 PRO 6.0 理賠文件導覽</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700&display=swap');
-        
-        body { 
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); 
-            margin: 0; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column;
-            align-items: center; 
-            justify-content: center; 
-            color: #475569; 
-            font-family: 'Noto Sans TC', sans-serif; 
-            overflow: hidden; 
-            cursor: pointer; 
-            user-select: none; 
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
         }
-
-        .container {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2.5rem;
-            z-index: 10;
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-
-        .loader { 
-            width: 40px; 
-            height: 40px; 
-            border: 2px solid #e2e8f0; 
-            border-top: 2px solid #6366f1; 
-            border-radius: 50%; 
-            animation: spin 3s linear infinite; 
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-
-        .main-text {
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            color: #1e293b;
-            animation: bounceText 2s ease-in-out infinite;
+        /* 按鈕基礎樣式與 Hover 效果 */
+        .category-pill {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .bg-circle {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
-            border-radius: 50%;
-            z-index: 1;
-            animation: move 10s infinite alternate;
+        .category-pill:hover {
+            background-color: #1d4ed8 !important; /* 滑過時：藍色填滿 */
+            color: white !important; /* 滑過時：白色文字 */
         }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        @keyframes bounceText {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+        .category-pill.active {
+            background-color: #1d4ed8 !important;
+            color: white !important;
+            box-shadow: 0 10px 15px -3px rgba(29, 78, 216, 0.3);
+            transform: scale(1.05);
         }
-
-        @keyframes move {
-            from { transform: translate(-10%, -10%); }
-            to { transform: translate(10%, 10%); }
-        }
-
-        #footer-tag { 
-            position: absolute; 
-            bottom: 30px; 
-            font-size: 10px; 
-            letter-spacing: 2px;
-            color: #cbd5e1;
+        /* 指定紅字粗體樣式 */
+        .highlight-red {
+            color: #dc2626;
+            font-weight: 800;
         }
     </style>
 </head>
-<body onclick="handleClick()">
-    <div class="bg-circle"></div>
-    <div class="container">
-        <div class="loader"></div>
-        <div class="main-text">請輸入密碼!</div>
-    </div>
-    <div id="footer-tag">SECURE ACCESS V4.1</div>
+<body class="text-slate-800 pb-20">
+
+    <!-- Header -->
+    <header class="bg-blue-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-6 py-6 text-center md:text-left">
+            <div class="flex flex-col md:flex-row items-center gap-3">
+                <div class="bg-yellow-400 p-2 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold">金平安 PRO 6.0 理賠文件導覽</h1>
+                    <p class="text-blue-100 text-xs md:text-sm opacity-90 mt-1">南山產物保險 - 依狀況精準查詢</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 mt-8">
+        
+        <!-- Category Navigation -->
+        <div class="flex flex-wrap justify-center gap-3 mb-10 pb-6 border-b border-slate-200">
+            <button onclick="filterCategory('全部')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-slate-200 text-slate-700 border border-slate-300" id="btn-全部">顯示全部</button>
+            <button onclick="filterCategory('旅程取消(人在國內)')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-lime-100 text-lime-700 border border-lime-200" id="btn-旅程取消(人在國內)">旅程取消(人在國內)</button>
+            <button onclick="filterCategory('旅程更改(人在國外)')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-emerald-100 text-emerald-700 border border-emerald-200" id="btn-旅程更改(人在國外)">旅程更改(人在國外)</button>
+            <button onclick="filterCategory('班機延誤')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-amber-100 text-amber-700 border border-amber-200" id="btn-班機延誤">班機延誤</button>
+            <button onclick="filterCategory('行李延誤')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-indigo-50 text-indigo-700 border border-indigo-200" id="btn-行李延誤">行李延誤</button>
+            <button onclick="filterCategory('行李損失')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-blue-50 text-blue-700 border border-blue-200" id="btn-行李損失">行李損失</button>
+            <button onclick="filterCategory('旅行文件損失')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-purple-100 text-purple-700 border border-purple-200" id="btn-旅行文件損失">旅行文件損失</button>
+            <button onclick="filterCategory('現金竊盜損失')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-zinc-200 text-zinc-700 border border-zinc-300" id="btn-現金竊盜損失">現金竊盜損失</button>
+            <button onclick="filterCategory('信用卡盜刷損失')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-slate-600 text-white border border-slate-700" id="btn-信用卡盜刷損失">信用卡盜刷損失</button>
+            <button onclick="filterCategory('緊急救援')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-orange-100 text-orange-700 border border-orange-200" id="btn-緊急救援">緊急救援</button>
+            <button onclick="filterCategory('醫療保險')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-rose-100 text-rose-700 border border-rose-200" id="btn-醫療保險">醫療保險</button>
+            <button onclick="filterCategory('第三人責任-體傷')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-cyan-100 text-cyan-700 border border-cyan-200" id="btn-第三人責任-體傷">第三人責任-體傷</button>
+            <button onclick="filterCategory('第三人責任-財損')" class="category-pill px-6 py-3 rounded-xl text-sm font-bold bg-teal-100 text-teal-700 border border-teal-200" id="btn-第三人責任-財損">第三人責任-財損</button>
+        </div>
+
+        <!-- Claim Content List -->
+        <div id="claim-list" class="space-y-12 min-h-[200px]">
+            <div id="placeholder" class="text-center py-20 text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p>請點選分類按鈕展開各項詳細理賠文件要求</p>
+            </div>
+        </div>
+
+    </main>
 
     <script>
-        let clicks = 0;
-        let lastClick = 0;
-        const _DATA = "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";
-        const _K = "SECRET_SESSION_PASS_6_CLICKS";
-        const SESSION_PASS_KEY = "global_secure_unlock_token";
+        const claimData = [
+            // 旅程取消(人在國內)
+            {
+                category: '旅程取消(人在國內)',
+                title: '旅程取消 - 本人 死亡或病危',
+                situations: ['被保險人本人發生死亡或病危事故'],
+                documents: ['理賠申請書', '電子機票或跟團行程表', '死亡證明或病危通知書', '代收轉付收據 <span class="highlight-red">(正本)</span>', '退費證明'],
+                notes: '必須於海外旅程開始前20日內發生事故。'
+            },
+            {
+                category: '旅程取消(人在國內)',
+                title: '旅程取消 - 配偶或三親等親屬 死亡或病危',
+                situations: ['配偶或三親等內親屬發生死亡或病危事故'],
+                documents: ['理賠申請書', '電子機票或跟團行程表', '死亡證明或病危通知書', '代收轉付收據 <span class="highlight-red">(正本)</span>', '退費證明', '三親等之關係證明'],
+                notes: '三親等關係證明包含戶口名簿或戶籍謄本。'
+            },
+            {
+                category: '旅程取消(人在國內)',
+                title: '旅程取消 - 擔任訴訟證人',
+                situations: ['保期到期前須於中華民國境內擔任訴訟證人'],
+                documents: ['理賠申請書', '電子機票或跟團行程表', '出庭通知', '代收轉付收據 <span class="highlight-red">(正本)</span>', '退費證明'],
+                notes: '限擔任證人身份，<span class="highlight-red">不含當事人</span>。'
+            },
+            {
+                category: '旅程取消(人在國內)',
+                title: '旅程取消 - 公共交通業者罷工',
+                situations: ['預定搭乘之業者受僱人罷工致班次取消或<span class="highlight-red">延誤達24小時</span>'],
+                documents: ['理賠申請書', '電子機票或跟團行程表', '班機取消證明或罷工證明', '代收轉付收據 <span class="highlight-red">(正本)</span>', '退費證明'],
+                notes: '訂約時已取得罷工權、預告罷工期間或已宣布罷工為不保事項。'
+            },
+            {
+                category: '旅程取消(人在國內)',
+                title: '旅程取消 - 暴動、民眾騷擾',
+                situations: ['預定前往之旅遊地點發生暴動、民眾騷擾事故'],
+                documents: ['理賠申請書', '電子機票或跟團行程表', '暴動、民眾騷擾事件證明', '代收轉付收據 <span class="highlight-red">(正本)</span>', '退費證明'],
+                notes: '必須於海外旅程開始前20日內發生事故。'
+            },
+            {
+                category: '旅程取消(人在國內)',
+                title: '旅程取消 - 天災住居所受損',
+                situations: ['中華民國境內住居所因火災、天災損害<span class="highlight-red">金額超過25萬</span>'],
+                documents: ['理賠申請書', '電子機票或跟團行程表', '事故證明(消防局或警政單位)', '損失證明', '代收轉付收據 <span class="highlight-red">(正本)</span>', '退費證明'],
+                notes: '動產亦包含在內。'
+            },
+
+            // 旅程更改(人在國外)
+            {
+                category: '旅程更改(人在國外)',
+                title: '旅程更改 - 罷工',
+                situations: ['預定搭乘之交通工具業者受僱人罷工'],
+                documents: ['理賠申請書', '電子機票或行程表 + 實際起飛航班登機證', '班機取消證明 (罷工證明)', '額外支出交通或住宿費收據 <span class="highlight-red">(正本)</span>', '原交通或住宿費用退費證明'],
+                notes: '額外增加之交通或住宿費用，以原預定之<span class="highlight-red">同等級費用</span>為限。不含他人同宿費用，依人數比例計算。'
+            },
+            {
+                category: '旅程更改(人在國外)',
+                title: '旅程更改 - 戰爭、暴動、民眾騷擾',
+                situations: ['海外旅遊地點發生戰爭、暴動、民眾騷擾事故'],
+                documents: ['理賠申請書', '電子機票或行程表 + 實際起飛航班登機證', '戰爭、暴動、民眾騷擾事件證明', '額外支出交通或住宿費收據 <span class="highlight-red">(正本)</span>', '原交通或住宿費用退費證明'],
+                notes: '額外增加之交通或住宿費用，以原預定之<span class="highlight-red">同等級費用</span>為限。不含他人同宿費用，依人數比例計算。'
+            },
+            {
+                category: '旅程更改(人在國外)',
+                title: '旅程更改 - 天災',
+                situations: ['海外地點發生天災致行程異動'],
+                documents: ['理賠申請書', '電子機票或行程表 + 實際起飛航班登機證', '天災證明 / 相關報導 / 交通工具取消證明 (註明原因)', '額外支出交通或住宿費收據 <span class="highlight-red">(正本)</span>', '原交通或住宿費用退費證明'],
+                notes: '額外增加之交通或住宿費用，以原預定之<span class="highlight-red">同等級費用</span>為限。不含他人同宿費用，依人數比例計算。'
+            },
+            {
+                category: '旅程更改(人在國外)',
+                title: '旅程更改 - 配偶或三親等內親屬死亡',
+                situations: ['海外旅途中，配偶或三親等內親屬死亡'],
+                documents: ['理賠申請書', '電子機票或行程表 + 實際起飛航班登機證', '死亡證明', '額外支出交通或住宿費收據 <span class="highlight-red">(正本)</span>', '原交通或住宿費用退費證明', '三親等之關係證明'],
+                notes: '額外增加之交通或住宿費用，以原預定之<span class="highlight-red">同等級費用</span>為限。不含他人同宿費用，依人數比例計算。'
+            },
+            {
+                category: '旅程更改(人在國外)',
+                title: '旅程更改 - 護照或旅行文件遺失',
+                situations: ['護照、簽證或其他作為出入國境或通行之文件遺失'],
+                documents: ['理賠申請書', '電子機票或行程表 + 實際起飛航班登機證', '報案證明 (載明遺失之物件)', '額外支出交通或住宿費收據 <span class="highlight-red">(正本)</span>', '原交通或住宿費用退費證明'],
+                notes: '額外增加之交通或住宿費用，以原預定之<span class="highlight-red">同等級費用</span>為限。不含他人同宿費用，依人數比例計算。'
+            },
+            {
+                category: '旅程更改(人在國外)',
+                title: '旅程更改 - 交通事故',
+                situations: ['搭乘汽車、火車、航空器或輪船等發生交通事故'],
+                documents: ['理賠申請書', '電子機票或行程表 + 實際起飛航班登機證', '交通事故證明', '額外支出交通或住宿費收據 <span class="highlight-red">(正本)</span>', '原交通或住宿費用退費證明'],
+                notes: '額外增加之交通或住宿費用，以原預定之<span class="highlight-red">同等級費用</span>為限。不含他人同宿費用，依人數比例計算。'
+            },
+
+            // 班機延誤
+            {
+                category: '班機延誤',
+                title: '班機延誤 - 投保時「有」提供航班資訊',
+                situations: ['實際出發時間較預定出發延誤4小時以上', '投保時已主動填寫正確航班資訊'],
+                documents: ['理賠申請書', '實際起飛航班的登機證'],
+                notes: '每滿4小時給付6,000元，<span class="highlight-red">最多2次給付12,000元</span>。'
+            },
+            {
+                category: '班機延誤',
+                title: '班機延誤 - 投保時「無」提供航班資訊',
+                situations: ['實際出發時間較預定出發延誤4小時以上', '投保時未告知航班資訊或後續行程異動'],
+                documents: ['理賠申請書', '電子機票 或 跟團的行程表', '延誤證明', '實際起飛航班的登機證'],
+                notes: '每滿4小時給付6,000元，<span class="highlight-red">最多2次給付12,000元</span>。'
+            },
+
+            // 行李延誤
+            {
+                category: '行李延誤',
+                title: '行李延誤保險',
+                situations: ['隨行託運行李延誤領得'],
+                documents: ['理賠申請書', '電子機票 / 跟團行程表 + 實際登機證', '行李延誤證明 + 行李簽收單'],
+                notes: '特別不保事項：<span class="highlight-red">返抵中華民國境內機場</span>或返回出發地/居住地之行李延誤不予理賠。'
+            },
+            {
+                category: '行李延誤',
+                title: '交通工具業者處理失當 (延誤後找不回)',
+                situations: ['隨行託運行李因業者失當致延誤且最終未領回'],
+                documents: ['理賠申請書', '電子機票 / 跟團行程表 + 實際登機證', '行李延誤證明', '交通工具業者出具之賠償證明'],
+                notes: '請務必保留交通業者之正式理賠/賠償公文。'
+            },
+
+            // 行李損失
+            {
+                category: '行李損失',
+                title: '行李損失保險 - 竊盜、強盜與搶奪',
+                situations: ['隨身或行李箱內物品遭人偷竊或強奪'],
+                documents: ['理賠申請書', '電子機票 / 跟團行程表 + 實際登機證', '24小時內報案證明 <span class="highlight-red">(需載明被偷搶物件)</span>', '損失物品購買證明'],
+                notes: '不保物品：<span class="highlight-red">食物、珠寶、行動電話、飾品、現金、入場券、機/船/車票、信用卡、金融卡</span>。其餘詳見條款。'
+            },
+            {
+                category: '行李損失',
+                title: '行李損失保險 - 交通工具業者處理失當致遺失',
+                situations: ['行李箱內容物因業者疏失遺失'],
+                documents: ['理賠申請書', '電子機票 / 跟團行程表 + 實際登機證', '航空公司出具之遺失賠償證明'],
+                notes: '<span class="highlight-red">行李箱內容物之毀損</span>非承保範圍。承保範圍：<span class="highlight-red">行李箱內容物遺失</span>。'
+            },
+
+            // 旅行文件損失
+            {
+                category: '旅行文件損失',
+                title: '旅行文件損失 (強盜、搶奪、竊盜或遺失)',
+                situations: ['護照、簽證或其他出入境文件遭竊、搶或遺失'],
+                documents: ['理賠申請書', '電子機票 / 跟團行程表 + 實際登機證', '24小時內報案證明 <span class="highlight-red">(需載明遺失物件)</span>', '重新申辦旅行文件之證明'],
+                notes: '報案證明必須明確列出遺失的文件名稱。'
+            },
+
+            // 現金竊盜損失
+            {
+                category: '現金竊盜損失',
+                title: '現金竊盜損失 - 竊盜、強盜與搶奪',
+                situations: ['現金、支票、匯票或旅行支票遭竊盜、強用或盜領'],
+                documents: [
+                    '理賠申請書', 
+                    '24小時內向警政單位報案證明', 
+                    '向警政單位提列之損失清單', 
+                    '支票、匯票或旅行支票遭盜用或盜領之損失證明'
+                ],
+                notes: '必須於發現損失後 24 小時內向當地警方報案並取得證明。'
+            },
+
+            // 信用卡盜刷損失
+            {
+                category: '信用卡盜刷損失',
+                title: '信用卡盜刷損失 - 遺失、竊盜、強盜與搶奪',
+                situations: ['信用卡遺失或遭竊後，在掛失止付前遭他人冒用盜刷'],
+                documents: [
+                    '理賠申請書', 
+                    '被保險人身分證明文件', 
+                    '向警政單位報案證明 <span class="highlight-red">(不慎遺失者免檢附)</span>', 
+                    '掛失止付證明',
+                    '信用卡帳單發行機構證明 <span class="highlight-red">(證明遭盜刷金額)</span>',
+                    '信用卡核發機構之補償或不補償證明'
+                ],
+                notes: '如為不慎遺失信用卡者，無須檢附警方報案證明。'
+            },
+
+            // 緊急救援
+            {
+                category: '緊急救援',
+                title: '子女看護費用保險',
+                situations: ['子女於海外旅途中發生重大傷病需人看護'],
+                documents: [
+                    '理賠申請書', 
+                    '電子機票或行程表 + 實際登機證', 
+                    '被保險人之重大傷病診斷書', 
+                    '增加之交通及住宿費用收據 <span class="highlight-red">(正本)</span>',
+                    '親屬證明'
+                ],
+                notes: '<span class="highlight-red">該子女必須為本保險契約之被保險人</span>。'
+            },
+            {
+                category: '緊急救援',
+                title: '探病費用保險',
+                situations: ['被保險人於海外發生死亡或重大傷病'],
+                documents: [
+                    '理賠申請書', 
+                    '電子機票或行程表 + 實際登機證', 
+                    '被保險人之死亡證明書 / 重大傷病診斷書', 
+                    '增加之交通及住宿費用收據 <span class="highlight-red">(正本)</span>',
+                    '親屬證明'
+                ],
+                notes: '限親屬前往探視或處理後事所增加之費用。'
+            },
+
+            // 醫療保險
+            {
+                category: '醫療保險',
+                title: '海外突發疾病醫療',
+                situations: ['於境外突然發生疾病需診療'],
+                documents: [
+                    '理賠申請書', 
+                    '電子機票或行程表 + 實際登機證', 
+                    '病歷', 
+                    '診斷書 <span class="highlight-red">(正本)</span>',
+                    '收據 <span class="highlight-red">(正本)</span>'
+                ],
+                notes: '國外的診斷書正本、收據正本驗畢後可歸還 (如有要求)。'
+            },
+            {
+                category: '醫療保險',
+                title: '傷害醫療',
+                situations: ['海外發生意外傷害事故需診療'],
+                documents: [
+                    '理賠申請書', 
+                    '電子機票或行程表 + 實際登機證', 
+                    '病歷', 
+                    '診斷書 <span class="highlight-red">(正本)</span>',
+                    '收據 <span class="highlight-red">(正本)</span>'
+                ],
+                notes: '國外的診斷書正本、收據正本驗畢後可歸還 (如有要求)。'
+            },
+
+            // 第三人責任-體傷
+            {
+                category: '第三人責任-體傷',
+                title: '第三人責任保險 - 體傷',
+                situations: ['因行為致第三人死亡或體傷'],
+                documents: [
+                    '理賠申請書 <span class="highlight-red">(需含事故經過 & 第三人資料)</span>', 
+                    '電子機票或行程表 + 實際登機證', 
+                    '醫療收據 <span class="highlight-red">(正本)</span>', 
+                    '受傷照片',
+                    '付款憑證 / 和解書'
+                ],
+                notes: '特別不保事項有五點，最常發生下列三點<br>一． 親屬、僱用人或受僱人之賠償責任。<br>二． 被保險人所有、使用或管理之財物受有損害所致之賠償責任。<br>三． 租用／借用／使用領有牌照車輛之賠償責任。<br>＊ 餘請閱保單條款'
+            },
+
+            // 第三人責任-財損
+            {
+                category: '第三人責任-財損',
+                title: '第三人責任保險 - 財損',
+                situations: ['因行為致第三人財物受損'],
+                documents: [
+                    '理賠申請書 <span class="highlight-red">(需含事故經過 & 第三人資料)</span>', 
+                    '電子機票或行程表 + 實際登機證', 
+                    '財損修繕費估價單 / 收據 <span class="highlight-red">(正本)</span>',
+                    '購買收據 <span class="highlight-red">(正本)</span>',
+                    '財損照片',
+                    '付款憑證 / 和解書'
+                ],
+                notes: '特別不保事項有五點，最常發生下列三點<br>一． 親屬、僱用人或受僱人之賠償責任。<br>二． 被保險人所有、使用或管理之財物受有損害所致之賠償責任。<br>三． 租用／借用／使用領有牌照車輛之賠償責任。<br>＊ 餘請閱保單條款'
+            }
+        ];
+
+        function renderClaims(category) {
+            const container = document.getElementById('claim-list');
+            container.innerHTML = '';
+
+            const filtered = category === '全部' 
+                ? claimData 
+                : claimData.filter(item => item.category === category);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-20 text-slate-400">
+                        <p>請點選分類按鈕展開各項詳細理賠文件要求</p>
+                    </div>`;
+                return;
+            }
+
+            filtered.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden transform transition-all duration-300 translate-y-0 opacity-100';
+                
+                card.innerHTML = `
+                    <div class="p-6 border-b border-green-100 bg-green-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                        <div class="flex-1">
+                            <span class="text-[10px] font-black text-green-700 bg-green-200 px-3 py-1 rounded-full uppercase tracking-tighter mb-1 inline-block">${item.category}</span>
+                            <h2 class="text-xl font-bold text-slate-800 leading-tight">${item.title}</h2>
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <section>
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 text-center md:text-left">適用情境明細</h3>
+                            <div class="flex flex-wrap justify-center md:justify-start gap-2">
+                                ${item.situations.map(s => `<span class="text-sm bg-slate-50 px-4 py-2 rounded-xl text-slate-600 border border-slate-200 shadow-sm">${s}</span>`).join('')}
+                            </div>
+                        </section>
+                        <section>
+                            <h3 class="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3 flex items-center justify-center md:justify-start gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                必備理賠文件 (請逐一核對)
+                            </h3>
+                            <ul class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                ${item.documents.map(doc => `
+                                    <li class="flex items-center gap-3 text-sm font-medium text-slate-800 bg-blue-50/40 p-4 rounded-2xl border border-blue-100/50 hover:bg-white transition-all shadow-sm">
+                                        <div class="bg-blue-600 p-1.5 rounded-full flex-shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                        ${doc}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </section>
+                        <div class="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <h4 class="text-sm font-bold text-orange-900">重點注意</h4>
+                                <p class="text-xs text-orange-800 leading-relaxed mt-1">${item.notes}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            // 自動捲動
+            if(category !== '全部') {
+                const headerOffset = 150;
+                const elementPosition = container.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+            }
+        }
+
+        function filterCategory(category) {
+            document.querySelectorAll('.category-pill').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(`btn-${category}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            renderClaims(category);
+        }
 
         window.onload = () => {
-            if (sessionStorage.getItem(SESSION_PASS_KEY) === "authorized") {
-                unlock(true);
-            }
+            console.log("Guide Ready. Specific keywords highlighted.");
         };
-
-        function handleClick() {
-            const now = Date.now();
-            if (now - lastClick > 2000) clicks = 0;
-            clicks++;
-            lastClick = now;
-            if (clicks === 6) {
-                unlock(false);
-            }
-        }
-
-        async function unlock(isAuto) {
-            try {
-                const bin = atob(_DATA);
-                const bytes = new Uint8Array(bin.length);
-                for(let i=0; i<bin.length; i++) bytes[i] = bin.charCodeAt(i);
-                
-                const salt = bytes.slice(0, 16);
-                const iv = bytes.slice(16, 28);
-                const data = bytes.slice(28);
-                
-                const enc = new TextEncoder();
-                const keyMat = await crypto.subtle.importKey("raw", enc.encode(_K), "PBKDF2", false, ["deriveKey"]);
-                const key = await crypto.subtle.deriveKey(
-                    { name: "PBKDF2", salt, iterations: 1000, hash: "SHA-256" },
-                    keyMat, { name: "AES-GCM", length: 256 }, false, ["decrypt"]
-                );
-                
-                const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
-                sessionStorage.setItem(SESSION_PASS_KEY, "authorized");
-                
-                document.open();
-                document.write(new TextDecoder().decode(decrypted));
-                document.close();
-            } catch (e) {
-                console.error("解密失敗");
-            }
-        }
     </script>
 </body>
 </html>
+<a href="金平安6.0商品與保障概覽.html"
+   style="position: fixed; top: 15px; left: 15px; z-index: 99999; width: 45px; height: 45px; background-color: #f59e0b; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; transition: all 0.3s ease; color: white; text-decoration: none;"
+   onmouseover="this.style.transform='scale(1.1)';"
+   onmouseout="this.style.transform='scale(1)';"
+   onclick="event.preventDefault(); this.style.transition='all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'; this.style.opacity='0'; this.style.transform='scale(0.5) translateY(-20px)'; setTimeout(() => { window.location.href = this.href; }, 500);"
+   title="返回商品與保障概覽">
+   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 24px; height: 24px;">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+   </svg>
+</a>
