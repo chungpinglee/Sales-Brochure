@@ -11,6 +11,11 @@
         .step-content { display: none; }
         .step-content.active { display: block; }
         
+        /* 微軟正黑體 class */
+        .font-msjh {
+            font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif !important;
+        }
+
         /* 自定義拉桿樣式 - 維持藍色圓圈作為控制點 */
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -29,20 +34,21 @@
             margin: 0;
         }
 
+        /* 三大分類框架：淡綠色風格 */
         .input-group-card {
-            @apply bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-6;
+            @apply bg-green-50 border-2 border-green-200 rounded-2xl shadow-sm overflow-hidden mb-6;
         }
 
         .group-header {
-            @apply p-5 bg-red-50 border-b border-red-100 flex flex-col md:flex-row md:items-center justify-between gap-3;
+            @apply p-5 bg-green-100 border-b border-green-200 flex flex-col md:flex-row md:items-center justify-between gap-3;
         }
 
         .sub-items-area {
-            @apply p-4 md:p-5 space-y-4 bg-white;
+            @apply p-4 md:p-5 space-y-4 bg-green-50;
         }
 
         .sub-input-row {
-            @apply flex flex-col gap-3 p-4 bg-slate-50/50 rounded-xl border border-slate-100;
+            @apply flex flex-col gap-3 p-4 bg-white/80 rounded-xl border border-green-100 shadow-sm;
         }
 
         .read-only-total {
@@ -202,14 +208,21 @@
             transform: scale(1.1);
         }
 
-        /* 卡片翻轉隱藏區特效 */
+        /* 卡片翻轉隱藏區特效 (支援手機點擊 toggle 與 PC hover) */
+        .feature-card .front-content {
+            transition: opacity 0.4s ease;
+        }
         .feature-card .hidden-desc {
             transform: translateY(100%);
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .feature-card:hover .hidden-desc, 
-        .feature-card:active .hidden-desc {
+        .feature-card.show-desc .hidden-desc {
             transform: translateY(0);
+        }
+        .feature-card:hover .front-content, 
+        .feature-card.show-desc .front-content {
+            opacity: 0;
         }
     </style>
 </head>
@@ -249,7 +262,7 @@
                         </ul>
                     </div>
                     <div class="flex items-center justify-center">
-                        <a href="_1140318住院卵巢癌住院1天.pdf" target="_blank" class="bg-white p-5 rounded-2xl shadow-md border border-slate-200 transform md:rotate-1 hover:rotate-0 hover:shadow-lg transition-all duration-300 w-full flex flex-col items-center justify-center group h-32 md:h-44 hover:bg-red-50">
+                        <a href="./_1140318住院卵巢癌住院1天.pdf" target="_blank" class="bg-white p-5 rounded-2xl shadow-md border border-slate-200 transform md:rotate-1 hover:rotate-0 hover:shadow-lg transition-all duration-300 w-full flex flex-col items-center justify-center group h-32 md:h-44 hover:bg-red-50">
                             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500 mb-3 group-hover:scale-110 group-hover:text-red-700 transition-all"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
                             <span class="text-red-600 font-black text-lg md:text-xl border-b-2 border-red-200 group-hover:border-red-600 transition-colors">點擊查看收據摘要</span>
                             <span class="text-xs text-slate-500 mt-2 font-bold uppercase tracking-widest group-hover:text-slate-700">PDF 檔案</span>
@@ -295,7 +308,7 @@
                 </div>
                 
                 <button onclick="goToStep(1)" class="w-full py-6 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-xl transition-colors duration-300 transform active:scale-95 flex items-center justify-center gap-4 btn-hover-scale">
-                    <span class="font-black text-xl md:text-2xl btn-text">我現在的南山人壽保單將會如何理賠?</span>
+                    <span class="font-black text-xl md:text-2xl btn-text">我的南山人壽保單將會如何理賠?</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-text translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </button>
             </div>
@@ -315,14 +328,14 @@
             </div>
 
             <div class="space-y-10">
-                <!-- 一般住院日額組 -->
+                <!-- 一般住院日額組 (淡綠色) -->
                 <div class="input-group-card">
                     <div class="group-header">
-                        <h3 class="font-black text-red-900 text-xl">一般住院日額合計:</h3>
-                        <div class="flex items-center gap-1 text-red-700">
+                        <h3 class="font-black text-green-900 text-xl">一般住院日額合計:</h3>
+                        <div class="flex items-center gap-1 text-green-800">
                             <span class="font-bold text-2xl">$</span>
-                            <input type="text" inputmode="numeric" id="num-norm-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl">
-                            <span class="text-sm font-black opacity-60">/ 日</span>
+                            <input type="text" inputmode="numeric" id="num-norm-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl text-green-900">
+                            <span class="text-sm font-black opacity-80">/ 日</span>
                         </div>
                     </div>
                     <div class="sub-items-area">
@@ -336,12 +349,12 @@
                                     </div>
                                     <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-slate-100 focus-within:border-blue-400 transition-all">
                                         <span class="text-slate-300 text-xs font-bold">$</span>
-                                        <input type="text" inputmode="numeric" id="num-norm-rent" value="0" oninput="itemUpdate('norm', 'rent', this.value, 'num')" class="w-24 text-right font-black text-blue-600 focus:outline-none text-lg">
+                                        <input type="text" inputmode="numeric" id="num-norm-rent" value="0" oninput="itemUpdate('norm', 'rent', this.value, 'num')" class="w-24 text-right font-black text-blue-600 focus:outline-none text-lg bg-transparent">
                                     </div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
-                                <input type="range" id="range-norm-rent" min="0" max="15000" step="100" value="0" oninput="itemUpdate('norm', 'rent', this.value, 'range')" class="w-full flex-1 h-3 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                                <input type="range" id="range-norm-rent" min="0" max="15000" step="100" value="0" oninput="itemUpdate('norm', 'rent', this.value, 'range')" class="w-full flex-1 h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                                 <span class="text-[10px] font-black text-black whitespace-nowrap">
                                     可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
                                 </span>
@@ -357,12 +370,12 @@
                                     </div>
                                     <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-slate-100 focus-within:border-blue-400 transition-all">
                                         <span class="text-slate-300 text-xs font-bold">$</span>
-                                        <input type="text" inputmode="numeric" id="num-norm-life" value="0" oninput="itemUpdate('norm', 'life', this.value, 'num')" class="w-24 text-right font-black text-blue-600 focus:outline-none text-lg">
+                                        <input type="text" inputmode="numeric" id="num-norm-life" value="0" oninput="itemUpdate('norm', 'life', this.value, 'num')" class="w-24 text-right font-black text-blue-600 focus:outline-none text-lg bg-transparent">
                                     </div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
-                                <input type="range" id="range-norm-life" min="0" max="15000" step="100" value="0" oninput="itemUpdate('norm', 'life', this.value, 'range')" class="w-full flex-1 h-3 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                                <input type="range" id="range-norm-life" min="0" max="15000" step="100" value="0" oninput="itemUpdate('norm', 'life', this.value, 'range')" class="w-full flex-1 h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                                 <span class="text-[10px] font-black text-black whitespace-nowrap">
                                     可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
                                 </span>
@@ -371,20 +384,20 @@
                     </div>
                 </div>
 
-                <!-- 癌症住院日額組 -->
+                <!-- 癌症住院日額組 (淡綠色) -->
                 <div class="input-group-card">
                     <div class="group-header">
-                        <h3 class="font-black text-red-900 text-xl">癌症住院日額合計:</h3>
-                        <div class="flex items-center gap-1 text-red-700">
+                        <h3 class="font-black text-green-900 text-xl">癌症住院日額合計:</h3>
+                        <div class="flex items-center gap-1 text-green-800">
                             <span class="font-bold text-2xl">$</span>
-                            <input type="text" inputmode="numeric" id="num-can-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl">
-                            <span class="text-sm font-black opacity-60">/ 日</span>
+                            <input type="text" inputmode="numeric" id="num-can-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl text-green-900">
+                            <span class="text-sm font-black opacity-80">/ 日</span>
                         </div>
                     </div>
                     <div class="sub-items-area">
-                        <div class="flex justify-between items-center p-5 bg-blue-50/50 rounded-2xl border border-blue-100 mb-2">
-                            <span class="text-sm font-black text-blue-700 uppercase tracking-widest">🏥 住院日額基數 (系統連動)</span>
-                            <span id="display-can-base" class="font-black text-blue-800 text-2xl">$0</span>
+                        <div class="flex justify-between items-center p-5 bg-white/60 rounded-2xl border border-green-200 mb-2 shadow-sm">
+                            <span class="text-sm font-black text-green-800 uppercase tracking-widest">🏥 住院日額基數 (系統連動)</span>
+                            <span id="display-can-base" class="font-black text-green-900 text-2xl">$0</span>
                         </div>
                         <div class="sub-input-row">
                             <div class="flex justify-between items-center">
@@ -396,12 +409,12 @@
                                     </div>
                                     <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-slate-100 focus-within:border-red-400 transition-all">
                                         <span class="text-slate-300 text-xs font-bold">$</span>
-                                        <input type="text" inputmode="numeric" id="num-can-life" value="0" oninput="itemUpdate('can', 'life', this.value, 'num')" class="w-24 text-right font-black text-red-600 focus:outline-none text-lg">
+                                        <input type="text" inputmode="numeric" id="num-can-life" value="0" oninput="itemUpdate('can', 'life', this.value, 'num')" class="w-24 text-right font-black text-red-600 focus:outline-none text-lg bg-transparent">
                                     </div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
-                                <input type="range" id="range-can-life" min="0" max="20000" step="100" value="0" oninput="itemUpdate('can', 'life', this.value, 'range')" class="w-full flex-1 h-3 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-red-600">
+                                <input type="range" id="range-can-life" min="0" max="20000" step="100" value="0" oninput="itemUpdate('can', 'life', this.value, 'range')" class="w-full flex-1 h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-600">
                                 <span class="text-[10px] font-black text-black whitespace-nowrap">
                                     可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
                                 </span>
@@ -410,24 +423,24 @@
                     </div>
                 </div>
 
-                <!-- 住院實支實付組 -->
+                <!-- 住院實支實付組 (淡綠色) -->
                 <div class="input-group-card">
                     <div class="group-header">
-                        <h3 class="font-black text-red-900 text-xl text-center md:text-left">住院實支實付合計上限:</h3>
-                        <div class="flex items-center gap-1 text-red-700 justify-center">
+                        <h3 class="font-black text-green-900 text-xl text-center md:text-left">住院實支實付合計上限:</h3>
+                        <div class="flex items-center gap-1 text-green-800 justify-center">
                             <span class="font-bold text-2xl">$</span>
-                            <input type="text" inputmode="numeric" id="num-reim-total" value="0" readonly class="read-only-total w-36 md:w-48 text-2xl md:text-4xl">
-                            <span class="text-sm font-black opacity-60">元</span>
+                            <input type="text" inputmode="numeric" id="num-reim-total" value="0" readonly class="read-only-total w-36 md:w-48 text-2xl md:text-4xl text-green-900">
+                            <span class="text-sm font-black opacity-80">元</span>
                         </div>
                     </div>
                     <div class="sub-items-area grid grid-cols-1 md:grid-cols-2 gap-8 space-y-0">
                         <div class="sub-input-row">
                             <div class="flex justify-between items-center">
                                 <span class="text-sm font-black text-black uppercase">🚫 65歲終止</span>
-                                <input type="text" inputmode="numeric" id="num-reim-65" value="0" oninput="itemUpdate('reim', '65', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-slate-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
+                                <input type="text" inputmode="numeric" id="num-reim-65" value="0" oninput="itemUpdate('reim', '65', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                             </div>
                             <div class="flex items-center gap-3">
-                                <input type="range" id="range-reim-65" min="0" max="150000" step="1000" value="0" oninput="itemUpdate('reim', '65', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-cyan-600">
+                                <input type="range" id="range-reim-65" min="0" max="150000" step="1000" value="0" oninput="itemUpdate('reim', '65', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cyan-600">
                                 <span class="text-[10px] font-black text-black whitespace-nowrap">
                                     可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
                                 </span>
@@ -436,10 +449,10 @@
                         <div class="sub-input-row">
                             <div class="flex justify-between items-center">
                                 <span class="text-sm font-black text-black uppercase">🚫 75歲終止</span>
-                                <input type="text" inputmode="numeric" id="num-reim-75" value="0" oninput="itemUpdate('reim', '75', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-slate-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
+                                <input type="text" inputmode="numeric" id="num-reim-75" value="0" oninput="itemUpdate('reim', '75', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                             </div>
                             <div class="flex items-center gap-3">
-                                <input type="range" id="range-reim-75" min="0" max="300000" step="1000" value="0" oninput="itemUpdate('reim', '75', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-cyan-600">
+                                <input type="range" id="range-reim-75" min="0" max="300000" step="1000" value="0" oninput="itemUpdate('reim', '75', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cyan-600">
                                 <span class="text-[10px] font-black text-black whitespace-nowrap">
                                     可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
                                 </span>
@@ -451,10 +464,10 @@
                                     <span class="text-sm font-black text-black uppercase">♾️ 終身帳戶型</span>
                                     <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
                                 </div>
-                                <input type="text" inputmode="numeric" id="num-reim-life" value="0" oninput="itemUpdate('reim', 'life', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-slate-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
+                                <input type="text" inputmode="numeric" id="num-reim-life" value="0" oninput="itemUpdate('reim', 'life', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                             </div>
                             <div class="flex items-center gap-3">
-                                <input type="range" id="range-reim-life" min="0" max="500000" step="1000" value="0" oninput="itemUpdate('reim', 'life', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-cyan-600">
+                                <input type="range" id="range-reim-life" min="0" max="500000" step="1000" value="0" oninput="itemUpdate('reim', 'life', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cyan-600">
                                 <span class="text-[10px] font-black text-black whitespace-nowrap">
                                     可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
                                 </span>
@@ -466,10 +479,10 @@
                                     <span class="text-sm font-black text-black uppercase">♾️ 75歲啟動型</span>
                                     <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
                                 </div>
-                                <input type="text" inputmode="numeric" id="num-reim-75start" value="0" oninput="itemUpdate('reim', '75start', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-slate-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
+                                <input type="text" inputmode="numeric" id="num-reim-75start" value="0" oninput="itemUpdate('reim', '75start', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                             </div>
                             <div class="flex items-center gap-3">
-                                <input type="range" id="range-reim-75start" min="0" max="500000" step="1000" value="0" oninput="itemUpdate('reim', '75start', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-cyan-600">
+                                <input type="range" id="range-reim-75start" min="0" max="500000" step="1000" value="0" oninput="itemUpdate('reim', '75start', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cyan-600">
                                 <span class="text-[10px] font-black text-black whitespace-nowrap">
                                     可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
                                 </span>
@@ -701,7 +714,6 @@
             <div class="bg-white p-8 md:p-12 rounded-[40px] shadow-2xl border border-blue-50 text-center relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -mr-10 -mt-10"></div>
                 <h3 class="text-2xl md:text-4xl font-black mb-10 relative z-10 leading-tight">
-                    <!-- 背景改為黃色 bg-yellow-400，文字改為深藍 text-slate-900 -->
                     <span class="bg-yellow-400 text-slate-900 px-6 py-3 rounded-2xl inline-block shadow-md">面對75歲以後的醫療缺口，我們可以怎麼做？</span>
                 </h3>
                 
@@ -722,7 +734,6 @@
         <div id="step-5" class="step-content">
             <div class="bg-white p-8 md:p-12 rounded-[40px] shadow-2xl border border-blue-50 text-center">
                 <h3 class="text-2xl md:text-4xl font-black mb-10 leading-tight">
-                    <!-- 背景改為黃色 bg-yellow-400，文字改為深藍 text-slate-900 -->
                     <span class="bg-yellow-400 text-slate-900 px-6 py-3 rounded-2xl inline-block shadow-md">您認為：我們大概要準備多少醫療基金才會有安全感？</span>
                 </h3>
                 
@@ -751,15 +762,14 @@
                 </h3>
                 
                 <div class="flex flex-col gap-6 max-w-2xl mx-auto">
-                    <button onclick="goToStep(7)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
-                        <span class="text-3xl btn-text">✅</span> <span class="btn-text">A: 是的，我已準備好了！</span>
+                    <button onclick="goToStep(7)" class="w-full py-8 rounded-3xl font-black text-[22px] md:text-[27px] bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
+                        <span class="text-[27px] btn-text">✅</span> <span class="btn-text">A: 是的，我已準備好了！</span>
                     </button>
-                    <button onclick="goToStep(8)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-amber-500 text-white hover:bg-amber-600 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
-                        <span class="text-3xl btn-text">⏳</span> <span class="btn-text">B: 還在努力中...</span>
+                    <button onclick="goToStep(8)" class="w-full py-8 rounded-3xl font-black text-[22px] md:text-[27px] bg-amber-500 text-white hover:bg-amber-600 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
+                        <span class="text-[27px] btn-text">⏳</span> <span class="btn-text">B: 還在努力中...</span>
                     </button>
-                    <!-- 新增選項C -->
-                    <button onclick="goToStep(11)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-red-500 text-white hover:bg-red-600 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
-                        <span class="text-3xl btn-text">🤦‍♂️</span> <span class="btn-text">C: 太多錢了，乾脆放棄!</span>
+                    <button onclick="goToStep(11)" class="w-full py-8 rounded-3xl font-black text-[22px] md:text-[27px] bg-red-500 text-white hover:bg-red-600 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
+                        <span class="text-[27px] btn-text">🤦‍♂️</span> <span class="btn-text">C: 太多錢了，乾脆放棄!</span>
                     </button>
                 </div>
             </div>
@@ -784,7 +794,7 @@
         <div id="step-8" class="step-content">
             <div class="bg-white p-8 md:p-12 rounded-[40px] shadow-2xl border border-blue-50 text-center">
                 <h3 class="text-2xl md:text-4xl font-black mb-10 leading-tight">
-                    <span class="bg-green-600 text-white px-6 py-3 rounded-2xl inline-block shadow-md">您想全部靠自己努力？還是也想聽聽保險公司怎麼說？</span>
+                    <span class="bg-white text-blue-600 border-2 border-blue-600 px-6 py-3 rounded-2xl inline-block shadow-md">您想全部靠自己努力？還是也想聽聽保險公司怎麼說？</span>
                 </h3>
                 
                 <div class="flex flex-col gap-6 max-w-3xl mx-auto">
@@ -822,7 +832,6 @@
                     但是別氣餒，我們其實還有更輕鬆的解決方法可以幫您轉嫁風險。
                 </p>
                 <div class="flex flex-col items-center">
-                    <!-- 點擊後跳轉到 WEHS 方案 (STEP 10) -->
                     <button onclick="goToStep(10)" class="w-full max-w-2xl py-8 rounded-3xl font-black text-2xl md:text-3xl bg-blue-600 text-white hover:bg-green-600 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
                         <span class="btn-text">別放棄! 聽聽看保險公司怎麼說...</span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-text translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -831,13 +840,12 @@
             </div>
         </div>
 
-        <!-- STEP 10: 解決方案 (WEHS) -->
+        <!-- STEP 10: 解決方案 (WEHS介紹) -->
         <div id="step-10" class="step-content">
             <div class="bg-gradient-to-br from-blue-950 to-indigo-950 p-6 md:p-12 rounded-[50px] shadow-2xl border border-white/10 relative">
                 
-                <!-- 新增：設計師簡介卡片區 (六大核心優勢) -->
                 <div class="mb-12">
-                    <div class="text-center mb-8">
+                    <div class="text-center mb-8 relative">
                         <h2 class="text-3xl md:text-5xl font-black text-white tracking-tighter drop-shadow-md">南山人壽 實健溢百 (WEHS)</h2>
                         <p class="text-orange-400 mt-3 text-lg md:text-2xl font-black tracking-widest uppercase opacity-100 drop-shadow">可以協助我們降低老年高額醫療費的支出風險</p>
                         
@@ -850,121 +858,140 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                                 保單條款
                             </a>
+                            <!-- 建議書按鈕移到此處右側 -->
+                            <button onclick="handleProposalClick(event)" class="px-5 py-2 bg-gradient-to-r from-yellow-500 to-orange-400 hover:from-yellow-400 hover:to-orange-300 text-slate-900 rounded-full font-black shadow-[0_0_15px_rgba(250,204,21,0.5)] transition-transform transform active:scale-95 border-2 border-yellow-200/50 flex items-center gap-2 text-sm md:text-base">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                <span class="proposal-btn-text">建議書</span>
+                            </button>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5">
-                        
                         <!-- Card 1 -->
-                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
-                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
-                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-green-300 drop-shadow">0~70歲均可保</h4>
-                                <p class="text-sm md:text-base text-blue-100 mt-2">保障至100歲保單年度末</p>
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg" onclick="this.classList.toggle('show-desc')">
+                            <div class="front-content z-10">
+                                <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-green-300 drop-shadow">0~70歲均可保</h4>
+                                <p class="text-xs md:text-sm text-blue-100 mt-2">保障至100歲保單年度末</p>
                             </div>
                             <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
-                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
-                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">就不用擔心年紀大買不到保險啦！只要一張保單，就能擁有一輩子安安心心的醫療防護網哦。</p>
+                                <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-base md:text-lg font-black text-slate-900 leading-snug">就不用擔心年紀大買不到保險啦！只要一張保單，就能擁有一輩子安安心心的醫療防護網哦。</p>
                             </div>
                         </div>
 
                         <!-- Card 2 -->
-                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
-                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
-                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-green-300 drop-shadow">靈活選擇</h4>
-                                <p class="text-xs md:text-sm text-blue-100 mt-2">提供10/20/30年繳費年期<br>及投保計劃10/20/30</p>
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg" onclick="this.classList.toggle('show-desc')">
+                            <div class="front-content z-10">
+                                <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-green-300 drop-shadow">靈活選擇</h4>
+                                <p class="text-[11px] md:text-xs text-blue-100 mt-2">提供10/20/30年繳費年期<br>及投保計劃10/20/30</p>
                             </div>
                             <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
-                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
-                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">我們可以根據目前的財務狀況與預算，自由搭配最適合自己的繳費負擔與保障額度。</p>
+                                <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-base md:text-lg font-black text-slate-900 leading-snug">我們可以根據目前的財務狀況與預算，自由搭配最適合自己的繳費負擔與保障額度。</p>
                             </div>
                         </div>
 
                         <!-- Card 3 -->
-                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
-                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
-                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-cyan-300 drop-shadow">醫療雙帳戶</h4>
-                                <p class="text-xs md:text-sm text-blue-100 mt-2">74歲前後獨立給付<br>各最高達750萬</p>
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg" onclick="this.classList.toggle('show-desc')">
+                            <div class="front-content z-10">
+                                <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-cyan-300 drop-shadow">醫療雙帳戶</h4>
+                                <p class="text-[11px] md:text-xs text-blue-100 mt-2">74歲前後獨立給付<br>各最高達750萬</p>
                             </div>
                             <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
-                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
-                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">這樣就不怕年輕時看病把額度用光光！等於是幫我們人生的不同階段，各自準備了專屬的小金庫呢。</p>
+                                <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-base md:text-lg font-black text-slate-900 leading-snug">這樣就不怕年輕時看病把額度用光光！等於是幫我們人生的不同階段，各自準備了專屬的小金庫呢。</p>
                             </div>
                         </div>
 
                         <!-- Card 4 -->
-                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
-                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
-                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-blue-300 drop-shadow">補足缺口</h4>
-                                <p class="text-xs md:text-sm text-blue-100 mt-2">74歲前定額給付<br>74歲後實支實付</p>
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg" onclick="this.classList.toggle('show-desc')">
+                            <div class="front-content z-10">
+                                <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-blue-300 drop-shadow">補足缺口</h4>
+                                <p class="text-[11px] md:text-xs text-blue-100 mt-2">74歲前定額給付<br>74歲後實支實付</p>
                             </div>
                             <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
-                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
-                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">剛好可以完美搭配我們舊的保單！年輕生病能補貼不能上班的損失，老了之後的實支實付還能幫我們扛下超貴的自費藥（像是標靶藥物）。</p>
+                                <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-base md:text-lg font-black text-slate-900 leading-snug">剛好可以完美搭配我們舊的保單！年輕生病能補貼不能上班的損失，老了之後的實支實付還能幫我們扛下超貴的自費藥（像是標靶藥物）。</p>
                             </div>
                         </div>
 
                         <!-- Card 5 -->
-                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
-                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
-                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-indigo-300 drop-shadow">強化保障</h4>
-                                <p class="text-xs md:text-sm text-blue-100 mt-2">強化癌症/加護暨燒燙傷<br>病房相關醫療保障</p>
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg" onclick="this.classList.toggle('show-desc')">
+                            <div class="front-content z-10">
+                                <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-indigo-300 drop-shadow">強化保障</h4>
+                                <p class="text-[11px] md:text-xs text-blue-100 mt-2">強化癌症/加護暨燒燙傷<br>病房相關醫療保障</p>
                             </div>
                             <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
-                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
-                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">萬一碰到最花錢的重症，理賠金還會加倍給哦！讓我們在遇到大難關的時候，背後能有最強大的靠山。</p>
+                                <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-base md:text-lg font-black text-slate-900 leading-snug">萬一碰到最花錢的重症，理賠金還會加倍給哦！讓我們在遇到大難關的時候，背後能有最強大的靠山。</p>
                             </div>
                         </div>
 
                         <!-- Card 6 -->
-                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
-                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
-                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-purple-300 drop-shadow">身故/祝壽金</h4>
-                                <p class="text-xs md:text-sm text-blue-100 mt-2">保費有去有回<br>機會享健康促進增額</p>
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg" onclick="this.classList.toggle('show-desc')">
+                            <div class="front-content z-10">
+                                <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-purple-300 drop-shadow">身故/祝壽金</h4>
+                                <p class="text-[11px] md:text-xs text-blue-100 mt-2">保費有去有回<br>機會享健康促進增額</p>
                             </div>
                             <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
-                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
-                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">如果健健康康沒用到理賠，這筆錢也能當作給自己的長壽大紅包，或是留給家人，繳出去的保費絕對不會白白浪費掉哦！</p>
+                                <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-base md:text-lg font-black text-slate-900 leading-snug">如果健健康康沒用到理賠，這筆錢也能當作給自己的長壽大紅包，或是留給家人，繳出去的保費絕對不會白白浪費掉哦！</p>
                             </div>
                         </div>
-
                     </div>
-                    <p class="text-center text-white/50 text-[11px] mt-4 font-bold tracking-widest">👆 游標滑過或輕觸卡片，查看對您的好處！</p>
+                    <p class="text-center text-white/50 text-[11px] mt-4 font-bold tracking-widest">👆 游標滑過或手機輕觸卡片，查看對您的好處！</p>
                 </div>
                 
                 <div class="w-full h-px bg-white/20 mb-12"></div>
 
-                <!-- 修改：主引導按鈕 -->
                 <div class="flex justify-center mb-10 animate-in fade-in zoom-in duration-500">
-                    <button id="main-wehs-trigger" onclick="showPlanSelection(this)" class="wehs-btn group w-full md:w-auto py-5 px-8 md:py-6 md:px-12 rounded-full font-black text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] transition-all duration-300 bg-orange-500 hover:bg-orange-600 border-4 border-transparent flex justify-center items-center transform hover:-translate-y-1 active:scale-95 animate-pulse">
+                    <button id="main-wehs-trigger" onclick="goToStep(12)" class="wehs-btn group w-full md:w-auto py-5 px-8 md:py-6 md:px-12 rounded-full font-black text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] transition-all duration-300 bg-orange-500 hover:bg-orange-600 border-4 border-transparent flex justify-center items-center transform hover:-translate-y-1 active:scale-95 animate-pulse">
                         <span class="btn-text-span transition-transform duration-300 group-hover:scale-110 text-xl md:text-2xl inline-flex items-center gap-3">
                             想看看WEHS如何協助您降低老年醫療風險缺口嗎?
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                         </span>
                     </button>
                 </div>
+            </div>
+        </div>
 
-                <!-- 新增：三個計畫選擇按鈕區 -->
-                <div id="plan-selection-group" class="hidden animate-in fade-in zoom-in duration-500">
+        <!-- STEP 12: WEHS 計畫選擇與結果頁面 (新頁面) -->
+        <div id="step-12" class="step-content">
+            <div class="bg-gradient-to-br from-blue-950 to-indigo-950 p-6 md:p-12 rounded-[50px] shadow-2xl border border-white/10 relative">
+                
+                <div class="text-center mb-10 relative">
+                    <h2 class="text-3xl md:text-4xl font-black text-white tracking-tighter drop-shadow-md">南山人壽 實健溢百 (WEHS)</h2>
+                    <p class="text-orange-400 mt-3 text-lg md:text-xl font-black tracking-widest uppercase opacity-100 drop-shadow">請選擇適合您的保障計畫</p>
+                    <div class="flex justify-center mt-5">
+                        <!-- 建議書按鈕統一置放於此，維持版面整潔 -->
+                        <button onclick="handleProposalClick(event)" class="px-5 py-2 bg-gradient-to-r from-yellow-500 to-orange-400 hover:from-yellow-400 hover:to-orange-300 text-slate-900 rounded-full font-black shadow-[0_0_15px_rgba(250,204,21,0.5)] transition-transform transform active:scale-95 border-2 border-yellow-200/50 flex items-center gap-2 text-sm md:text-base">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                            <span class="proposal-btn-text">建議書</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="plan-selection-group" class="animate-in fade-in zoom-in duration-500">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-                        <button id="wehs-plan-10" onclick="selectPlan(10)" class="wehs-plan-btn group w-full py-5 md:py-6 rounded-3xl font-black text-white shadow-lg transition-all duration-300 bg-green-500 border-4 border-transparent flex justify-center items-center origin-center">
+                        <button id="wehs-plan-10" onclick="selectPlan(10)" class="wehs-plan-btn group w-full py-5 md:py-6 rounded-3xl font-black text-white shadow-lg transition-all duration-300 bg-green-500 border-4 border-transparent flex justify-center items-center origin-center hover:-translate-y-1 hover:shadow-xl">
                             <span class="btn-text-span transition-transform duration-300 group-hover:scale-110 text-xl md:text-2xl inline-block">WEHS-計畫10</span>
                         </button>
-                        <button id="wehs-plan-20" onclick="selectPlan(20)" class="wehs-plan-btn group w-full py-5 md:py-6 rounded-3xl font-black text-white shadow-lg transition-all duration-300 bg-orange-500 border-4 border-transparent flex justify-center items-center origin-center">
+                        <button id="wehs-plan-20" onclick="selectPlan(20)" class="wehs-plan-btn group w-full py-5 md:py-6 rounded-3xl font-black text-white shadow-lg transition-all duration-300 bg-orange-500 border-4 border-transparent flex justify-center items-center origin-center hover:-translate-y-1 hover:shadow-xl">
                             <span class="btn-text-span transition-transform duration-300 group-hover:scale-110 text-xl md:text-2xl inline-block">WEHS-計畫20</span>
                         </button>
-                        <button id="wehs-plan-30" onclick="selectPlan(30)" class="wehs-plan-btn group w-full py-5 md:py-6 rounded-3xl font-black text-white shadow-lg transition-all duration-300 bg-pink-500 border-4 border-transparent flex justify-center items-center origin-center">
+                        <button id="wehs-plan-30" onclick="selectPlan(30)" class="wehs-plan-btn group w-full py-5 md:py-6 rounded-3xl font-black text-white shadow-lg transition-all duration-300 bg-pink-500 border-4 border-transparent flex justify-center items-center origin-center hover:-translate-y-1 hover:shadow-xl">
                             <span class="btn-text-span transition-transform duration-300 group-hover:scale-110 text-xl md:text-2xl inline-block">WEHS-計畫30</span>
                         </button>
                     </div>
                 </div>
 
-                <div id="wehs-result-container" class="hidden space-y-8 animate-in fade-in">
+                <div id="wehs-result-container" class="hidden space-y-8 animate-in fade-in font-msjh">
                     <div class="bg-white rounded-3xl shadow-xl overflow-hidden p-6 md:p-10">
-                        <h4 class="text-xl md:text-3xl font-black text-black mb-8 flex items-center gap-3 border-l-8 border-blue-600 pl-4 uppercase">
+                        <h4 class="text-xl md:text-3xl font-black text-black mb-8 flex items-center gap-3 border-l-8 border-blue-600 pl-4 uppercase font-msjh">
                             75歲以上 規劃後理賠總表
                         </h4>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-center border-collapse min-w-[800px]">
+                            <table class="w-full text-center border-collapse min-w-[800px] font-msjh">
                                 <thead>
                                     <tr class="bg-slate-800 text-white">
                                         <th class="py-5 px-3 font-black border-b-2 border-slate-700 tracking-widest uppercase">理賠項目</th>
@@ -996,7 +1023,7 @@
                                 <tfoot>
                                     <tr class="bg-blue-600 text-white font-black shadow-lg">
                                         <td class="py-8 pl-6 text-left text-xl rounded-bl-2xl border-none">合計:</td>
-                                        <td class="py-8 text-xl opacity-50 border-none"></td>
+                                        <td class="py-8 text-xl font-black text-red-200 border-none" id="wehs-total-exp"></td>
                                         <td class="py-8 text-xl opacity-50 border-none"></td>
                                         <td class="py-8 text-xl md:text-2xl border-none" id="wehs-old-total-claim"></td>
                                         <td class="py-8 text-sm opacity-50 border-none"></td>
@@ -1011,9 +1038,7 @@
                                 <p class="text-sm md:text-base font-black uppercase tracking-widest mb-2 opacity-80 text-black" id="wehs-gap-title">規劃後最終自付缺口</p>
                                 <p class="text-4xl md:text-6xl font-black tracking-tighter" id="wehs-final-gap"></p>
                                 
-                                <!-- 新增：理賠分析區塊 -->
                                 <div id="wehs-analysis-details" class="mt-6 p-5 bg-white/60 rounded-2xl border border-black/10 space-y-3 text-sm md:text-lg font-bold text-slate-800 shadow-sm max-w-xl">
-                                    <!-- JS動態填入分析數據 -->
                                 </div>
                             </div>
                             <div id="wehs-final-icon" class="scale-125 transform p-4 bg-white/30 rounded-2xl shadow-inner shrink-0 mt-6 md:mt-0 md:ml-8 hidden md:block"></div>
@@ -1026,9 +1051,29 @@
 
     </main>
 
-    <footer class="max-w-4xl mx-auto py-16 px-10 text-black text-[11px] leading-relaxed text-center font-black opacity-40">
-        * 本試算係依據您輸入之保額數值與指定癌症案例（台北榮總真實收據數據）進行對比分析，結果僅供銷售輔助參考。實際理賠金額需依所投保之保單條款及保險公司最後審核結果為準。
-    </footer>
+    <!-- 建議書編輯 Modal -->
+    <div id="proposal-modal" class="fixed inset-0 bg-black/70 z-[100] hidden flex items-center justify-center">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl relative border-t-8 border-blue-600 animate-in fade-in zoom-in duration-300">
+            <h3 class="text-2xl font-black text-blue-900 mb-6 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                設定建議書資料
+            </h3>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">客戶名稱</label>
+                    <input type="text" id="modal-customer-name" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-lg font-bold transition-all" placeholder="例如：王小明">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">超連結網址</label>
+                    <input type="url" id="modal-proposal-url" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-base transition-all" placeholder="https://...">
+                </div>
+            </div>
+            <div class="mt-8 flex gap-4">
+                <button onclick="closeProposalModal()" class="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">取消</button>
+                <button onclick="saveProposalModal()" class="flex-1 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">儲存設定</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         const totalTimes = 24;
@@ -1045,6 +1090,11 @@
 
         let stepHistory = [];
 
+        // 建議書功能相關變數
+        let proposalClickCount = 0;
+        let proposalClickTimer = null;
+        let proposalData = { customerName: '', url: '' };
+
         window.onload = function() {
             refreshTotals('norm');
             refreshTotals('reim');
@@ -1054,7 +1104,6 @@
             const activeContent = document.querySelector('.step-content.active');
             const currentStep = activeContent ? parseInt(activeContent.id.split('-')[1]) : 0;
             
-            // 如果不是按返回鍵，就將當前步驟加入歷史堆疊
             if (!isBack && activeContent) {
                 stepHistory.push(currentStep);
             }
@@ -1065,7 +1114,7 @@
             const backBtn = document.getElementById('back-btn');
             if (step === 0) {
                 backBtn.classList.add('hidden-btn');
-                stepHistory = []; // 回到首頁清除歷史
+                stepHistory = []; 
             } else {
                 backBtn.classList.remove('hidden-btn');
             }
@@ -1079,7 +1128,6 @@
             }
         }
 
-        // 新增的問卷流程設值功能
         function setFundAndGo(fundStr, nextStep) {
             document.getElementById('display-fund').innerText = fundStr;
             document.getElementById('display-fund-2').innerText = fundStr;
@@ -1217,13 +1265,56 @@
             goToStep(2);
         }
 
-        function showPlanSelection(btn) {
-            // 背景改為綠色並取消跳動特效
-            btn.classList.remove('bg-orange-500', 'hover:bg-orange-600', 'animate-pulse');
-            btn.classList.add('bg-green-600', 'hover:bg-green-700', 'shadow-[0_0_20px_rgba(22,163,74,0.4)]');
+        // 建議書按鈕處理邏輯 (單擊開啟 / 連點6次設定)
+        function handleProposalClick(e) {
+            e.preventDefault();
+            proposalClickCount++;
             
-            // 顯示三個計畫選擇按鈕
-            document.getElementById('plan-selection-group').classList.remove('hidden');
+            if (proposalClickTimer) clearTimeout(proposalClickTimer);
+
+            if (proposalClickCount >= 6) {
+                // 連按 6 次，進入編輯模式
+                proposalClickCount = 0;
+                openProposalModal();
+            } else {
+                // 等待 350ms 判斷是否停止點擊
+                proposalClickTimer = setTimeout(() => {
+                    if (proposalClickCount > 0 && proposalClickCount < 6) {
+                        // 單擊/少於6次 執行開啟動作
+                        if (proposalData.url) {
+                            window.open(proposalData.url, '_blank');
+                        } else {
+                            // 尚未設定，提示使用者或直接開啟編輯
+                            alert('尚未設定建議書！請連點按鈕 6 次以進入設定模式。');
+                        }
+                    }
+                    proposalClickCount = 0;
+                }, 350);
+            }
+        }
+
+        function openProposalModal() {
+            document.getElementById('modal-customer-name').value = proposalData.customerName;
+            document.getElementById('modal-proposal-url').value = proposalData.url;
+            document.getElementById('proposal-modal').classList.remove('hidden');
+        }
+
+        function closeProposalModal() {
+            document.getElementById('proposal-modal').classList.add('hidden');
+        }
+
+        function saveProposalModal() {
+            proposalData.customerName = document.getElementById('modal-customer-name').value.trim();
+            proposalData.url = document.getElementById('modal-proposal-url').value.trim();
+            updateProposalButtons();
+            closeProposalModal();
+        }
+
+        function updateProposalButtons() {
+            const btns = document.querySelectorAll('.proposal-btn-text');
+            btns.forEach(btn => {
+                btn.innerText = proposalData.customerName ? `${proposalData.customerName}的建議書` : '建議書';
+            });
         }
 
         function selectPlan(plan) {
@@ -1231,28 +1322,23 @@
             
             plans.forEach(p => {
                 const btn = document.getElementById('wehs-plan-' + p);
-                // 移除所有可能的顏色與活躍狀態
                 btn.classList.remove('bg-green-500', 'bg-orange-500', 'bg-pink-500', 'text-black', 'text-white', 'border-white', 'shadow-2xl');
                 
-                // 設定為未點擊狀態 (灰色、白色字、縮小10%)
                 btn.classList.add('bg-gray-400', 'text-white', 'border-transparent');
                 btn.style.transform = 'scale(0.9)'; 
             });
 
-            // 設定被點擊的按鈕 (橙色、黑色字、正常大小、外加白色邊框)
             const activeBtn = document.getElementById('wehs-plan-' + plan);
             activeBtn.classList.remove('bg-gray-400', 'text-white', 'border-transparent');
             activeBtn.classList.add('bg-orange-500', 'text-black', 'border-white', 'shadow-2xl');
             activeBtn.style.transform = 'scale(1)';
 
-            // 呼叫更新表格功能
             showWEHSTable(plan);
         }
 
         function showWEHSTable(plan) {
             document.getElementById('wehs-result-container').classList.remove('hidden');
             
-            // 動態更新表頭標題 (使用 innerHTML 插入 <br> 換行)
             document.getElementById('wehs-table-header-limit').innerHTML = `WEHS-計畫${plan}<br>保障額度`;
             document.getElementById('wehs-table-header-claim').innerHTML = `WEHS-計畫${plan}<br>理賠預估`;
 
@@ -1283,20 +1369,19 @@
             document.getElementById('wehs-claim-can').innerText = fmt(wehsTotalRoomClaim);
             document.getElementById('wehs-claim-reim').innerText = fmt(wehsTotalMiscClaim);
 
-            // 更新各自的合計數字
             const oldTotalClaim = globalFutureCanClaim + globalFutureReimClaim;
             const wehsTotalClaimSum = wehsTotalRoomClaim + wehsTotalMiscClaim;
             
-            // 修正：規劃後理賠總額 應該是 (原保險理賠 + WEHS預估)
             const combinedTotalClaim = oldTotalClaim + wehsTotalClaimSum;
 
             document.getElementById('wehs-old-total-claim').innerText = fmt(oldTotalClaim);
             document.getElementById('wehs-new-total-claim').innerText = fmt(wehsTotalClaimSum);
+            
+            // 填入預估支出合計
+            document.getElementById('wehs-total-exp').innerText = fmt(totalCost);
 
-            // 最終結果計算: (原保險理賠金額 + WEHS計畫理賠預估) - 預估支出總金額
             const finalBalance = combinedTotalClaim - totalCost;
 
-            // 更新分析數據UI
             const analysisHtml = `
                 <div class="flex justify-between items-center border-b border-black/10 pb-2">
                     <span class="opacity-70">規劃前理賠金額：</span><span class="text-slate-500">${fmt(oldTotalClaim)}</span>
@@ -1318,13 +1403,11 @@
             const gapIcon = document.getElementById('wehs-final-icon');
 
             if (finalBalance < 0) {
-                // 若為負數，表示不足
                 document.getElementById('wehs-final-gap').innerHTML = `<span class="text-red-600">不足 : </span>${fmt(Math.abs(finalBalance))}`;
                 document.getElementById('wehs-gap-title').className = 'text-sm md:text-base font-black uppercase tracking-widest mb-2 text-red-500';
                 gapBox.className = 'mt-10 p-8 md:p-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 bg-red-50 border-red-200';
                 gapIcon.innerHTML = '<span class="emoji-sad text-5xl md:text-7xl">😢</span>';
             } else {
-                // 若為正數或零，表示已覆蓋(甚至結餘)
                 document.getElementById('wehs-final-gap').innerHTML = '<span class="text-green-600">保額已完全覆蓋</span>';
                 document.getElementById('wehs-gap-title').className = 'text-sm md:text-base font-black uppercase tracking-widest mb-2 text-green-600';
                 gapBox.className = 'mt-10 p-8 md:p-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 bg-green-50 border-green-200';
