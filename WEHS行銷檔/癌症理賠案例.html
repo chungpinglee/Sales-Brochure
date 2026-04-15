@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>理賠案例分享</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; }
+        .step-content { display: none; }
+        .step-content.active { display: block; }
+        
+        /* 自定義拉桿樣式 - 維持藍色圓圈作為控制點 */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-group-card {
+            @apply bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-6;
+        }
+
+        .group-header {
+            @apply p-5 bg-red-50 border-b border-red-100 flex flex-col md:flex-row md:items-center justify-between gap-3;
+        }
+
+        .sub-items-area {
+            @apply p-4 md:p-5 space-y-4 bg-white;
+        }
+
+        .sub-input-row {
+            @apply flex flex-col gap-3 p-4 bg-slate-50/50 rounded-xl border border-slate-100;
+        }
+
+        .read-only-total {
+            @apply bg-transparent border-none text-right font-black focus:outline-none pointer-events-none text-black;
+        }
+
+        /* Tooltip 樣式 */
+        .tooltip-trigger {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .tooltip-box {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            margin-bottom: 8px;
+            padding: 6px 12px;
+            background-color: #1e293b; 
+            color: #ffffff;
+            font-size: 11px;
+            border-radius: 8px;
+            white-space: nowrap;
+            z-index: 50;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease-out;
+            pointer-events: none;
+        }
+
+        .tooltip-trigger:hover .tooltip-box {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .tooltip-arrow {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+
+        #back-btn { transition: all 0.3s ease; }
+        .hidden-btn { opacity: 0; pointer-events: none; transform: translateX(-10px); }
+
+        /* --- 現有理賠：專業美工表格系統 --- */
+        .detail-table-container {
+            @apply bg-white rounded-3xl shadow-2xl border-4 border-green-600 overflow-hidden;
+        }
+        .detail-table {
+            @apply w-full text-left border-collapse table-fixed;
+        }
+        .detail-table thead tr {
+            @apply bg-green-700 text-white;
+        }
+        .detail-table th {
+            @apply py-6 px-3 text-sm md:text-xl font-black uppercase tracking-widest text-center border-b-2 border-green-800 border-r-2 border-green-600/50;
+        }
+        .detail-table th:last-child { @apply border-r-0; }
+        .detail-table td {
+            @apply py-8 px-3 text-center border-b-2 border-green-100 border-r-2 border-green-100 transition-colors bg-white;
+        }
+        .detail-table td:last-child { @apply border-r-0; }
+        
+        .total-row-style {
+            @apply bg-green-800 text-white font-black;
+        }
+        .total-row-style td {
+            @apply py-12 border-none text-white border-r-2 border-white/10;
+        }
+        .total-row-style td:first-child {
+            @apply text-xl md:text-4xl pl-8 bg-green-900;
+        }
+
+        /* --- 75歲後理賠：淡紅色框架表格系統 --- */
+        .detail-table-container-alert {
+            @apply bg-white rounded-3xl shadow-2xl border-4 border-red-200 overflow-hidden;
+        }
+        .detail-table-alert {
+            @apply w-full text-left border-collapse table-fixed;
+        }
+        .detail-table-alert thead tr {
+            @apply bg-red-50 text-red-900 border-b-4 border-red-200;
+        }
+        .detail-table-alert th {
+            @apply py-6 px-3 text-sm md:text-xl font-black uppercase tracking-widest text-center border-r-2 border-red-200/50;
+        }
+        .detail-table-alert th:last-child { @apply border-r-0; }
+        .detail-table-alert td {
+            @apply py-8 px-3 text-center border-b-2 border-red-50 border-r-2 border-red-50 transition-colors bg-white;
+        }
+        .detail-table-alert td:last-child { @apply border-r-0; }
+
+        .total-row-style-alert {
+            @apply bg-red-100 text-red-900 font-black border-t-4 border-red-200;
+        }
+        .total-row-style-alert td {
+            @apply py-12 border-none border-r-2 border-red-200/50;
+        }
+        .total-row-style-alert td:first-child {
+            @apply text-xl md:text-4xl pl-8 bg-red-200;
+        }
+
+        /* 欄位通用配色 */
+        .col-item { @apply text-left pl-6 font-black text-black text-sm md:text-xl bg-slate-50/50; }
+        .col-expenditure { @apply font-black text-red-600 text-base md:text-3xl; }
+        .col-limit { @apply font-bold text-black text-xs md:text-xl; }
+        .col-claim-cell { @apply font-black text-blue-600 text-lg md:text-3xl relative; }
+        
+        .total-val-primary { @apply text-xl md:text-4xl; }
+        .total-val-highlight-cell { @apply text-2xl md:text-5xl font-black text-blue-700; }
+        
+        .stamp-win {
+            @apply inline-block transform rotate-12 shadow-lg ml-3 md:ml-4 flex-shrink-0;
+            background-color: #ffffff;
+            color: #e60000;
+            border: 3px solid #e60000;
+            border-radius: 0.5rem;
+            font-weight: 900;
+            font-size: 1.2rem;
+            padding: 0.25rem 0.5rem;
+            font-family: 'LiSu', 'STXinwei', 'FZShuTi', 'DFLiShu-W5', 'BiauKai', serif;
+            line-height: 1;
+            z-index: 20;
+        }
+        @media (min-width: 768px) {
+            .stamp-win {
+                font-size: 2.25rem;
+                border-width: 5px;
+                border-radius: 0.75rem;
+                padding: 0.25rem 0.75rem;
+            }
+        }
+        
+        .emoji-sad { @apply text-6xl md:text-7xl ml-3 md:ml-4 flex-shrink-0 leading-none; }
+
+        @keyframes pulse-bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-pulse-bounce {
+            animation: pulse-bounce 2s infinite;
+        }
+
+        .btn-hover-scale .btn-text {
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+        .btn-hover-scale:hover .btn-text {
+            transform: scale(1.1);
+        }
+
+        /* 卡片翻轉隱藏區特效 */
+        .feature-card .hidden-desc {
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .feature-card:hover .hidden-desc, 
+        .feature-card:active .hidden-desc {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+
+    <!-- Header -->
+    <nav class="bg-blue-950 text-white p-4 sticky top-0 z-50 shadow-lg">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <button id="back-btn" onclick="goBack()" class="flex items-center gap-1 px-4 py-1.5 border border-white/30 rounded-full hover:bg-white hover:text-blue-900 transition-all hidden-btn text-xs font-bold uppercase tracking-wider">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    <span>返回</span>
+                </button>
+                <span class="font-black text-xl md:text-2xl tracking-tighter">理賠案例分享</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-50">
+                <span class="text-[10px] font-bold hidden md:inline tracking-tighter text-white">醫療理賠分析</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-8">
+
+        <!-- STEP 0: 案例介紹 -->
+        <div id="step-0" class="step-content active animate-in fade-in">
+            <div class="bg-red-50 border-l-8 border-red-600 p-6 rounded-r-2xl shadow-md mb-8">
+                <h2 class="text-xl md:text-2xl font-black text-red-900 mb-4 tracking-tight">以下是現在正在發生的真實案例。。。</h2>
+                <div class="grid md:grid-cols-2 gap-6 items-center">
+                    <div class="space-y-3 text-black">
+                        <p class="flex items-center gap-2 font-medium text-base md:text-lg">📅 <strong>就醫日期：</strong> 2025/03/18 - 03/19</p>
+                        <p class="flex items-center gap-2 font-medium text-base md:text-lg">👤 <strong>就醫科別：</strong> 婦產科 (卵巢癌治療)</p>
+                        <p class="text-2xl md:text-3xl text-red-600 font-black border-b-4 border-red-200 inline-block mt-4">住院僅 1 天，總自費：$59,347</p>
+                        <ul class="list-disc list-inside pl-4 text-sm md:text-base space-y-1 mt-2 text-black font-bold">
+                            <li>單人病房差額：$12,000 /日</li>
+                            <li>自費藥費及處置：$47,347</li>
+                        </ul>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <a href="_1140318住院卵巢癌住院1天.pdf" target="_blank" class="bg-white p-5 rounded-2xl shadow-md border border-slate-200 transform md:rotate-1 hover:rotate-0 hover:shadow-lg transition-all duration-300 w-full flex flex-col items-center justify-center group h-32 md:h-44 hover:bg-red-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500 mb-3 group-hover:scale-110 group-hover:text-red-700 transition-all"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                            <span class="text-red-600 font-black text-lg md:text-xl border-b-2 border-red-200 group-hover:border-red-600 transition-colors">點擊查看收據摘要</span>
+                            <span class="text-xs text-slate-500 mt-2 font-bold uppercase tracking-widest group-hover:text-slate-700">PDF 檔案</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 md:p-12 rounded-3xl shadow-xl border border-blue-100 text-center space-y-10">
+                <div class="text-left">
+                    <h3 class="text-xl md:text-3xl font-black text-blue-950 mb-3">真實長期治療評估：</h3>
+                    <p class="text-black leading-relaxed text-sm md:text-xl font-medium">
+                        這位朋友的標靶治療已持續兩年了，治療頻率約為每月 1 次，(上面這張收據是所有標靶收據中最低的一張)，目前治療仍在進行中，假設已經治療 <span class="text-red-600 font-black text-xl px-1">24 次</span>：
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-8 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center justify-center">
+                        <div class="mb-3">
+                            <span class="text-xs md:text-sm font-black text-white bg-blue-600 px-3 py-1 rounded tracking-widest">總住院天數</span>
+                        </div>
+                        <p class="text-3xl font-black text-black">24 天</p>
+                    </div>
+                    <div class="p-8 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center justify-center">
+                        <div class="mb-3">
+                            <span class="text-xs md:text-sm font-black text-white bg-blue-600 px-3 py-1 rounded tracking-widest">累計病房費用</span>
+                        </div>
+                        <p class="text-3xl font-black text-black">$288,000</p>
+                    </div>
+                    <div class="p-8 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center justify-center">
+                        <div class="mb-3">
+                            <span class="text-xs md:text-sm font-black text-white bg-blue-600 px-3 py-1 rounded tracking-widest">累計醫療雜費</span>
+                        </div>
+                        <p class="text-3xl font-black text-black">$1,136,328</p>
+                    </div>
+                </div>
+                
+                <div class="py-10 border-y-4 border-double border-slate-100 flex flex-col items-center">
+                    <div class="mb-4">
+                        <span class="text-lg md:text-2xl font-bold text-white bg-blue-600 px-4 py-2 rounded-xl italic">總支出預估高達</span>
+                    </div>
+                    <p class="text-5xl md:text-7xl font-black text-red-600 tracking-tighter mt-2">$1,424,328</p>
+                </div>
+                
+                <button onclick="goToStep(1)" class="w-full py-6 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-xl transition-colors duration-300 transform active:scale-95 flex items-center justify-center gap-4 btn-hover-scale">
+                    <span class="font-black text-xl md:text-2xl btn-text">我現在的南山人壽保單將會如何理賠?</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-text translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 1: 詳細保額輸入 -->
+        <div id="step-1" class="step-content">
+            <div class="mb-10 p-6 bg-blue-600 text-white rounded-3xl shadow-lg flex items-start gap-5 animate-in slide-in-from-top-4">
+                <div class="bg-white/20 p-3 rounded-2xl shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+                </div>
+                <p class="text-lg md:text-2xl font-black leading-tight">
+                    請將 LINE 記事本中的保單內容分析數字填入，即可進行計算！
+                    <a href="LINE通知.pdf" target="_blank" class="text-yellow-300 hover:text-yellow-100 underline decoration-2 underline-offset-4 transition-colors inline-block mt-1 md:mt-0 whitespace-nowrap">(保障內填寫範例)</a><br>
+                    <span class="text-sm md:text-lg text-blue-200 block mt-2">(若有困難，請通知仲平提供數字也可以!)</span>
+                </p>
+            </div>
+
+            <div class="space-y-10">
+                <!-- 一般住院日額組 -->
+                <div class="input-group-card">
+                    <div class="group-header">
+                        <h3 class="font-black text-red-900 text-xl">一般住院日額合計:</h3>
+                        <div class="flex items-center gap-1 text-red-700">
+                            <span class="font-bold text-2xl">$</span>
+                            <input type="text" inputmode="numeric" id="num-norm-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl">
+                            <span class="text-sm font-black opacity-60">/ 日</span>
+                        </div>
+                    </div>
+                    <div class="sub-items-area">
+                        <div class="sub-input-row">
+                            <div class="flex justify-between items-center">
+                                <span class="text-base font-black text-black uppercase tracking-widest">🚫 租約型</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="tooltip-trigger">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400 cursor-help"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                                        <div class="tooltip-box">您也可以自行輸入數字 !<div class="tooltip-arrow"></div></div>
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-slate-100 focus-within:border-blue-400 transition-all">
+                                        <span class="text-slate-300 text-xs font-bold">$</span>
+                                        <input type="text" inputmode="numeric" id="num-norm-rent" value="0" oninput="itemUpdate('norm', 'rent', this.value, 'num')" class="w-24 text-right font-black text-blue-600 focus:outline-none text-lg">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="range" id="range-norm-rent" min="0" max="15000" step="100" value="0" oninput="itemUpdate('norm', 'rent', this.value, 'range')" class="w-full flex-1 h-3 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                                <span class="text-[10px] font-black text-black whitespace-nowrap">
+                                    可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
+                                </span>
+                            </div>
+                        </div>
+                        <div class="sub-input-row">
+                            <div class="flex justify-between items-center">
+                                <span class="text-base font-black text-black uppercase tracking-widest">♾️ 終身型</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="tooltip-trigger">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400 cursor-help"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                                        <div class="tooltip-box">您也可以自行輸入數字 !<div class="tooltip-arrow"></div></div>
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-slate-100 focus-within:border-blue-400 transition-all">
+                                        <span class="text-slate-300 text-xs font-bold">$</span>
+                                        <input type="text" inputmode="numeric" id="num-norm-life" value="0" oninput="itemUpdate('norm', 'life', this.value, 'num')" class="w-24 text-right font-black text-blue-600 focus:outline-none text-lg">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="range" id="range-norm-life" min="0" max="15000" step="100" value="0" oninput="itemUpdate('norm', 'life', this.value, 'range')" class="w-full flex-1 h-3 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                                <span class="text-[10px] font-black text-black whitespace-nowrap">
+                                    可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 癌症住院日額組 -->
+                <div class="input-group-card">
+                    <div class="group-header">
+                        <h3 class="font-black text-red-900 text-xl">癌症住院日額合計:</h3>
+                        <div class="flex items-center gap-1 text-red-700">
+                            <span class="font-bold text-2xl">$</span>
+                            <input type="text" inputmode="numeric" id="num-can-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl">
+                            <span class="text-sm font-black opacity-60">/ 日</span>
+                        </div>
+                    </div>
+                    <div class="sub-items-area">
+                        <div class="flex justify-between items-center p-5 bg-blue-50/50 rounded-2xl border border-blue-100 mb-2">
+                            <span class="text-sm font-black text-blue-700 uppercase tracking-widest">🏥 住院日額基數 (系統連動)</span>
+                            <span id="display-can-base" class="font-black text-blue-800 text-2xl">$0</span>
+                        </div>
+                        <div class="sub-input-row">
+                            <div class="flex justify-between items-center">
+                                <span class="text-base font-black text-black uppercase tracking-widest">♾️ 癌症險-終身型</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="tooltip-trigger">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-400 cursor-help"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                                        <div class="tooltip-box">您也可以自行輸入數字 !<div class="tooltip-arrow"></div></div>
+                                    </div>
+                                    <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-slate-100 focus-within:border-red-400 transition-all">
+                                        <span class="text-slate-300 text-xs font-bold">$</span>
+                                        <input type="text" inputmode="numeric" id="num-can-life" value="0" oninput="itemUpdate('can', 'life', this.value, 'num')" class="w-24 text-right font-black text-red-600 focus:outline-none text-lg">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="range" id="range-can-life" min="0" max="20000" step="100" value="0" oninput="itemUpdate('can', 'life', this.value, 'range')" class="w-full flex-1 h-3 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-red-600">
+                                <span class="text-[10px] font-black text-black whitespace-nowrap">
+                                    可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 住院實支實付組 -->
+                <div class="input-group-card">
+                    <div class="group-header">
+                        <h3 class="font-black text-red-900 text-xl text-center md:text-left">住院實支實付合計上限:</h3>
+                        <div class="flex items-center gap-1 text-red-700 justify-center">
+                            <span class="font-bold text-2xl">$</span>
+                            <input type="text" inputmode="numeric" id="num-reim-total" value="0" readonly class="read-only-total w-36 md:w-48 text-2xl md:text-4xl">
+                            <span class="text-sm font-black opacity-60">元</span>
+                        </div>
+                    </div>
+                    <div class="sub-items-area grid grid-cols-1 md:grid-cols-2 gap-8 space-y-0">
+                        <div class="sub-input-row">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-black text-black uppercase">🚫 65歲終止</span>
+                                <input type="text" inputmode="numeric" id="num-reim-65" value="0" oninput="itemUpdate('reim', '65', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-slate-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="range" id="range-reim-65" min="0" max="150000" step="1000" value="0" oninput="itemUpdate('reim', '65', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-cyan-600">
+                                <span class="text-[10px] font-black text-black whitespace-nowrap">
+                                    可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
+                                </span>
+                            </div>
+                        </div>
+                        <div class="sub-input-row">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-black text-black uppercase">🚫 75歲終止</span>
+                                <input type="text" inputmode="numeric" id="num-reim-75" value="0" oninput="itemUpdate('reim', '75', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-slate-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="range" id="range-reim-75" min="0" max="300000" step="1000" value="0" oninput="itemUpdate('reim', '75', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-cyan-600">
+                                <span class="text-[10px] font-black text-black whitespace-nowrap">
+                                    可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
+                                </span>
+                            </div>
+                        </div>
+                        <div class="sub-input-row">
+                            <div class="flex justify-between items-center">
+                                <div class="text-left">
+                                    <span class="text-sm font-black text-black uppercase">♾️ 終身帳戶型</span>
+                                    <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
+                                </div>
+                                <input type="text" inputmode="numeric" id="num-reim-life" value="0" oninput="itemUpdate('reim', 'life', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-slate-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="range" id="range-reim-life" min="0" max="500000" step="1000" value="0" oninput="itemUpdate('reim', 'life', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-cyan-600">
+                                <span class="text-[10px] font-black text-black whitespace-nowrap">
+                                    可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
+                                </span>
+                            </div>
+                        </div>
+                        <div class="sub-input-row">
+                            <div class="flex justify-between items-center">
+                                <div class="text-left">
+                                    <span class="text-sm font-black text-black uppercase">♾️ 75歲啟動型</span>
+                                    <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
+                                </div>
+                                <input type="text" inputmode="numeric" id="num-reim-75start" value="0" oninput="itemUpdate('reim', '75start', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-slate-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <input type="range" id="range-reim-75start" min="0" max="500000" step="1000" value="0" oninput="itemUpdate('reim', '75start', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-cyan-600">
+                                <span class="text-[10px] font-black text-black whitespace-nowrap">
+                                    可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-10 flex flex-col gap-6">
+                    <button onclick="calculateAndShowResult()" class="w-full py-6 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-xl transition-colors duration-300 transform active:scale-95 flex items-center justify-center gap-4 btn-hover-scale">
+                        <span class="font-black text-xl md:text-2xl btn-text">進去看看我的保障內容試算</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-text translate-x-1"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: 結果分析 -->
+        <div id="step-2" class="step-content">
+            <div class="bg-white p-6 md:p-12 rounded-[40px] shadow-2xl border border-blue-50 overflow-hidden relative">
+                <div class="absolute top-0 right-0 bg-blue-600 text-white px-10 py-3 rounded-bl-[40px] font-black text-xs md:text-sm tracking-widest shadow-lg uppercase">精算報告</div>
+                
+                <h3 class="text-2xl md:text-4xl font-black mb-12 tracking-tighter leading-tight text-left">
+                    <span class="bg-blue-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-xl inline-block shadow-md">針對此癌症療程 (24次住院)</span>
+                </h3>
+                
+                <div class="space-y-16">
+                    <div class="detail-table-container">
+                        <div class="p-8 bg-green-600 border-b-4 border-green-700 flex items-center justify-between">
+                            <p class="text-xl md:text-2xl font-black text-white flex items-center gap-4">
+                                <span class="w-4 h-4 bg-white rounded-full"></span>
+                                現有保險理賠計算明細
+                            </p>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="detail-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-[30%]">理賠項目</th>
+                                        <th class="w-[20%] text-red-600">預估支出</th>
+                                        <th class="w-[25%]">保險理賠額度</th>
+                                        <th class="w-[25%]">理賠金額預估</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="col-item">
+                                            <div class="flex flex-col">
+                                                <span>癌症住院日額</span>
+                                                <span class="text-[11px] text-black font-black tracking-widest">(24天累計)</span>
+                                            </div>
+                                        </td>
+                                        <td class="col-expenditure" id="detail-exp-can">$288,000</td>
+                                        <td class="col-limit" id="detail-limit-can">$0 / 日</td>
+                                        <td class="col-claim-cell">
+                                            <div class="flex items-center justify-center">
+                                                <span id="detail-claim-can">$0</span>
+                                                <div id="status-can"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="col-item">
+                                            <div class="flex flex-col">
+                                                <span>醫療雜費實支</span>
+                                                <span class="text-[11px] text-black font-black tracking-widest">(24次住院)</span>
+                                            </div>
+                                        </td>
+                                        <td class="col-expenditure" id="detail-exp-reim">$1,136,328</td>
+                                        <td class="col-limit" id="detail-limit-reim">$0 / 次</td>
+                                        <td class="col-claim-cell">
+                                            <div class="flex items-center justify-center">
+                                                <span id="detail-claim-reim">$0</span>
+                                                <div id="status-reim"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="total-row-style shadow-2xl">
+                                        <td class="text-left pl-8">合計</td>
+                                        <td id="total-exp-all" class="total-val-primary text-red-600">$1,424,328</td>
+                                        <td class="opacity-30 italic text-sm"></td>
+                                        <td class="total-val-highlight-cell">
+                                            <div class="flex items-center justify-center">
+                                                <span id="total-claim-all">$0</span>
+                                                <div id="status-total"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="gap-box" class="p-10 rounded-[35px] flex items-center justify-between transition-all duration-700 shadow-xl border-4 mt-12">
+                        <div>
+                            <p class="text-xs md:text-base text-black font-black uppercase tracking-widest mb-2">您的最終自付缺口 / Financial Gap</p>
+                            <p class="text-4xl md:text-7xl font-black tracking-tighter" id="res-gap">$0</p>
+                        </div>
+                        <div id="gap-icon" class="p-5 bg-white/30 rounded-3xl shadow-inner scale-150"></div>
+                    </div>
+                </div>
+
+                <div class="mt-12">
+                    <button onclick="goToStep(3)" class="w-full py-6 bg-blue-600 hover:bg-green-600 text-white rounded-3xl font-black text-2xl md:text-3xl shadow-xl transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-4 btn-hover-scale">
+                        <span class="btn-text">若案例發生在75歲以後，想看看您的保障內容嗎?</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-text translate-x-1"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: 75歲以後 -->
+        <div id="step-3" class="step-content">
+            <div class="bg-white p-6 md:p-12 rounded-[40px] shadow-2xl border border-slate-200 overflow-hidden relative">
+                <div class="absolute top-0 right-0 bg-slate-800 text-white px-10 py-3 rounded-bl-[40px] font-black text-xs md:text-sm tracking-widest shadow-lg uppercase">75歲後風險報告</div>
+                
+                <h3 class="text-2xl md:text-4xl font-black text-black mb-10 pr-24 tracking-tighter leading-tight">75歲後相同癌症療程 (24次住院)</h3>
+                
+                <div class="space-y-12">
+                    <div class="p-6 bg-red-50 border-l-8 border-red-500 rounded-r-2xl shadow-sm flex items-start gap-4">
+                        <span class="text-red-500 text-3xl">⚠️</span>
+                        <div>
+                            <p class="text-red-800 font-black text-lg md:text-xl">租約型與定期險已終止</p>
+                            <p class="text-black mt-2 font-bold leading-relaxed text-sm md:text-base">
+                                根據計算，此階段僅剩「終身型」及「75歲啟動型」保險持續提供給付。其他定期保障將不納入理賠計算。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="detail-table-container-alert">
+                        <div class="p-8 bg-red-50 border-b-4 border-red-200 flex items-center justify-between">
+                            <p class="text-xl md:text-2xl font-black text-red-900 flex items-center gap-4">
+                                <span class="w-4 h-4 bg-red-500 rounded-full animate-pulse"></span>
+                                75歲後理賠重新計算明細
+                            </p>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="detail-table-alert">
+                                <thead>
+                                    <tr>
+                                        <th class="w-[30%] text-red-900">理賠項目</th>
+                                        <th class="w-[20%] text-red-600">預估支出</th>
+                                        <th class="w-[25%] text-red-900">保險理賠額度</th>
+                                        <th class="w-[25%] text-red-900">理賠金額預估</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="col-item text-black">
+                                            <div class="flex flex-col">
+                                                <span>癌症住院日額</span>
+                                                <span class="text-[11px] text-black font-black tracking-widest">(24天累計)</span>
+                                            </div>
+                                        </td>
+                                        <td class="col-expenditure text-red-600" id="future-detail-exp-can">$288,000</td>
+                                        <td class="col-limit text-black" id="future-detail-limit-can">$0 / 日</td>
+                                        <td class="col-claim-cell text-blue-600">
+                                            <div class="flex items-center justify-center">
+                                                <span id="future-detail-claim-can">$0</span>
+                                                <div id="future-status-can"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="col-item text-black">
+                                            <div class="flex flex-col">
+                                                <span>醫療雜費實支</span>
+                                                <span class="text-[11px] text-black font-black tracking-widest">(24次住院)</span>
+                                            </div>
+                                        </td>
+                                        <td class="col-expenditure text-red-600" id="future-detail-exp-reim">$1,136,328</td>
+                                        <td class="col-limit text-black" id="future-detail-limit-reim">$0 / 次</td>
+                                        <td class="col-claim-cell text-blue-600">
+                                            <div class="flex items-center justify-center">
+                                                <span id="future-detail-claim-reim">$0</span>
+                                                <div id="future-status-reim"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="total-row-style-alert shadow-2xl">
+                                        <td class="text-left pl-8 text-red-900">合計</td>
+                                        <td id="future-total-exp-all" class="total-val-primary text-red-600">$1,424,328</td>
+                                        <td class="opacity-40 italic text-sm text-red-800"></td>
+                                        <td class="total-val-highlight-cell text-blue-700">
+                                            <div class="flex items-center justify-center">
+                                                <span id="future-total-claim-all">$0</span>
+                                                <div id="future-status-total"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="future-gap-box" class="p-10 rounded-[35px] flex items-center justify-between transition-all duration-700 shadow-xl border-4 mt-12">
+                        <div>
+                            <p class="text-xs md:text-base text-black font-black uppercase tracking-widest mb-2">75歲後最終自付缺口</p>
+                            <p class="text-4xl md:text-7xl font-black tracking-tighter" id="future-res-gap">$0</p>
+                        </div>
+                        <div id="future-gap-icon" class="p-5 bg-white/30 rounded-3xl shadow-inner scale-150"></div>
+                    </div>
+
+                    <div id="future-interactive-section" class="mt-12">
+                        <div id="future-success-message" class="hidden animate-pulse-bounce p-8 bg-green-50 border-4 border-green-200 rounded-3xl text-center shadow-lg">
+                            <div class="text-5xl mb-4">🎉</div>
+                            <h3 class="text-2xl md:text-3xl font-black text-green-700">恭喜!您的終身醫療保障充足，您的深謀遠慮令人佩服，祝您健康平安！</h3>
+                        </div>
+
+                        <div id="future-action-flow" class="hidden space-y-6">
+                            <div class="flex flex-col items-center">
+                                <button onclick="goToStep(4)" class="w-full py-6 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-xl transition-colors duration-300 transform active:scale-95 flex items-center justify-center gap-4 btn-hover-scale">
+                                    <span id="future-action-btn-text" class="font-black text-xl md:text-2xl btn-text">面對老年高額醫療費支出風險，我們可以怎麼做?</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-text translate-x-1"><path d="m9 18 6-6-6-6"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4: 行動方案選擇 -->
+        <div id="step-4" class="step-content">
+            <div class="bg-white p-8 md:p-12 rounded-[40px] shadow-2xl border border-blue-50 text-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                <h3 class="text-2xl md:text-4xl font-black mb-10 relative z-10 leading-tight">
+                    <!-- 背景改為黃色 bg-yellow-400，文字改為深藍 text-slate-900 -->
+                    <span class="bg-yellow-400 text-slate-900 px-6 py-3 rounded-2xl inline-block shadow-md">面對75歲以後的醫療缺口，我們可以怎麼做？</span>
+                </h3>
+                
+                <div class="flex flex-col gap-6 relative z-10">
+                    <button onclick="goToStep(5)" class="w-full py-6 md:py-8 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-lg transition-all transform active:scale-95 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left px-8 btn-hover-scale">
+                        <span class="text-4xl btn-text">🏦</span>
+                        <span class="font-black text-xl md:text-2xl flex-1 btn-text">A: 我可以把醫療基金的錢存在銀行或投資，需要時再提出。</span>
+                    </button>
+                    <button onclick="goToStep(10)" class="w-full py-6 md:py-8 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-lg transition-all transform active:scale-95 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left px-8 btn-hover-scale">
+                        <span class="text-4xl btn-text">🛡️</span>
+                        <span class="font-black text-xl md:text-2xl flex-1 btn-text">B: 可以聽聽看保險公司怎麼說。。。</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 5: 準備多少錢 -->
+        <div id="step-5" class="step-content">
+            <div class="bg-white p-8 md:p-12 rounded-[40px] shadow-2xl border border-blue-50 text-center">
+                <h3 class="text-2xl md:text-4xl font-black mb-10 leading-tight">
+                    <!-- 背景改為黃色 bg-yellow-400，文字改為深藍 text-slate-900 -->
+                    <span class="bg-yellow-400 text-slate-900 px-6 py-3 rounded-2xl inline-block shadow-md">您認為：我們大概要準備多少醫療基金才會有安全感？</span>
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <button onclick="setFundAndGo('250萬', 6)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-blue-600 text-white hover:bg-green-600 shadow-lg transform active:scale-95 transition-all btn-hover-scale">
+                        <span class="btn-text">A: 250萬以下</span>
+                    </button>
+                    <button onclick="setFundAndGo('500萬', 6)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-blue-600 text-white hover:bg-green-600 shadow-lg transform active:scale-95 transition-all btn-hover-scale">
+                        <span class="btn-text">B: 500萬</span>
+                    </button>
+                    <button onclick="setFundAndGo('750萬', 6)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-blue-600 text-white hover:bg-green-600 shadow-lg transform active:scale-95 transition-all btn-hover-scale">
+                        <span class="btn-text">C: 750萬</span>
+                    </button>
+                    <button onclick="setFundAndGo('1000萬', 6)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-blue-600 text-white hover:bg-green-600 shadow-lg transform active:scale-95 transition-all btn-hover-scale">
+                        <span class="btn-text">D: 1000萬</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 6: 是否已準備好 -->
+        <div id="step-6" class="step-content">
+            <div class="bg-white p-8 md:p-12 rounded-[40px] shadow-2xl border border-blue-50 text-center">
+                <h3 class="text-2xl md:text-4xl font-black mb-10 text-blue-950 leading-tight">
+                    請問：現在 <span id="display-fund" class="text-red-600 border-b-4 border-red-200 inline-block px-2"></span> 的醫療基金準備的進度？
+                </h3>
+                
+                <div class="flex flex-col gap-6 max-w-2xl mx-auto">
+                    <button onclick="goToStep(7)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
+                        <span class="text-3xl btn-text">✅</span> <span class="btn-text">A: 是的，我已準備好了！</span>
+                    </button>
+                    <button onclick="goToStep(8)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-amber-500 text-white hover:bg-amber-600 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
+                        <span class="text-3xl btn-text">⏳</span> <span class="btn-text">B: 還在努力中...</span>
+                    </button>
+                    <!-- 新增選項C -->
+                    <button onclick="goToStep(11)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-red-500 text-white hover:bg-red-600 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
+                        <span class="text-3xl btn-text">🤦‍♂️</span> <span class="btn-text">C: 太多錢了，乾脆放棄!</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 7: 恭喜準備好 (結束) -->
+        <div id="step-7" class="step-content">
+            <div class="bg-emerald-50 p-10 md:p-16 rounded-[40px] shadow-2xl border-4 border-emerald-200 text-center animate-in zoom-in">
+                <div class="text-7xl mb-8 animate-bounce">🎉</div>
+                <h3 class="text-3xl md:text-5xl font-black mb-6 text-emerald-800 leading-tight">
+                    恭喜您已準備好 <span id="display-fund-2" class="text-red-600 underline"></span> 醫療基金！
+                </h3>
+                <p class="text-emerald-700 text-xl md:text-2xl font-bold mt-8">您的深謀遠慮令人佩服，祝您健康平安！</p>
+                
+                <div class="mt-12 flex justify-center">
+                    <button onclick="goBack()" class="px-8 py-3 rounded-full border-2 border-emerald-300 text-emerald-700 font-bold hover:bg-emerald-100 transition-colors">返回上一步</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 8: 靠自己還是聽保險公司 -->
+        <div id="step-8" class="step-content">
+            <div class="bg-white p-8 md:p-12 rounded-[40px] shadow-2xl border border-blue-50 text-center">
+                <h3 class="text-2xl md:text-4xl font-black mb-10 leading-tight">
+                    <span class="bg-green-600 text-white px-6 py-3 rounded-2xl inline-block shadow-md">您想全部靠自己努力？還是也想聽聽保險公司怎麼說？</span>
+                </h3>
+                
+                <div class="flex flex-col gap-6 max-w-3xl mx-auto">
+                    <button onclick="goToStep(9)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-orange-500 text-white hover:bg-green-600 shadow-lg transform active:scale-95 transition-all btn-hover-scale">
+                        <span class="btn-text">A: 想全部靠自己努力</span>
+                    </button>
+                    <button onclick="goToStep(10)" class="w-full py-8 rounded-3xl font-black text-2xl md:text-3xl bg-blue-600 text-white hover:bg-green-600 shadow-lg transform active:scale-95 transition-all btn-hover-scale">
+                        <span class="btn-text">B: 想聽聽看保險公司怎麼說</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 9: 鼓勵靠自己 (結束) -->
+        <div id="step-9" class="step-content">
+            <div class="bg-slate-50 p-10 md:p-16 rounded-[40px] shadow-2xl border-4 border-slate-200 text-center animate-in zoom-in">
+                <div class="text-7xl mb-8">💪</div>
+                <h3 class="text-3xl md:text-5xl font-black mb-6 text-slate-800 leading-tight">請多加油！</h3>
+                <p class="text-slate-600 text-xl md:text-2xl font-bold mt-8">保重身體不要太勞累，祝您早日達成目標！</p>
+                
+                <div class="mt-12 flex justify-center">
+                    <button onclick="goBack()" class="px-8 py-3 rounded-full border-2 border-slate-300 text-slate-600 font-bold hover:bg-slate-200 transition-colors">返回上一步</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 11: 選了放棄之後的引導頁面 -->
+        <div id="step-11" class="step-content">
+            <div class="bg-white p-8 md:p-12 rounded-[40px] shadow-2xl border border-red-50 text-center">
+                <div class="text-7xl mb-8 animate-bounce">💡</div>
+                <h3 class="text-3xl md:text-5xl font-black mb-10 leading-tight text-blue-950">
+                    準備這些醫療資金確實不容易，壓力很大是正常的！
+                </h3>
+                <p class="text-xl md:text-2xl font-bold text-slate-600 mb-12">
+                    但是別氣餒，我們其實還有更輕鬆的解決方法可以幫您轉嫁風險。
+                </p>
+                <div class="flex flex-col items-center">
+                    <!-- 點擊後跳轉到 WEHS 方案 (STEP 10) -->
+                    <button onclick="goToStep(10)" class="w-full max-w-2xl py-8 rounded-3xl font-black text-2xl md:text-3xl bg-blue-600 text-white hover:bg-green-600 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
+                        <span class="btn-text">別放棄! 聽聽看保險公司怎麼說...</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-text translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 10: 解決方案 (WEHS) -->
+        <div id="step-10" class="step-content">
+            <div class="bg-gradient-to-br from-blue-950 to-indigo-950 p-6 md:p-12 rounded-[50px] shadow-2xl border border-white/10 relative">
+                
+                <!-- 新增：設計師簡介卡片區 (六大核心優勢) -->
+                <div class="mb-12">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl md:text-5xl font-black text-white tracking-tighter drop-shadow-md">南山人壽 實健溢百 (WEHS)</h2>
+                        <p class="text-orange-400 mt-3 text-lg md:text-2xl font-black tracking-widest uppercase opacity-100 drop-shadow">可以協助我們降低老年高額醫療費的支出風險</p>
+                        
+                        <div class="flex flex-wrap justify-center items-center gap-4 mt-6">
+                            <a href="WEHS-商品簡介-2026年3月A版.pdf" target="_blank" class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-full text-sm md:text-base font-bold transition-all hover:-translate-y-1 shadow-lg backdrop-blur-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                商品簡介
+                            </a>
+                            <a href="https://drive.google.com/file/d/1mXZRxqxjNhqwgHCPydiSdvp5nCXg9q32/view?usp=drive_link" target="_blank" class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-full text-sm md:text-base font-bold transition-all hover:-translate-y-1 shadow-lg backdrop-blur-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                保單條款
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5">
+                        
+                        <!-- Card 1 -->
+                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
+                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
+                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-green-300 drop-shadow">0~70歲均可保</h4>
+                                <p class="text-sm md:text-base text-blue-100 mt-2">保障至100歲保單年度末</p>
+                            </div>
+                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">就不用擔心年紀大買不到保險啦！只要一張保單，就能擁有一輩子安安心心的醫療防護網哦。</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
+                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
+                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-green-300 drop-shadow">靈活選擇</h4>
+                                <p class="text-xs md:text-sm text-blue-100 mt-2">提供10/20/30年繳費年期<br>及投保計劃10/20/30</p>
+                            </div>
+                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">我們可以根據目前的財務狀況與預算，自由搭配最適合自己的繳費負擔與保障額度。</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
+                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
+                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-cyan-300 drop-shadow">醫療雙帳戶</h4>
+                                <p class="text-xs md:text-sm text-blue-100 mt-2">74歲前後獨立給付<br>各最高達750萬</p>
+                            </div>
+                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">這樣就不怕年輕時看病把額度用光光！等於是幫我們人生的不同階段，各自準備了專屬的小金庫呢。</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 4 -->
+                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
+                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
+                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-blue-300 drop-shadow">補足缺口</h4>
+                                <p class="text-xs md:text-sm text-blue-100 mt-2">74歲前定額給付<br>74歲後實支實付</p>
+                            </div>
+                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">剛好可以完美搭配我們舊的保單！年輕生病能補貼不能上班的損失，老了之後的實支實付還能幫我們扛下超貴的自費藥（像是標靶藥物）。</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 5 -->
+                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
+                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
+                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-indigo-300 drop-shadow">強化保障</h4>
+                                <p class="text-xs md:text-sm text-blue-100 mt-2">強化癌症/加護暨燒燙傷<br>病房相關醫療保障</p>
+                            </div>
+                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">萬一碰到最花錢的重症，理賠金還會加倍給哦！讓我們在遇到大難關的時候，背後能有最強大的靠山。</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 6 -->
+                        <div class="feature-card group relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hover:border-yellow-400 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-colors shadow-lg">
+                            <div class="z-10 group-hover:opacity-0 transition-opacity duration-300">
+                                <h4 class="font-black text-white text-xl md:text-2xl tracking-wide text-purple-300 drop-shadow">身故/祝壽金</h4>
+                                <p class="text-xs md:text-sm text-blue-100 mt-2">保費有去有回<br>機會享健康促進增額</p>
+                            </div>
+                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                                <span class="text-sm md:text-base font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
+                                <p class="text-lg md:text-xl font-black text-slate-900 leading-snug">如果健健康康沒用到理賠，這筆錢也能當作給自己的長壽大紅包，或是留給家人，繳出去的保費絕對不會白白浪費掉哦！</p>
+                            </div>
+                        </div>
+
+                    </div>
+                    <p class="text-center text-white/50 text-[11px] mt-4 font-bold tracking-widest">👆 游標滑過或輕觸卡片，查看對您的好處！</p>
+                </div>
+                
+                <div class="w-full h-px bg-white/20 mb-12"></div>
+
+                <!-- 修改：主引導按鈕 -->
+                <div class="flex justify-center mb-10 animate-in fade-in zoom-in duration-500">
+                    <button id="main-wehs-trigger" onclick="showPlanSelection(this)" class="wehs-btn group w-full md:w-auto py-5 px-8 md:py-6 md:px-12 rounded-full font-black text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] transition-all duration-300 bg-orange-500 hover:bg-orange-600 border-4 border-transparent flex justify-center items-center transform hover:-translate-y-1 active:scale-95 animate-pulse">
+                        <span class="btn-text-span transition-transform duration-300 group-hover:scale-110 text-xl md:text-2xl inline-flex items-center gap-3">
+                            想看看WEHS如何協助您降低老年醫療風險缺口嗎?
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        </span>
+                    </button>
+                </div>
+
+                <!-- 新增：三個計畫選擇按鈕區 -->
+                <div id="plan-selection-group" class="hidden animate-in fade-in zoom-in duration-500">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                        <button id="wehs-plan-10" onclick="selectPlan(10)" class="wehs-plan-btn group w-full py-5 md:py-6 rounded-3xl font-black text-white shadow-lg transition-all duration-300 bg-green-500 border-4 border-transparent flex justify-center items-center origin-center">
+                            <span class="btn-text-span transition-transform duration-300 group-hover:scale-110 text-xl md:text-2xl inline-block">WEHS-計畫10</span>
+                        </button>
+                        <button id="wehs-plan-20" onclick="selectPlan(20)" class="wehs-plan-btn group w-full py-5 md:py-6 rounded-3xl font-black text-white shadow-lg transition-all duration-300 bg-orange-500 border-4 border-transparent flex justify-center items-center origin-center">
+                            <span class="btn-text-span transition-transform duration-300 group-hover:scale-110 text-xl md:text-2xl inline-block">WEHS-計畫20</span>
+                        </button>
+                        <button id="wehs-plan-30" onclick="selectPlan(30)" class="wehs-plan-btn group w-full py-5 md:py-6 rounded-3xl font-black text-white shadow-lg transition-all duration-300 bg-pink-500 border-4 border-transparent flex justify-center items-center origin-center">
+                            <span class="btn-text-span transition-transform duration-300 group-hover:scale-110 text-xl md:text-2xl inline-block">WEHS-計畫30</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="wehs-result-container" class="hidden space-y-8 animate-in fade-in">
+                    <div class="bg-white rounded-3xl shadow-xl overflow-hidden p-6 md:p-10">
+                        <h4 class="text-xl md:text-3xl font-black text-black mb-8 flex items-center gap-3 border-l-8 border-blue-600 pl-4 uppercase">
+                            75歲以上 規劃後理賠總表
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-center border-collapse min-w-[800px]">
+                                <thead>
+                                    <tr class="bg-slate-800 text-white">
+                                        <th class="py-5 px-3 font-black border-b-2 border-slate-700 tracking-widest uppercase">理賠項目</th>
+                                        <th class="py-5 px-3 font-black border-b-2 border-slate-700 tracking-widest uppercase text-slate-300">預估支出</th>
+                                        <th class="py-5 px-3 font-black border-b-2 border-slate-700 tracking-widest uppercase text-slate-400">原保險額度</th>
+                                        <th class="py-5 px-3 font-black border-b-2 border-slate-700 tracking-widest uppercase text-slate-400">原保險理賠</th>
+                                        <th id="wehs-table-header-limit" class="py-5 px-3 font-black border-b-2 border-blue-600 bg-blue-900 text-blue-100 leading-relaxed">WEHS<br>保障額度</th>
+                                        <th id="wehs-table-header-claim" class="py-5 px-3 font-black border-b-2 border-blue-600 bg-blue-900 text-blue-100 leading-relaxed">WEHS<br>理賠預估</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="py-6 px-3 border-b border-slate-100 font-black text-left pl-6 text-black text-lg">癌症住院日額<br><span class="text-[11px] text-black font-bold tracking-widest">(24天累計)</span></td>
+                                        <td class="py-6 px-3 border-b border-slate-100 font-black text-red-600 text-xl">$288,000</td>
+                                        <td class="py-6 px-3 border-b border-slate-100 font-bold text-black text-sm" id="wehs-old-limit-can"></td>
+                                        <td class="py-6 px-3 border-b border-slate-100 font-black text-black text-lg" id="wehs-old-claim-can"></td>
+                                        <td class="py-6 px-3 border-b border-blue-50 font-black text-blue-700 bg-blue-50/50 leading-relaxed text-sm md:text-base" id="wehs-limit-can"></td>
+                                        <td class="py-6 px-3 border-b border-blue-50 font-black text-blue-600 text-2xl bg-blue-50/50" id="wehs-claim-can"></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="py-6 px-3 border-b border-slate-100 font-black text-left pl-6 text-black text-lg">醫療雜費實支<br><span class="text-[11px] text-black font-bold tracking-widest">(24次住院)</span></td>
+                                        <td class="py-6 px-3 border-b border-slate-100 font-black text-red-600 text-xl">$1,136,328</td>
+                                        <td class="py-6 px-3 border-b border-slate-100 font-bold text-black text-sm" id="wehs-old-limit-reim"></td>
+                                        <td class="py-6 px-3 border-b border-slate-100 font-black text-black text-lg" id="wehs-old-claim-reim"></td>
+                                        <td class="py-6 px-3 border-b border-blue-50 font-black text-blue-700 bg-blue-50/50 leading-relaxed text-sm md:text-base" id="wehs-limit-reim"></td>
+                                        <td class="py-6 px-3 border-b border-blue-50 font-black text-blue-600 text-2xl bg-blue-50/50" id="wehs-claim-reim"></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-blue-600 text-white font-black shadow-lg">
+                                        <td class="py-8 pl-6 text-left text-xl rounded-bl-2xl border-none">合計:</td>
+                                        <td class="py-8 text-xl opacity-50 border-none"></td>
+                                        <td class="py-8 text-xl opacity-50 border-none"></td>
+                                        <td class="py-8 text-xl md:text-2xl border-none" id="wehs-old-total-claim"></td>
+                                        <td class="py-8 text-sm opacity-50 border-none"></td>
+                                        <td class="py-8 text-2xl md:text-3xl text-yellow-300 rounded-br-2xl border-none" id="wehs-new-total-claim"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div id="wehs-final-gap-box" class="mt-10 p-8 md:p-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4">
+                            <div class="flex-1 w-full">
+                                <p class="text-sm md:text-base font-black uppercase tracking-widest mb-2 opacity-80 text-black" id="wehs-gap-title">規劃後最終自付缺口</p>
+                                <p class="text-4xl md:text-6xl font-black tracking-tighter" id="wehs-final-gap"></p>
+                                
+                                <!-- 新增：理賠分析區塊 -->
+                                <div id="wehs-analysis-details" class="mt-6 p-5 bg-white/60 rounded-2xl border border-black/10 space-y-3 text-sm md:text-lg font-bold text-slate-800 shadow-sm max-w-xl">
+                                    <!-- JS動態填入分析數據 -->
+                                </div>
+                            </div>
+                            <div id="wehs-final-icon" class="scale-125 transform p-4 bg-white/30 rounded-2xl shadow-inner shrink-0 mt-6 md:mt-0 md:ml-8 hidden md:block"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="max-w-4xl mx-auto py-16 px-10 text-black text-[11px] leading-relaxed text-center font-black opacity-40">
+        * 本試算係依據您輸入之保額數值與指定癌症案例（台北榮總真實收據數據）進行對比分析，結果僅供銷售輔助參考。實際理賠金額需依所投保之保單條款及保險公司最後審核結果為準。
+    </footer>
+
+    <script>
+        const totalTimes = 24;
+        const totalCost = 1424328;
+        const singleMiscCost = 47347;
+        const singleRoomCost = 12000;
+        const expCanTotal = 288000;
+        const expReimTotal = 1136328;
+
+        let globalFutureCanLimit = 0;
+        let globalFutureReimLimit = 0;
+        let globalFutureCanClaim = 0;
+        let globalFutureReimClaim = 0;
+
+        let stepHistory = [];
+
+        window.onload = function() {
+            refreshTotals('norm');
+            refreshTotals('reim');
+        };
+
+        function goToStep(step, isBack = false) {
+            const activeContent = document.querySelector('.step-content.active');
+            const currentStep = activeContent ? parseInt(activeContent.id.split('-')[1]) : 0;
+            
+            // 如果不是按返回鍵，就將當前步驟加入歷史堆疊
+            if (!isBack && activeContent) {
+                stepHistory.push(currentStep);
+            }
+
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+            
+            const backBtn = document.getElementById('back-btn');
+            if (step === 0) {
+                backBtn.classList.add('hidden-btn');
+                stepHistory = []; // 回到首頁清除歷史
+            } else {
+                backBtn.classList.remove('hidden-btn');
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function goBack() {
+            if (stepHistory.length > 0) {
+                const prevStep = stepHistory.pop();
+                goToStep(prevStep, true);
+            }
+        }
+
+        // 新增的問卷流程設值功能
+        function setFundAndGo(fundStr, nextStep) {
+            document.getElementById('display-fund').innerText = fundStr;
+            document.getElementById('display-fund-2').innerText = fundStr;
+            goToStep(nextStep);
+        }
+
+        function itemUpdate(group, item, val, source) {
+            const cleanVal = val.toString().replace(/,/g, '');
+            const finalVal = parseInt(cleanVal) || 0;
+            
+            const numEl = document.getElementById(`num-${group}-${item}`);
+            const rangeEl = document.getElementById(`range-${group}-${item}`);
+            
+            if (source === 'num') {
+                rangeEl.value = Math.min(finalVal, rangeEl.max);
+                if (val !== '') {
+                    numEl.value = new Intl.NumberFormat('zh-TW').format(finalVal);
+                }
+            } else {
+                numEl.value = new Intl.NumberFormat('zh-TW').format(finalVal);
+            }
+            refreshTotals(group);
+        }
+
+        function refreshTotals(group) {
+            const getVal = (id) => parseInt(document.getElementById(id).value.replace(/,/g, '')) || 0;
+
+            if (group === 'norm') {
+                const rent = getVal('num-norm-rent');
+                const life = getVal('num-norm-life');
+                const total = rent + life;
+                document.getElementById('num-norm-total').value = new Intl.NumberFormat('zh-TW').format(total);
+                const baseEl = document.getElementById('display-can-base');
+                if (baseEl) baseEl.innerText = '$' + new Intl.NumberFormat('zh-TW').format(total);
+                refreshTotals('can'); 
+            } else if (group === 'can') {
+                const normTotal = getVal('num-norm-total');
+                const canLife = getVal('num-can-life');
+                const total = normTotal + canLife;
+                document.getElementById('num-can-total').value = new Intl.NumberFormat('zh-TW').format(total);
+            } else if (group === 'reim') {
+                const r65 = getVal('num-reim-65');
+                const r75 = getVal('num-reim-75');
+                const rLife = getVal('num-reim-life');
+                const r75s = getVal('num-reim-75start');
+                const total = r65 + r75 + rLife + r75s;
+                document.getElementById('num-reim-total').value = new Intl.NumberFormat('zh-TW').format(total);
+            }
+        }
+
+        function getStatusHtml(claim, expenditure) {
+            if (claim > expenditure) {
+                return '<span class="stamp-win">勝</span>';
+            } else if (claim < expenditure) {
+                return '<span class="emoji-sad">😢</span>';
+            }
+            return '';
+        }
+
+        function calculateAndShowResult() {
+            document.getElementById('future-success-message').classList.add('hidden');
+            document.getElementById('future-action-flow').classList.add('hidden');
+
+            const getVal = (id) => parseInt(document.getElementById(id).value.replace(/,/g, '')) || 0;
+
+            const normLife = getVal('num-norm-life');
+            const canLife = getVal('num-can-life');
+            const canTotal = getVal('num-can-total');
+            const reimTotal = getVal('num-reim-total');
+            const rLife = getVal('num-reim-life');
+            const r75s = getVal('num-reim-75start');
+
+            const fmt = (v) => '$' + new Intl.NumberFormat('zh-TW').format(v);
+
+            const currentCanClaimPart = canTotal * totalTimes;
+            const currentReimClaimPart = Math.min(singleMiscCost, reimTotal) * totalTimes;
+            const currentTotalClaim = currentCanClaimPart + currentReimClaimPart;
+            const gap = totalCost - currentTotalClaim;
+            
+            document.getElementById('detail-limit-can').innerText = fmt(canTotal) + ' / 日';
+            document.getElementById('detail-claim-can').innerText = fmt(currentCanClaimPart);
+            document.getElementById('detail-limit-reim').innerText = fmt(reimTotal) + ' / 次';
+            document.getElementById('detail-claim-reim').innerText = fmt(currentReimClaimPart);
+            document.getElementById('total-claim-all').innerText = fmt(currentTotalClaim);
+
+            document.getElementById('status-can').innerHTML = ''; 
+            document.getElementById('status-reim').innerHTML = getStatusHtml(currentReimClaimPart, expReimTotal);
+            document.getElementById('status-total').innerHTML = getStatusHtml(currentTotalClaim, totalCost);
+
+            document.getElementById('res-gap').innerHTML = gap > 0 ? `<span class="text-red-600">不足 : </span>${fmt(gap)}` : '保額已完全覆蓋 COVERED';
+
+            const gapBox = document.getElementById('gap-box');
+            const gapIcon = document.getElementById('gap-icon');
+            if (gap > 0) {
+                gapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-red-50 text-red-600 border-4 border-red-100 shadow-2xl transition-all';
+                gapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-red-500"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+            } else {
+                gapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-green-50 text-green-600 border-4 border-green-100 shadow-2xl transition-all';
+                gapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-green-500"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>';
+            }
+
+            globalFutureCanLimit = normLife + canLife; 
+            globalFutureReimLimit = rLife + r75s;      
+
+            globalFutureCanClaim = globalFutureCanLimit * totalTimes;
+            globalFutureReimClaim = Math.min(singleMiscCost, globalFutureReimLimit) * totalTimes;
+            const futureTotalClaim = globalFutureCanClaim + globalFutureReimClaim;
+            const futureGap = totalCost - futureTotalClaim;
+
+            document.getElementById('future-detail-limit-can').innerText = fmt(globalFutureCanLimit) + ' / 日';
+            document.getElementById('future-detail-claim-can').innerText = fmt(globalFutureCanClaim);
+            document.getElementById('future-detail-limit-reim').innerText = fmt(globalFutureReimLimit) + ' / 次';
+            document.getElementById('future-detail-claim-reim').innerText = fmt(globalFutureReimClaim);
+            document.getElementById('future-total-claim-all').innerText = fmt(futureTotalClaim);
+
+            document.getElementById('future-status-can').innerHTML = ''; 
+            document.getElementById('future-status-reim').innerHTML = getStatusHtml(globalFutureReimClaim, expReimTotal);
+            document.getElementById('future-status-total').innerHTML = getStatusHtml(futureTotalClaim, totalCost);
+
+            document.getElementById('future-res-gap').innerHTML = futureGap > 0 ? `<span class="text-red-600">不足 : </span>${fmt(futureGap)}` : '保額已完全覆蓋 COVERED';
+
+            const futureGapBox = document.getElementById('future-gap-box');
+            const futureGapIcon = document.getElementById('future-gap-icon');
+            if (futureGap > 0) {
+                futureGapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-red-50 text-red-600 border-4 border-red-100 shadow-2xl transition-all';
+                futureGapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-red-500"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+                document.getElementById('future-action-btn-text').innerText = `面對 : ${fmt(futureGap)}元的醫療費缺口，我們可以。。。`;
+                document.getElementById('future-action-flow').classList.remove('hidden');
+            } else {
+                futureGapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-green-50 text-green-600 border-4 border-green-100 shadow-2xl transition-all';
+                futureGapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-green-500"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>';
+                document.getElementById('future-success-message').classList.remove('hidden');
+            }
+
+            goToStep(2);
+        }
+
+        function showPlanSelection(btn) {
+            // 背景改為綠色並取消跳動特效
+            btn.classList.remove('bg-orange-500', 'hover:bg-orange-600', 'animate-pulse');
+            btn.classList.add('bg-green-600', 'hover:bg-green-700', 'shadow-[0_0_20px_rgba(22,163,74,0.4)]');
+            
+            // 顯示三個計畫選擇按鈕
+            document.getElementById('plan-selection-group').classList.remove('hidden');
+        }
+
+        function selectPlan(plan) {
+            const plans = [10, 20, 30];
+            
+            plans.forEach(p => {
+                const btn = document.getElementById('wehs-plan-' + p);
+                // 移除所有可能的顏色與活躍狀態
+                btn.classList.remove('bg-green-500', 'bg-orange-500', 'bg-pink-500', 'text-black', 'text-white', 'border-white', 'shadow-2xl');
+                
+                // 設定為未點擊狀態 (灰色、白色字、縮小10%)
+                btn.classList.add('bg-gray-400', 'text-white', 'border-transparent');
+                btn.style.transform = 'scale(0.9)'; 
+            });
+
+            // 設定被點擊的按鈕 (橙色、黑色字、正常大小、外加白色邊框)
+            const activeBtn = document.getElementById('wehs-plan-' + plan);
+            activeBtn.classList.remove('bg-gray-400', 'text-white', 'border-transparent');
+            activeBtn.classList.add('bg-orange-500', 'text-black', 'border-white', 'shadow-2xl');
+            activeBtn.style.transform = 'scale(1)';
+
+            // 呼叫更新表格功能
+            showWEHSTable(plan);
+        }
+
+        function showWEHSTable(plan) {
+            document.getElementById('wehs-result-container').classList.remove('hidden');
+            
+            // 動態更新表頭標題 (使用 innerHTML 插入 <br> 換行)
+            document.getElementById('wehs-table-header-limit').innerHTML = `WEHS-計畫${plan}<br>保障額度`;
+            document.getElementById('wehs-table-header-claim').innerHTML = `WEHS-計畫${plan}<br>理賠預估`;
+
+            const wehsRoomDaily = plan * 100;
+            const wehsCancerDaily = plan * 30;
+            const wehsMiscLimit = plan * 13000;
+
+            const fmt = (v) => '$' + new Intl.NumberFormat('zh-TW').format(v);
+
+            document.getElementById('wehs-limit-can').innerHTML = `${fmt(wehsRoomDaily)} / 日<br><span class="text-[12px] opacity-80">(註:74歲前一般日額${fmt(wehsRoomDaily)}+癌症另給付${fmt(wehsCancerDaily)})</span>`;
+            document.getElementById('wehs-limit-reim').innerText = `${fmt(wehsMiscLimit)} / 次`;
+
+            document.getElementById('wehs-old-limit-can').innerText = `${fmt(globalFutureCanLimit)} / 日`;
+            document.getElementById('wehs-old-claim-can').innerText = fmt(globalFutureCanClaim);
+            document.getElementById('wehs-old-limit-reim').innerText = `${fmt(globalFutureReimLimit)} / 次`;
+            document.getElementById('wehs-old-claim-reim').innerText = fmt(globalFutureReimClaim);
+
+            const oldDailyRoomClaim = Math.min(singleRoomCost, globalFutureCanLimit);
+            const remainingDailyRoom = Math.max(0, singleRoomCost - oldDailyRoomClaim);
+            const wehsDailyRoomClaim = Math.min(remainingDailyRoom, wehsRoomDaily);
+            const wehsTotalRoomClaim = wehsDailyRoomClaim * totalTimes;
+            
+            const oldTimeMiscClaim = Math.min(singleMiscCost, globalFutureReimLimit);
+            const remainingTimeMisc = Math.max(0, singleMiscCost - oldTimeMiscClaim);
+            const wehsTimeMiscClaim = Math.min(remainingTimeMisc, wehsMiscLimit);
+            const wehsTotalMiscClaim = wehsTimeMiscClaim * totalTimes;
+
+            document.getElementById('wehs-claim-can').innerText = fmt(wehsTotalRoomClaim);
+            document.getElementById('wehs-claim-reim').innerText = fmt(wehsTotalMiscClaim);
+
+            // 更新各自的合計數字
+            const oldTotalClaim = globalFutureCanClaim + globalFutureReimClaim;
+            const wehsTotalClaimSum = wehsTotalRoomClaim + wehsTotalMiscClaim;
+            
+            // 修正：規劃後理賠總額 應該是 (原保險理賠 + WEHS預估)
+            const combinedTotalClaim = oldTotalClaim + wehsTotalClaimSum;
+
+            document.getElementById('wehs-old-total-claim').innerText = fmt(oldTotalClaim);
+            document.getElementById('wehs-new-total-claim').innerText = fmt(wehsTotalClaimSum);
+
+            // 最終結果計算: (原保險理賠金額 + WEHS計畫理賠預估) - 預估支出總金額
+            const finalBalance = combinedTotalClaim - totalCost;
+
+            // 更新分析數據UI
+            const analysisHtml = `
+                <div class="flex justify-between items-center border-b border-black/10 pb-2">
+                    <span class="opacity-70">規劃前理賠金額：</span><span class="text-slate-500">${fmt(oldTotalClaim)}</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-black/10 pb-2">
+                    <span class="opacity-70">規劃後理賠金額：</span><span class="text-blue-700 font-black">${fmt(combinedTotalClaim)}</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-black/10 pb-2">
+                    <span class="opacity-70">預估支出總金額：</span><span class="text-red-600 font-black">${fmt(totalCost)}</span>
+                </div>
+                <div class="flex justify-between items-center pt-1">
+                    <span class="opacity-70 ${finalBalance < 0 ? 'text-red-600' : 'text-green-600'} font-bold">最終結果 (理賠 - 支出)：</span>
+                    <span class="${finalBalance < 0 ? 'text-red-600' : 'text-green-600'} font-black text-xl md:text-2xl">${finalBalance < 0 ? '' : '+'}${fmt(finalBalance)}</span>
+                </div>
+            `;
+            document.getElementById('wehs-analysis-details').innerHTML = analysisHtml;
+
+            const gapBox = document.getElementById('wehs-final-gap-box');
+            const gapIcon = document.getElementById('wehs-final-icon');
+
+            if (finalBalance < 0) {
+                // 若為負數，表示不足
+                document.getElementById('wehs-final-gap').innerHTML = `<span class="text-red-600">不足 : </span>${fmt(Math.abs(finalBalance))}`;
+                document.getElementById('wehs-gap-title').className = 'text-sm md:text-base font-black uppercase tracking-widest mb-2 text-red-500';
+                gapBox.className = 'mt-10 p-8 md:p-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 bg-red-50 border-red-200';
+                gapIcon.innerHTML = '<span class="emoji-sad text-5xl md:text-7xl">😢</span>';
+            } else {
+                // 若為正數或零，表示已覆蓋(甚至結餘)
+                document.getElementById('wehs-final-gap').innerHTML = '<span class="text-green-600">保額已完全覆蓋</span>';
+                document.getElementById('wehs-gap-title').className = 'text-sm md:text-base font-black uppercase tracking-widest mb-2 text-green-600';
+                gapBox.className = 'mt-10 p-8 md:p-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 bg-green-50 border-green-200';
+                gapIcon.innerHTML = '<span class="stamp-win">勝</span>';
+            }
+        }
+    </script>
+</body>
+</html>
