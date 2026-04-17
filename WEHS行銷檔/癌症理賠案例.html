@@ -22,7 +22,7 @@
         }
 
         .group-header {
-            @apply p-5 bg-green-100 border-b border-green-200 flex flex-col md:flex-row md:items-center justify-between gap-3;
+            @apply p-4 md:p-5 bg-green-100 border-b border-green-200 flex flex-row items-center justify-between gap-2 w-full;
         }
 
         .sub-items-area {
@@ -34,7 +34,7 @@
         }
 
         .read-only-total {
-            @apply bg-transparent border-none text-right font-black focus:outline-none pointer-events-none text-black;
+            @apply bg-transparent border-none text-right font-black focus:outline-none pointer-events-none;
         }
 
         /* Tooltip 樣式 */
@@ -94,11 +94,11 @@
             @apply bg-green-700 text-white;
         }
         .detail-table th {
-            @apply py-6 px-3 text-sm md:text-xl font-black uppercase tracking-widest text-center border-b-2 border-green-800 border-r-2 border-green-600/50;
+            @apply py-3 md:py-4 px-2 md:px-3 text-base md:text-2xl font-black uppercase tracking-widest text-center border-b-2 border-green-800 border-r-2 border-green-600/50;
         }
         .detail-table th:last-child { @apply border-r-0; }
         .detail-table td {
-            @apply py-8 px-3 text-center border-b-2 border-green-100 border-r-2 border-green-100 transition-colors bg-white;
+            @apply py-3 md:py-5 px-2 md:px-3 text-center border-b-2 border-green-100 border-r-2 border-green-100 transition-colors bg-white;
         }
         .detail-table td:last-child { @apply border-r-0; }
         
@@ -106,10 +106,10 @@
             @apply bg-green-800 text-white font-black;
         }
         .total-row-style td {
-            @apply py-12 border-none text-white border-r-2 border-white/10;
+            @apply py-4 md:py-6 border-none text-white border-r-2 border-white/10;
         }
         .total-row-style td:first-child {
-            @apply text-xl md:text-4xl pl-8 bg-green-900;
+            @apply text-xl md:text-4xl pl-4 md:pl-8 bg-green-900;
         }
 
         /* --- 75歲後理賠：淡紅色框架表格系統 --- */
@@ -123,11 +123,11 @@
             @apply bg-red-50 text-red-900 border-b-4 border-red-200;
         }
         .detail-table-alert th {
-            @apply py-6 px-3 text-sm md:text-xl font-black uppercase tracking-widest text-center border-r-2 border-red-200/50;
+            @apply py-3 md:py-4 px-2 md:px-3 text-base md:text-2xl font-black uppercase tracking-widest text-center border-r-2 border-red-200/50;
         }
         .detail-table-alert th:last-child { @apply border-r-0; }
         .detail-table-alert td {
-            @apply py-8 px-3 text-center border-b-2 border-red-50 border-r-2 border-red-50 transition-colors bg-white;
+            @apply py-3 md:py-5 px-2 md:px-3 text-center border-b-2 border-red-50 border-r-2 border-red-50 transition-colors bg-white;
         }
         .detail-table-alert td:last-child { @apply border-r-0; }
 
@@ -135,20 +135,20 @@
             @apply bg-red-100 text-red-900 font-black border-t-4 border-red-200;
         }
         .total-row-style-alert td {
-            @apply py-12 border-none border-r-2 border-red-200/50;
+            @apply py-4 md:py-6 border-none border-r-2 border-red-200/50;
         }
         .total-row-style-alert td:first-child {
-            @apply text-xl md:text-4xl pl-8 bg-red-200;
+            @apply text-xl md:text-4xl pl-4 md:pl-8 bg-red-200;
         }
 
         /* 欄位通用配色 */
-        .col-item { @apply text-left pl-6 font-black text-black text-sm md:text-xl bg-slate-50/50; }
-        .col-expenditure { @apply font-black text-red-600 text-base md:text-3xl; }
-        .col-limit { @apply font-bold text-black text-xs md:text-xl; }
-        .col-claim-cell { @apply font-black text-blue-600 text-lg md:text-3xl relative; }
+        .col-item { @apply text-left pl-4 md:pl-6 font-black text-black text-base md:text-2xl bg-slate-50/50; }
+        .col-expenditure { @apply font-black text-red-600 text-lg md:text-4xl; }
+        .col-limit { @apply font-bold text-black text-sm md:text-2xl; }
+        .col-claim-cell { @apply font-black text-blue-600 text-xl md:text-4xl relative; }
         
-        .total-val-primary { @apply text-xl md:text-4xl; }
-        .total-val-highlight-cell { @apply text-2xl md:text-5xl font-black text-blue-700; }
+        .total-val-primary { @apply text-2xl md:text-5xl; }
+        .total-val-highlight-cell { @apply text-3xl md:text-6xl font-black text-blue-700; }
         
         .stamp-win {
             @apply inline-block transform rotate-12 shadow-lg ml-3 md:ml-4 flex-shrink-0;
@@ -318,35 +318,33 @@
                 </p>
             </div>
 
-            <!-- 客戶資料快速帶入與解析工具 -->
-            <div class="mb-10 animate-in slide-in-from-top-6 flex justify-end">
-                <button onclick="openCustomerToolModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-black py-3 px-8 rounded flex items-center gap-2 shadow-md transition-colors text-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                    編輯
-                </button>
-            </div>
-
             <div class="space-y-10">
-                <!-- 客戶姓名搜尋帶入區塊 -->
-                <div class="bg-white p-5 rounded-3xl shadow-sm border-2 border-blue-200 flex flex-col md:flex-row items-center gap-4 animate-in slide-in-from-top-6">
+                <!-- 客戶姓名搜尋帶入與編輯按鈕區塊 -->
+                <div class="flex flex-col md:flex-row items-center gap-4 animate-in slide-in-from-top-6 px-2 mb-2">
                     <div class="flex items-center gap-2 text-blue-800 font-black shrink-0 text-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                        快速帶入客戶：
+                        客戶姓名
                     </div>
-                    <div class="relative flex-1 w-full">
-                        <input type="text" id="main-customer-search" list="main-customer-list" onchange="handleMainCustomerSearch(this.value)" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-slate-50 font-bold text-lg text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all" placeholder="請點擊或輸入客戶姓名快速帶入...">
+                    <!-- 輸入框設定為 50% 寬度 -->
+                    <div class="relative w-full md:w-1/2">
+                        <input type="text" id="main-customer-search" list="main-customer-list" onchange="handleMainCustomerSearch(this.value)" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white font-bold text-lg text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all shadow-sm" placeholder="請點擊或輸入客戶姓名快速帶入...">
                         <datalist id="main-customer-list"></datalist>
                     </div>
+                    <!-- 編輯按鈕移至右側 -->
+                    <button onclick="openCustomerToolModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-black py-3 px-8 rounded-xl flex items-center gap-2 shadow-md transition-colors text-lg shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                        編輯
+                    </button>
                 </div>
 
                 <!-- 一般住院日額組 (淡綠色) -->
                 <div class="input-group-card">
                     <div class="group-header">
-                        <h3 class="font-black text-green-900 text-xl">一般住院日額合計:</h3>
-                        <div class="flex items-center gap-1 text-green-800 ml-auto">
-                            <span class="font-bold text-2xl">$</span>
-                            <input type="text" id="num-norm-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl text-green-900">
-                            <span class="text-sm font-black opacity-80">/ 日</span>
+                        <h3 class="font-black text-green-900 text-base md:text-xl">一般住院日額合計:</h3>
+                        <div class="flex items-center justify-end gap-1 bg-green-600 text-white px-4 py-2 rounded-xl shadow-inner shrink-0">
+                            <span class="font-bold text-xl md:text-2xl">$</span>
+                            <input type="text" id="num-norm-total" value="0" readonly class="read-only-total w-28 md:w-40 text-2xl md:text-4xl text-black">
+                            <span class="text-sm font-black opacity-90 whitespace-nowrap">/ 日</span>
                         </div>
                     </div>
                     <div class="sub-items-area space-y-4">
@@ -386,11 +384,11 @@
                 <!-- 癌症住院日額組 (淡綠色) -->
                 <div class="input-group-card">
                     <div class="group-header">
-                        <h3 class="font-black text-green-900 text-xl">癌症住院日額合計:</h3>
-                        <div class="flex items-center gap-1 text-green-800 ml-auto">
-                            <span class="font-bold text-2xl">$</span>
-                            <input type="text" id="num-can-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl text-green-900">
-                            <span class="text-sm font-black opacity-80">/ 日</span>
+                        <h3 class="font-black text-green-900 text-base md:text-xl">癌症住院日額合計:</h3>
+                        <div class="flex items-center justify-end gap-1 bg-green-600 text-white px-4 py-2 rounded-xl shadow-inner shrink-0">
+                            <span class="font-bold text-xl md:text-2xl">$</span>
+                            <input type="text" id="num-can-total" value="0" readonly class="read-only-total w-28 md:w-40 text-2xl md:text-4xl text-black">
+                            <span class="text-sm font-black opacity-90 whitespace-nowrap">/ 日</span>
                         </div>
                     </div>
                     <div class="sub-items-area space-y-4">
@@ -419,11 +417,11 @@
                 <!-- 住院實支實付組 (淡綠色) -->
                 <div class="input-group-card">
                     <div class="group-header">
-                        <h3 class="font-black text-green-900 text-xl text-left">住院實支實付合計上限:</h3>
-                        <div class="flex items-center gap-1 text-green-800 ml-auto">
-                            <span class="font-bold text-2xl">$</span>
-                            <input type="text" id="num-reim-total" value="0" readonly class="read-only-total w-36 md:w-48 text-2xl md:text-4xl text-green-900">
-                            <span class="text-sm font-black opacity-80">元</span>
+                        <h3 class="font-black text-green-900 text-base md:text-xl text-left">住院實支實付合計上限:</h3>
+                        <div class="flex items-center justify-end gap-1 bg-green-600 text-white px-4 py-2 rounded-xl shadow-inner shrink-0">
+                            <span class="font-bold text-xl md:text-2xl">$</span>
+                            <input type="text" id="num-reim-total" value="0" readonly class="read-only-total w-32 md:w-48 text-2xl md:text-4xl text-black">
+                            <span class="text-sm font-black opacity-90 whitespace-nowrap">元</span>
                         </div>
                     </div>
                     <!-- 移除雙欄 Grid，改為單欄 stack 確保輸入框全靠右對齊 -->
@@ -447,7 +445,6 @@
                                 <div class="flex justify-between items-center w-full">
                                     <div class="text-left flex flex-col">
                                         <span class="text-sm font-black text-black uppercase">♾️ 終身帳戶型</span>
-                                        <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
                                     </div>
                                     <input type="text" inputmode="numeric" id="num-reim-life" value="0" oninput="itemUpdate('reim', 'life', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                                 </div>
@@ -467,7 +464,6 @@
                                 <div class="flex justify-between items-center w-full">
                                     <div class="text-left flex flex-col">
                                         <span class="text-sm font-black text-black uppercase">♾️ 75歲啟動型</span>
-                                        <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
                                     </div>
                                     <input type="text" inputmode="numeric" id="num-reim-75start" value="0" oninput="itemUpdate('reim', '75start', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                                 </div>
@@ -496,13 +492,13 @@
         <div id="step-2" class="step-content">
             <div class="bg-white p-6 md:p-12 rounded-[40px] shadow-2xl border border-blue-50 overflow-hidden relative">
                 
-                <h3 class="text-xl md:text-3xl font-black mb-12 tracking-tighter leading-tight text-left">
+                <h3 class="text-xl md:text-3xl font-black mb-8 tracking-tighter leading-tight text-left">
                     <span class="bg-blue-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-xl inline-block shadow-md">針對此癌症療程 (24次住院)</span>
                 </h3>
                 
-                <div class="space-y-16">
+                <div class="space-y-6">
                     <div class="detail-table-container">
-                        <div class="p-8 bg-green-600 border-b-4 border-green-700 flex items-center justify-between">
+                        <div class="p-6 bg-green-600 border-b-4 border-green-700 flex items-center justify-between">
                             <p class="text-xl md:text-2xl font-black text-white flex items-center gap-4">
                                 <span class="w-4 h-4 bg-white rounded-full"></span>
                                 保險理賠(預估值)
@@ -569,16 +565,16 @@
                         </div>
                     </div>
 
-                    <div id="gap-box" class="p-10 rounded-[35px] flex items-center justify-between transition-all duration-700 shadow-xl border-4 mt-12">
+                    <div id="gap-box" class="p-8 rounded-[35px] flex items-center justify-between transition-all duration-700 shadow-xl border-4 mt-6">
                         <div>
                             <p class="text-xs md:text-base text-black font-black uppercase tracking-widest mb-2">您的最終自付缺口 / Financial Gap</p>
-                            <p class="text-3xl md:text-6xl font-black tracking-tighter" id="res-gap">$0</p>
+                            <p class="text-2xl md:text-5xl font-black tracking-tighter" id="res-gap">$0</p>
                         </div>
                         <div id="gap-icon" class="p-5 bg-white/30 rounded-3xl shadow-inner scale-150"></div>
                     </div>
                 </div>
 
-                <div class="mt-12">
+                <div class="mt-8">
                     <button onclick="goToStep(3)" class="w-full py-6 bg-blue-600 hover:bg-green-600 text-white rounded-3xl font-black text-xl md:text-2xl shadow-xl transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-4 btn-hover-scale">
                         <span class="btn-text">若案例發生在75歲以後，想看看您的保障內容嗎?</span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-text translate-x-1"><path d="m9 18 6-6-6-6"/></svg>
@@ -591,9 +587,9 @@
         <div id="step-3" class="step-content">
             <div class="bg-white p-6 md:p-12 rounded-[40px] shadow-2xl border border-slate-200 overflow-hidden relative">
                 
-                <h3 class="text-xl md:text-3xl font-black text-black mb-10 pr-24 tracking-tighter leading-tight">75歲後相同癌症療程 (24次住院)</h3>
+                <h3 class="text-xl md:text-3xl font-black text-black mb-8 pr-24 tracking-tighter leading-tight">75歲後相同癌症療程 (24次住院)</h3>
                 
-                <div class="space-y-12">
+                <div class="space-y-6">
                     <div class="p-6 bg-red-50 border-l-8 border-red-500 rounded-r-2xl shadow-sm flex items-start gap-4">
                         <span class="text-red-500 text-3xl inline-block origin-left scale-50">⚠️</span>
                         <div>
@@ -605,7 +601,7 @@
                     </div>
 
                     <div class="detail-table-container-alert">
-                        <div class="p-8 bg-red-50 border-b-4 border-red-200 flex items-center justify-between">
+                        <div class="p-6 bg-red-50 border-b-4 border-red-200 flex items-center justify-between">
                             <p class="text-xl md:text-2xl font-black text-red-900 flex items-center gap-4">
                                 <span class="w-4 h-4 bg-red-500 rounded-full animate-pulse"></span>
                                 75歲後理賠(預估值)
@@ -672,15 +668,15 @@
                         </div>
                     </div>
 
-                    <div id="future-gap-box" class="p-10 rounded-[35px] flex items-center justify-between transition-all duration-700 shadow-xl border-4 mt-12">
+                    <div id="future-gap-box" class="p-8 rounded-[35px] flex items-center justify-between transition-all duration-700 shadow-xl border-4 mt-6">
                         <div>
                             <p class="text-xs md:text-base text-black font-black uppercase tracking-widest mb-2">75歲後最終自付缺口</p>
-                            <p class="text-3xl md:text-6xl font-black tracking-tighter" id="future-res-gap">$0</p>
+                            <p class="text-2xl md:text-5xl font-black tracking-tighter" id="future-res-gap">$0</p>
                         </div>
                         <div id="future-gap-icon" class="p-5 bg-white/30 rounded-3xl shadow-inner scale-150"></div>
                     </div>
 
-                    <div id="future-interactive-section" class="mt-12">
+                    <div id="future-interactive-section" class="mt-8">
                         <div id="future-success-message" class="hidden animate-pulse-bounce p-8 bg-green-50 border-4 border-green-200 rounded-3xl text-center shadow-lg">
                             <div class="text-5xl mb-4">🎉</div>
                             <h3 class="text-2xl md:text-3xl font-black text-green-700">恭喜!您的終身醫療保障充足，您的深謀遠慮令人佩服，祝您健康平安！</h3>
@@ -708,13 +704,13 @@
                 </h3>
                 
                 <div class="flex flex-col gap-6 relative z-10">
-                    <button onclick="goToStep(5)" class="w-full py-6 md:py-8 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-lg transition-all transform active:scale-95 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left px-8 btn-hover-scale">
-                        <span class="text-4xl btn-text">🏦</span>
-                        <span class="font-black text-xl md:text-2xl flex-1 btn-text">A: 我可以把醫療基金的錢存在銀行或投資，需要時再提出。</span>
+                    <button onclick="goToStep(5)" class="w-full h-auto py-6 md:py-8 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-lg transition-all transform active:scale-95 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left px-6 md:px-8 btn-hover-scale">
+                        <span class="text-4xl md:text-5xl btn-text shrink-0">🏦</span>
+                        <span class="font-black text-xl md:text-2xl flex-1 btn-text whitespace-normal break-words leading-snug">A: 我可以把醫療基金的錢存在銀行或投資，需要時再提出。</span>
                     </button>
-                    <button onclick="goToStep(10)" class="w-full py-6 md:py-8 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-lg transition-all transform active:scale-95 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left px-8 btn-hover-scale">
-                        <span class="text-4xl btn-text">🛡️</span>
-                        <span class="font-black text-lg md:text-xl flex-1 btn-text" style="font-size: 110%;">B: 聽聽保險怎麼說...</span>
+                    <button onclick="goToStep(10)" class="w-full h-auto py-6 md:py-8 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-lg transition-all transform active:scale-95 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left px-6 md:px-8 btn-hover-scale">
+                        <span class="text-4xl md:text-5xl btn-text shrink-0">🛡️</span>
+                        <span class="font-black text-xl md:text-2xl flex-1 btn-text whitespace-normal break-words leading-snug">B: 聽聽保險怎麼說...</span>
                     </button>
                 </div>
             </div>
@@ -1032,7 +1028,7 @@
                             </button>
                             <div class="flex-1 w-full mt-4 md:mt-0">
                                 <p class="text-sm md:text-base font-black uppercase tracking-widest mb-2 opacity-80 text-black" id="wehs-gap-title">規劃後最終自付缺口</p>
-                                <p class="text-3xl md:text-6xl font-black tracking-tighter" id="wehs-final-gap"></p>
+                                <p class="text-2xl md:text-5xl font-black tracking-tighter" id="wehs-final-gap"></p>
                                 
                                 <div id="wehs-analysis-details" class="mt-6 p-5 bg-white/60 rounded-2xl border border-black/10 space-y-3 text-sm md:text-lg font-bold text-slate-800 shadow-sm max-w-xl">
                                 </div>
@@ -1880,12 +1876,12 @@
             const gapIcon = document.getElementById('gap-icon');
             if (gap > 0) {
                 const coverPct = totalCost > 0 ? ((currentTotalClaim / totalCost) * 100).toFixed(1) : 100.0;
-                document.getElementById('res-gap').innerHTML = `<span class="text-red-600">不足 : </span>${fmt(gap)}<span class="text-lg md:text-2xl text-red-500 font-bold block mt-2">(保險覆蓋總支出比例: ${coverPct}%)</span>`;
-                gapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-red-50 text-red-600 border-4 border-red-100 shadow-2xl transition-all';
+                document.getElementById('res-gap').innerHTML = `<span class="text-red-600">不足 : </span>${fmt(gap)}<span class="text-base md:text-xl text-red-500 font-bold block mt-2">(保險覆蓋總支出比例: ${coverPct}%)</span>`;
+                gapBox.className = 'p-8 md:p-10 rounded-[35px] flex items-center justify-between bg-red-50 text-red-600 border-4 border-red-100 shadow-2xl transition-all';
                 gapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-red-500"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
             } else {
-                document.getElementById('res-gap').innerHTML = '<span class="text-green-600">保額已完全覆蓋 COVERED</span>';
-                gapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-green-50 text-green-600 border-4 border-green-100 shadow-2xl transition-all';
+                document.getElementById('res-gap').innerHTML = '<span class="text-green-600" style="font-size: 80%;">保額已完全覆蓋 COVERED</span>';
+                gapBox.className = 'p-8 md:p-10 rounded-[35px] flex items-center justify-between bg-green-50 text-green-600 border-4 border-green-100 shadow-2xl transition-all';
                 gapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-green-500"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>';
             }
 
@@ -1916,14 +1912,14 @@
             const futureGapIcon = document.getElementById('future-gap-icon');
             if (futureGap > 0) {
                 const futureCoverPct = totalCost > 0 ? ((futureTotalClaim / totalCost) * 100).toFixed(1) : 100.0;
-                document.getElementById('future-res-gap').innerHTML = `<span class="text-red-600">不足 : </span>${fmt(futureGap)}<span class="text-lg md:text-2xl text-red-500 font-bold block mt-2">(保險覆蓋總支出比例: ${futureCoverPct}%)</span>`;
-                futureGapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-red-50 text-red-600 border-4 border-red-100 shadow-2xl transition-all';
+                document.getElementById('future-res-gap').innerHTML = `<span class="text-red-600">不足 : </span>${fmt(futureGap)}<span class="text-base md:text-xl text-red-500 font-bold block mt-2">(保險覆蓋總支出比例: ${futureCoverPct}%)</span>`;
+                futureGapBox.className = 'p-8 md:p-10 rounded-[35px] flex items-center justify-between bg-red-50 text-red-600 border-4 border-red-100 shadow-2xl transition-all';
                 futureGapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-red-500"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
                 document.getElementById('future-action-btn-text').innerText = `面對 : ${fmt(futureGap)}元的醫療費缺口，我們可以。。。`;
                 document.getElementById('future-action-flow').classList.remove('hidden');
             } else {
-                document.getElementById('future-res-gap').innerHTML = '<span class="text-green-600">保額已完全覆蓋 COVERED</span>';
-                futureGapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-green-50 text-green-600 border-4 border-green-100 shadow-2xl transition-all';
+                document.getElementById('future-res-gap').innerHTML = '<span class="text-green-600" style="font-size: 80%;">保額已完全覆蓋 COVERED</span>';
+                futureGapBox.className = 'p-8 md:p-10 rounded-[35px] flex items-center justify-between bg-green-50 text-green-600 border-4 border-green-100 shadow-2xl transition-all';
                 futureGapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-green-500"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>';
                 document.getElementById('future-success-message').classList.remove('hidden');
             }
@@ -2083,7 +2079,7 @@
 
             if (finalBalance < 0) {
                 const wehsCoverPct = totalCost > 0 ? ((combinedTotalClaim / totalCost) * 100).toFixed(1) : 100.0;
-                document.getElementById('wehs-final-gap').innerHTML = `<span class="text-red-600">不足 : ${fmt(Math.abs(finalBalance))}</span><span class="text-lg md:text-2xl text-red-500 font-bold block mt-2">(保險覆蓋總支出比例: ${wehsCoverPct}%)</span>`;
+                document.getElementById('wehs-final-gap').innerHTML = `<span class="text-red-600">不足 : ${fmt(Math.abs(finalBalance))}</span><span class="text-base md:text-xl text-red-500 font-bold block mt-2">(保險覆蓋總支出比例: ${wehsCoverPct}%)</span>`;
                 document.getElementById('wehs-gap-title').className = 'text-sm md:text-base font-black uppercase tracking-widest mb-2 text-red-500';
                 gapBox.className = 'mt-10 p-8 md:p-10 pt-16 md:pt-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 bg-red-50 border-red-200 relative';
                 gapIcon.innerHTML = '<span class="emoji-sad text-5xl md:text-7xl">😢</span>';
