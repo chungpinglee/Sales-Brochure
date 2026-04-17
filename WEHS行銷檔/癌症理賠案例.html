@@ -238,9 +238,12 @@
                 </button>
                 <span class="font-black text-xl md:text-2xl tracking-tighter">理賠案例分享</span>
             </div>
-            <div class="flex items-center gap-2 opacity-50">
-                <span class="text-[10px] font-bold hidden md:inline tracking-tighter text-white">醫療理賠分析</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <div class="flex items-center gap-3">
+                <span class="text-[10px] font-bold hidden md:inline tracking-tighter text-white opacity-50">醫療理賠分析</span>
+                <!-- 客戶管理系統進入按鈕 (連按6次) -->
+                <button onclick="handleAdminClick(event)" class="text-white/50 hover:text-yellow-300 transition-colors cursor-pointer group flex items-center p-1.5 rounded-full hover:bg-white/10" title="連續點擊6次開啟客戶管理介面">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-90 transition-transform"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
             </div>
         </div>
     </nav>
@@ -255,10 +258,17 @@
                     <div class="space-y-3 text-black">
                         <p class="flex items-center gap-2 font-medium text-base md:text-lg">📅 <strong>就醫日期：</strong> 2025/03/18 - 03/19</p>
                         <p class="flex items-center gap-2 font-medium text-base md:text-lg">👤 <strong>就醫科別：</strong> 婦產科 (卵巢癌治療)</p>
-                        <p class="text-2xl md:text-3xl text-red-600 font-black border-b-4 border-red-200 inline-block mt-4">住院僅 1 天，總自費：$59,347</p>
-                        <ul class="list-disc list-inside pl-4 text-sm md:text-base space-y-1 mt-2 text-black font-bold">
-                            <li>單人病房差額：$12,000 /日</li>
-                            <li>自費藥費及處置：$47,347</li>
+                        <p class="text-2xl md:text-3xl text-red-600 font-black border-b-4 border-red-200 inline-block mt-4">住院僅 1 天，總自費：<span id="display-single-total">$59,347</span></p>
+                        <ul class="list-disc list-inside pl-4 text-sm md:text-base space-y-2 mt-2 text-black font-bold">
+                            <li class="flex items-center flex-wrap gap-1">單人病房差額：
+                                <span class="text-blue-700">$</span>
+                                <input type="text" id="setting-room-cost" value="12,000" oninput="formatNumberInput(this); updateBaseCosts();" class="w-20 md:w-24 text-right font-black text-blue-700 border-b-2 border-blue-300 bg-blue-50/50 focus:bg-white px-1 focus:outline-none focus:border-blue-600 transition-colors">
+                                <span class="text-blue-700">/日</span>
+                            </li>
+                            <li class="flex items-center flex-wrap gap-1">自費藥費及處置：
+                                <span class="text-blue-700">$</span>
+                                <input type="text" id="setting-misc-cost" value="47,347" oninput="formatNumberInput(this); updateBaseCosts();" class="w-24 md:w-28 text-right font-black text-blue-700 border-b-2 border-blue-300 bg-blue-50/50 focus:bg-white px-1 focus:outline-none focus:border-blue-600 transition-colors">
+                            </li>
                         </ul>
                     </div>
                     <div class="flex items-center justify-center">
@@ -290,13 +300,13 @@
                         <div class="mb-3">
                             <span class="text-xs md:text-sm font-black text-white bg-blue-600 px-3 py-1 rounded tracking-widest">累計病房費用</span>
                         </div>
-                        <p class="text-3xl font-black text-black">$288,000</p>
+                        <p class="text-3xl font-black text-black" id="display-total-room">$288,000</p>
                     </div>
                     <div class="p-8 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center justify-center">
                         <div class="mb-3">
                             <span class="text-xs md:text-sm font-black text-white bg-blue-600 px-3 py-1 rounded tracking-widest">累計醫療雜費</span>
                         </div>
-                        <p class="text-3xl font-black text-black">$1,136,328</p>
+                        <p class="text-3xl font-black text-black" id="display-total-misc">$1,136,328</p>
                     </div>
                 </div>
                 
@@ -304,7 +314,7 @@
                     <div class="mb-4">
                         <span class="text-lg md:text-2xl font-bold text-white bg-blue-600 px-4 py-2 rounded-xl italic">總支出預估高達</span>
                     </div>
-                    <p class="text-5xl md:text-7xl font-black text-red-600 tracking-tighter mt-2">$1,424,328</p>
+                    <p class="text-5xl md:text-7xl font-black text-red-600 tracking-tighter mt-2" id="display-total-cost">$1,424,328</p>
                 </div>
                 
                 <button onclick="goToStep(1)" class="w-full py-6 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-xl transition-colors duration-300 transform active:scale-95 flex items-center justify-center gap-4 btn-hover-scale">
@@ -316,25 +326,43 @@
 
         <!-- STEP 1: 詳細保額輸入 -->
         <div id="step-1" class="step-content">
-            <div class="mb-10 p-6 bg-blue-600 text-white rounded-3xl shadow-lg flex items-start gap-5 animate-in slide-in-from-top-4">
+            <div class="mb-8 p-6 bg-blue-600 text-white rounded-3xl shadow-lg flex items-start gap-5 animate-in slide-in-from-top-4">
                 <div class="bg-white/20 p-3 rounded-2xl shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
                 </div>
                 <p class="text-lg md:text-2xl font-black leading-tight">
-                    請將 LINE 記事本中的保單內容分析數字填入，即可進行計算！
-                    <a href="LINE通知.pdf" target="_blank" class="text-yellow-300 hover:text-yellow-100 underline decoration-2 underline-offset-4 transition-colors inline-block mt-1 md:mt-0 whitespace-nowrap">(保障內填寫範例)</a><br>
-                    <span class="text-sm md:text-lg text-blue-200 block mt-2">(若有困難，請通知仲平提供數字也可以!)</span>
+                    您目前的住院日額及實支實付限額保障(預估值)如下:
                 </p>
             </div>
 
+            <!-- 客戶資料快速帶入與解析工具 (改為方形編輯按鈕) -->
+            <div class="mb-10 animate-in slide-in-from-top-6 flex justify-end">
+                <button onclick="openCustomerToolModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-black py-3 px-8 rounded flex items-center gap-2 shadow-md transition-colors text-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    編輯
+                </button>
+            </div>
+
             <div class="space-y-10">
+                <!-- 客戶姓名搜尋帶入區塊 -->
+                <div class="bg-white p-5 rounded-3xl shadow-sm border-2 border-blue-200 flex flex-col md:flex-row items-center gap-4 animate-in slide-in-from-top-6">
+                    <div class="flex items-center gap-2 text-blue-800 font-black shrink-0 text-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                        快速帶入客戶：
+                    </div>
+                    <div class="relative flex-1 w-full">
+                        <input type="text" id="main-customer-search" list="main-customer-list" onchange="handleMainCustomerSearch(this.value)" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-slate-50 font-bold text-lg text-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all" placeholder="請點擊或輸入客戶姓名快速帶入...">
+                        <datalist id="main-customer-list"></datalist>
+                    </div>
+                </div>
+
                 <!-- 一般住院日額組 (淡綠色) -->
                 <div class="input-group-card">
                     <div class="group-header">
                         <h3 class="font-black text-green-900 text-xl">一般住院日額合計:</h3>
                         <div class="flex items-center gap-1 text-green-800">
                             <span class="font-bold text-2xl">$</span>
-                            <input type="text" inputmode="numeric" id="num-norm-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl text-green-900">
+                            <input type="text" id="num-norm-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl text-green-900">
                             <span class="text-sm font-black opacity-80">/ 日</span>
                         </div>
                     </div>
@@ -390,7 +418,7 @@
                         <h3 class="font-black text-green-900 text-xl">癌症住院日額合計:</h3>
                         <div class="flex items-center gap-1 text-green-800">
                             <span class="font-bold text-2xl">$</span>
-                            <input type="text" inputmode="numeric" id="num-can-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl text-green-900">
+                            <input type="text" id="num-can-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl text-green-900">
                             <span class="text-sm font-black opacity-80">/ 日</span>
                         </div>
                     </div>
@@ -429,63 +457,85 @@
                         <h3 class="font-black text-green-900 text-xl text-center md:text-left">住院實支實付合計上限:</h3>
                         <div class="flex items-center gap-1 text-green-800 justify-center">
                             <span class="font-bold text-2xl">$</span>
-                            <input type="text" inputmode="numeric" id="num-reim-total" value="0" readonly class="read-only-total w-36 md:w-48 text-2xl md:text-4xl text-green-900">
+                            <input type="text" id="num-reim-total" value="0" readonly class="read-only-total w-36 md:w-48 text-2xl md:text-4xl text-green-900">
                             <span class="text-sm font-black opacity-80">元</span>
                         </div>
                     </div>
                     <div class="sub-items-area grid grid-cols-1 md:grid-cols-2 gap-8 space-y-0">
-                        <div class="sub-input-row">
+                        <div class="sub-input-row justify-center">
                             <div class="flex justify-between items-center">
                                 <span class="text-sm font-black text-black uppercase">🚫 65歲終止</span>
                                 <input type="text" inputmode="numeric" id="num-reim-65" value="0" oninput="itemUpdate('reim', '65', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                             </div>
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-3 mt-2">
                                 <input type="range" id="range-reim-65" min="0" max="150000" step="1000" value="0" oninput="itemUpdate('reim', '65', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cyan-600">
                                 <span class="text-[10px] font-black text-black whitespace-nowrap">
                                     可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
                                 </span>
                             </div>
                         </div>
-                        <div class="sub-input-row">
+                        <div class="sub-input-row justify-center">
                             <div class="flex justify-between items-center">
                                 <span class="text-sm font-black text-black uppercase">🚫 75歲終止</span>
                                 <input type="text" inputmode="numeric" id="num-reim-75" value="0" oninput="itemUpdate('reim', '75', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                             </div>
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-3 mt-2">
                                 <input type="range" id="range-reim-75" min="0" max="300000" step="1000" value="0" oninput="itemUpdate('reim', '75', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cyan-600">
                                 <span class="text-[10px] font-black text-black whitespace-nowrap">
                                     可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
                                 </span>
                             </div>
                         </div>
-                        <div class="sub-input-row">
-                            <div class="flex justify-between items-center">
-                                <div class="text-left">
-                                    <span class="text-sm font-black text-black uppercase">♾️ 終身帳戶型</span>
-                                    <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
+
+                        <!-- 終身帳戶型 (加入總上限) -->
+                        <div class="sub-input-row justify-center relative">
+                            <div class="flex flex-col gap-2 w-full">
+                                <div class="flex justify-between items-center">
+                                    <div class="text-left">
+                                        <span class="text-sm font-black text-black uppercase">♾️ 終身帳戶型</span>
+                                        <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
+                                    </div>
+                                    <input type="text" inputmode="numeric" id="num-reim-life" value="0" oninput="itemUpdate('reim', 'life', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                                 </div>
-                                <input type="text" inputmode="numeric" id="num-reim-life" value="0" oninput="itemUpdate('reim', 'life', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <input type="range" id="range-reim-life" min="0" max="500000" step="1000" value="0" oninput="itemUpdate('reim', 'life', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cyan-600">
-                                <span class="text-[10px] font-black text-black whitespace-nowrap">
-                                    可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
-                                </span>
+                                <div class="flex items-center gap-3">
+                                    <input type="range" id="range-reim-life" min="0" max="500000" step="1000" value="0" oninput="itemUpdate('reim', 'life', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cyan-600">
+                                    <span class="text-[10px] font-black text-black whitespace-nowrap">
+                                        可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>
+                                    </span>
+                                </div>
+                                <div class="flex justify-between items-center mt-1 pl-3 border-l-4 border-cyan-100 bg-cyan-50/50 p-1.5 rounded-r-lg">
+                                    <span class="text-[11px] font-black text-cyan-800 tracking-wider">🔒 帳戶總上限:</span>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-xs font-bold text-slate-400">$</span>
+                                        <input type="text" inputmode="numeric" id="num-reim-life-total" value="0" oninput="itemUpdate('reim', 'life-total', this.value, 'num-only')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-cyan-100 rounded-lg px-2 py-1 hover:border-cyan-400 transition-all text-sm">
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="sub-input-row">
-                            <div class="flex justify-between items-center">
-                                <div class="text-left">
-                                    <span class="text-sm font-black text-black uppercase">♾️ 75歲啟動型</span>
-                                    <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
+
+                        <!-- 75歲啟動型 (加入總上限) -->
+                        <div class="sub-input-row justify-center relative">
+                            <div class="flex flex-col gap-2 w-full">
+                                <div class="flex justify-between items-center">
+                                    <div class="text-left">
+                                        <span class="text-sm font-black text-black uppercase">♾️ 75歲啟動型</span>
+                                        <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
+                                    </div>
+                                    <input type="text" inputmode="numeric" id="num-reim-75start" value="0" oninput="itemUpdate('reim', '75start', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                                 </div>
-                                <input type="text" inputmode="numeric" id="num-reim-75start" value="0" oninput="itemUpdate('reim', '75start', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <input type="range" id="range-reim-75start" min="0" max="500000" step="1000" value="0" oninput="itemUpdate('reim', '75start', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cyan-600">
-                                <span class="text-[10px] font-black text-black whitespace-nowrap">
-                                    可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>或直接輸入數字
-                                </span>
+                                <div class="flex items-center gap-3">
+                                    <input type="range" id="range-reim-75start" min="0" max="500000" step="1000" value="0" oninput="itemUpdate('reim', '75start', this.value, 'range')" class="w-full flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cyan-600">
+                                    <span class="text-[10px] font-black text-black whitespace-nowrap">
+                                        可拖曳<span class="text-blue-600">藍色<span class="text-sm font-black">O</span>圓圈</span>
+                                    </span>
+                                </div>
+                                <div class="flex justify-between items-center mt-1 pl-3 border-l-4 border-cyan-100 bg-cyan-50/50 p-1.5 rounded-r-lg">
+                                    <span class="text-[11px] font-black text-cyan-800 tracking-wider">🔒 帳戶總上限:</span>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-xs font-bold text-slate-400">$</span>
+                                        <input type="text" inputmode="numeric" id="num-reim-75start-total" value="0" oninput="itemUpdate('reim', '75start-total', this.value, 'num-only')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-cyan-100 rounded-lg px-2 py-1 hover:border-cyan-400 transition-all text-sm">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -854,15 +904,6 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                                 商品簡介
                             </a>
-                            <a href="https://drive.google.com/file/d/1mXZRxqxjNhqwgHCPydiSdvp5nCXg9q32/view?usp=drive_link" target="_blank" class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-full text-sm md:text-base font-bold transition-all hover:-translate-y-1 shadow-lg backdrop-blur-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                                保單條款
-                            </a>
-                            <!-- 建議書按鈕移到此處右側 -->
-                            <button onclick="handleProposalClick(event)" class="px-5 py-2 bg-gradient-to-r from-yellow-500 to-orange-400 hover:from-yellow-400 hover:to-orange-300 text-slate-900 rounded-full font-black shadow-[0_0_15px_rgba(250,204,21,0.5)] transition-transform transform active:scale-95 border-2 border-yellow-200/50 flex items-center gap-2 text-sm md:text-base">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                                <span class="proposal-btn-text">建議書</span>
-                            </button>
                         </div>
                     </div>
 
@@ -923,7 +964,7 @@
                             </div>
                             <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
                                 <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
-                                <p class="text-base md:text-lg font-black text-slate-900 leading-snug">萬一碰到最花錢的重症，理賠金還會加倍給哦！讓我們在遇到大難關的時候，背後能有最強大的靠山。</p>
+                                <p class="text-base md:text-lg font-black text-slate-900 leading-snug">萬一碰到最花錢的重症，理賠金還會加倍給哦！讓我們在遇到大難關的時候，背後能有最強大的靠山的。</p>
                             </div>
                         </div>
 
@@ -1005,7 +1046,7 @@
                                 <tbody>
                                     <tr class="hover:bg-slate-50 transition-colors">
                                         <td class="py-6 px-3 border-b border-slate-100 font-black text-left pl-6 text-black text-lg">癌症住院日額<br><span class="text-[11px] text-black font-bold tracking-widest">(24天累計)</span></td>
-                                        <td class="py-6 px-3 border-b border-slate-100 font-black text-red-600 text-xl">$288,000</td>
+                                        <td class="py-6 px-3 border-b border-slate-100 font-black text-red-600 text-xl" id="wehs-detail-exp-can">$288,000</td>
                                         <td class="py-6 px-3 border-b border-slate-100 font-bold text-black text-sm" id="wehs-old-limit-can"></td>
                                         <td class="py-6 px-3 border-b border-slate-100 font-black text-black text-lg" id="wehs-old-claim-can"></td>
                                         <td class="py-6 px-3 border-b border-blue-50 font-black text-blue-700 bg-blue-50/50 leading-relaxed text-sm md:text-base" id="wehs-limit-can"></td>
@@ -1013,7 +1054,7 @@
                                     </tr>
                                     <tr class="hover:bg-slate-50 transition-colors">
                                         <td class="py-6 px-3 border-b border-slate-100 font-black text-left pl-6 text-black text-lg">醫療雜費實支<br><span class="text-[11px] text-black font-bold tracking-widest">(24次住院)</span></td>
-                                        <td class="py-6 px-3 border-b border-slate-100 font-black text-red-600 text-xl">$1,136,328</td>
+                                        <td class="py-6 px-3 border-b border-slate-100 font-black text-red-600 text-xl" id="wehs-detail-exp-reim">$1,136,328</td>
                                         <td class="py-6 px-3 border-b border-slate-100 font-bold text-black text-sm" id="wehs-old-limit-reim"></td>
                                         <td class="py-6 px-3 border-b border-slate-100 font-black text-black text-lg" id="wehs-old-claim-reim"></td>
                                         <td class="py-6 px-3 border-b border-blue-50 font-black text-blue-700 bg-blue-50/50 leading-relaxed text-sm md:text-base" id="wehs-limit-reim"></td>
@@ -1075,13 +1116,128 @@
         </div>
     </div>
 
+    <!-- 編輯頁面 Modal (客戶資料編輯與解析) -->
+    <div id="customer-tool-modal" class="fixed inset-0 bg-slate-100 z-[120] hidden flex flex-col overflow-y-auto animate-in fade-in zoom-in duration-300">
+        <nav class="bg-purple-900 text-white p-4 sticky top-0 z-50 shadow-md">
+            <div class="max-w-5xl mx-auto flex justify-between items-center">
+                <span class="font-black text-xl flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    客戶資料編輯與解析
+                </span>
+                <button onclick="closeCustomerToolModal()" class="px-5 py-2 bg-white/20 hover:bg-white/30 rounded font-bold transition-colors shadow-sm flex items-center gap-2">
+                    返回主畫面
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+            </div>
+        </nav>
+        <div class="p-4 md:p-8 max-w-5xl mx-auto w-full flex-1">
+            <div class="bg-white p-6 md:p-8 rounded-3xl shadow-lg border-2 border-purple-200">
+                
+                <!-- 1. 貼上文字資料解析 -->
+                <div class="mb-8">
+                    <label class="block font-black text-purple-900 mb-3 text-lg">1. 貼上文字資料解析</label>
+                    <textarea id="parse-textarea" rows="5" class="w-full p-4 border-2 border-slate-200 rounded-2xl focus:border-purple-500 outline-none resize-y mb-3 font-bold text-slate-700" placeholder="請在此貼上 LINE 的文字內容..."></textarea>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="parseCustomerText()" class="px-6 py-3 bg-purple-600 text-white font-black rounded-xl hover:bg-purple-700 transition shadow-md flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            提取數據
+                        </button>
+                        <button onclick="clearParseData()" class="px-6 py-3 bg-slate-200 text-slate-700 font-black rounded-xl hover:bg-slate-300 transition shadow-md flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                            清除舊資料
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. 檢查表格 (預設隱藏) -->
+                <div id="verify-section" class="hidden mb-8 bg-purple-50 p-5 rounded-2xl border border-purple-100">
+                    <h4 class="font-black text-purple-900 mb-4 text-lg">2. 檢查提取結果 (若有誤可直接在下方表格修改)</h4>
+                    
+                    <datalist id="existing-customers-list"></datalist>
+
+                    <div class="overflow-auto max-h-[50vh] bg-white rounded-xl border border-slate-200 shadow-sm relative">
+                        <table class="w-full text-center min-w-[850px]">
+                            <thead class="bg-purple-100 text-purple-900 text-sm sticky top-0 z-10 shadow-sm outline outline-1 outline-purple-200">
+                                <tr>
+                                    <th class="py-3 px-2 font-black border-r border-purple-200 w-14">刪除</th>
+                                    <th class="py-3 px-2 font-black border-r border-purple-200">客戶姓名</th>
+                                    <th class="py-3 px-2 font-bold border-r border-purple-200">一般-租約</th>
+                                    <th class="py-3 px-2 font-bold border-r border-purple-200">一般-終身</th>
+                                    <th class="py-3 px-2 font-bold border-r border-purple-200">癌症-終身</th>
+                                    <th class="py-3 px-2 font-bold border-r border-purple-200">實支-65歲</th>
+                                    <th class="py-3 px-2 font-bold border-r border-purple-200">實支-75歲</th>
+                                    <th class="py-3 px-2 font-bold border-r border-purple-200 leading-tight text-xs">實支-終身<br><span class="text-[10px] font-normal">(每次 / 總上限)</span></th>
+                                    <th class="py-3 px-2 font-bold leading-tight text-xs">實支-75啟動<br><span class="text-[10px] font-normal">(每次 / 總上限)</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="verify-table-body">
+                                <!-- 動態產生提取結果 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-5 flex gap-4">
+                        <button onclick="confirmAndApplyParsedData()" class="px-6 py-3 bg-green-600 text-white font-black rounded-xl hover:bg-green-700 transition shadow-md w-full md:w-auto">
+                            檢查無誤，儲存至表格
+                        </button>
+                    </div>
+                </div>
+
+                <hr class="border-slate-200 my-8">
+
+                <!-- 3. 所有客戶清單 (供參考及直接修改) -->
+                <div class="mb-8">
+                    <label class="block font-black text-purple-900 mb-3 text-lg">3. 所有客戶資料表 (供參考及直接修改)</label>
+                    <div class="overflow-auto max-h-[50vh] bg-white rounded-xl border border-slate-200 shadow-sm relative">
+                        <table class="w-full text-center min-w-[850px]">
+                            <thead class="bg-blue-100 text-blue-900 text-sm sticky top-0 z-10 shadow-sm outline outline-1 outline-blue-200">
+                                <tr>
+                                    <th class="py-3 px-2 font-black border-r border-blue-200 w-14">刪除</th>
+                                    <th class="py-3 px-2 font-black border-r border-blue-200">客戶姓名</th>
+                                    <th class="py-3 px-2 font-bold border-r border-blue-200">一般-租約</th>
+                                    <th class="py-3 px-2 font-bold border-r border-blue-200">一般-終身</th>
+                                    <th class="py-3 px-2 font-bold border-r border-blue-200">癌症-終身</th>
+                                    <th class="py-3 px-2 font-bold border-r border-blue-200">實支-65歲</th>
+                                    <th class="py-3 px-2 font-bold border-r border-blue-200">實支-75歲</th>
+                                    <th class="py-3 px-2 font-bold border-r border-blue-200 leading-tight text-xs">實支-終身<br><span class="text-[10px] font-normal">(每次 / 總上限)</span></th>
+                                    <th class="py-3 px-2 font-bold leading-tight text-xs">實支-75啟動<br><span class="text-[10px] font-normal">(每次 / 總上限)</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tool-customer-table-body">
+                                <!-- JS 動態產生，綁定 onChange 供直接修改 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <hr class="border-slate-200 my-8">
+
+                <!-- 4. 匯入/匯出 JSON 備份 -->
+                <div>
+                    <label class="block font-black text-purple-900 mb-3 text-lg">4. 匯入/匯出 JSON 備份</label>
+                    <div class="flex gap-4">
+                        <label class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl cursor-pointer hover:bg-slate-700 transition shadow-md whitespace-nowrap flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            匯入 JSON
+                            <input type="file" accept=".json" class="hidden" onchange="importCustomers(event)">
+                        </label>
+                        <button onclick="exportCustomers()" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-md whitespace-nowrap flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            匯出 JSON
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script>
-        const totalTimes = 24;
-        const totalCost = 1424328;
-        const singleMiscCost = 47347;
-        const singleRoomCost = 12000;
-        const expCanTotal = 288000;
-        const expReimTotal = 1136328;
+        let totalTimes = 24;
+        let singleRoomCost = 12000;
+        let singleMiscCost = 47347;
+        let expCanTotal = singleRoomCost * totalTimes;
+        let expReimTotal = singleMiscCost * totalTimes;
+        let totalCost = expCanTotal + expReimTotal;
 
         let globalFutureCanLimit = 0;
         let globalFutureReimLimit = 0;
@@ -1095,10 +1251,539 @@
         let proposalClickTimer = null;
         let proposalData = { customerName: '', url: '' };
 
+        // --- 客戶資料管理系統 ---
+        let customersData = [];
+        
+        let adminClickCount = 0;
+        let adminClickTimer = null;
+
         window.onload = function() {
-            refreshTotals('norm');
-            refreshTotals('reim');
+            updateBaseCosts();
+            updateCustomerSelect();
         };
+
+        // --- Step 0 基礎醫療花費更新 ---
+        function updateBaseCosts() {
+            const roomInput = document.getElementById('setting-room-cost');
+            const miscInput = document.getElementById('setting-misc-cost');
+            
+            singleRoomCost = parseInt((roomInput.value || '0').replace(/,/g, ''), 10) || 0;
+            singleMiscCost = parseInt((miscInput.value || '0').replace(/,/g, ''), 10) || 0;
+            
+            expCanTotal = singleRoomCost * totalTimes;
+            expReimTotal = singleMiscCost * totalTimes;
+            totalCost = expCanTotal + expReimTotal;
+
+            const fmt = (v) => '$' + new Intl.NumberFormat('zh-TW').format(v);
+            
+            const updateText = (id, val) => {
+                const el = document.getElementById(id);
+                if(el) el.innerText = val;
+            };
+
+            updateText('display-single-total', fmt(singleRoomCost + singleMiscCost));
+            updateText('display-total-room', fmt(expCanTotal));
+            updateText('display-total-misc', fmt(expReimTotal));
+            updateText('display-total-cost', fmt(totalCost));
+
+            updateText('detail-exp-can', fmt(expCanTotal));
+            updateText('detail-exp-reim', fmt(expReimTotal));
+            updateText('total-exp-all', fmt(totalCost));
+
+            updateText('future-detail-exp-can', fmt(expCanTotal));
+            updateText('future-detail-exp-reim', fmt(expReimTotal));
+            updateText('future-total-exp-all', fmt(totalCost));
+
+            updateText('wehs-detail-exp-can', fmt(expCanTotal));
+            updateText('wehs-detail-exp-reim', fmt(expReimTotal));
+        }
+
+        // --- 客戶管理與快速選擇邏輯 ---
+        function handleAdminClick(e) {
+            e.preventDefault();
+            adminClickCount++;
+            if (adminClickTimer) clearTimeout(adminClickTimer);
+            
+            if (adminClickCount >= 6) {
+                adminClickCount = 0;
+                openAdminModal();
+            } else {
+                adminClickTimer = setTimeout(() => {
+                    adminClickCount = 0;
+                }, 400); // 400毫秒內連點判定
+            }
+        }
+
+        function openAdminModal() {
+            renderCustomerTable();
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function renderCustomerTable() {
+            const tbody = document.getElementById('customer-table-body');
+            const toolTbody = document.getElementById('tool-customer-table-body');
+            
+            if (tbody) tbody.innerHTML = '';
+            if (toolTbody) toolTbody.innerHTML = '';
+            
+            const fmt = (v) => new Intl.NumberFormat('zh-TW').format(v);
+            const fmtInput = (v) => v === 0 ? '0' : new Intl.NumberFormat('zh-TW').format(v);
+
+            customersData.forEach((c, index) => {
+                // 給隱藏的客戶管理系統 (6次點擊的) 的展示與套用表
+                if (tbody) {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-200 hover:bg-slate-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-3 text-center font-black text-black border-r border-slate-200">${c.name}</td>
+                        <td class="p-3 text-center text-slate-700 border-r border-slate-200 font-bold">${fmt(c.norm_rent)}</td>
+                        <td class="p-3 text-center text-slate-700 border-r border-slate-200 font-bold">${fmt(c.norm_life)}</td>
+                        <td class="p-3 text-center text-red-600 border-r border-slate-200 font-bold">${fmt(c.can_life)}</td>
+                        <td class="p-3 text-center text-slate-700 border-r border-slate-200 font-bold">${fmt(c.reim_65)}</td>
+                        <td class="p-3 text-center text-slate-700 border-r border-slate-200 font-bold">${fmt(c.reim_75)}</td>
+                        <td class="p-3 text-center text-slate-700 border-r border-slate-200 font-bold text-xs leading-tight">
+                            ${fmt(c.reim_life)}<br><span class="text-cyan-600 text-[10px]">${fmt(c.reim_life_total || 0)}</span>
+                        </td>
+                        <td class="p-3 text-center text-slate-700 border-r border-slate-200 font-bold text-xs leading-tight">
+                            ${fmt(c.reim_75start)}<br><span class="text-cyan-700 text-[10px]">${fmt(c.reim_75start_total || 0)}</span>
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="applyCustomerData(${index}, true)" class="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-200 font-black mr-2 shadow-sm transition">套用</button>
+                            <button onclick="deleteCustomer(${index})" class="text-sm bg-red-100 text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-200 font-black shadow-sm transition">刪除</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+
+                // 給編輯頁面專用的「可直接修改」參考表
+                if (toolTbody) {
+                    const trTool = document.createElement('tr');
+                    trTool.className = "border-b border-slate-200 hover:bg-slate-50 transition-colors";
+                    trTool.innerHTML = `
+                        <td class="p-2 border-r border-slate-200 text-center">
+                            <button onclick="deleteCustomer(${index})" class="w-8 h-8 inline-flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-600 hover:text-white transition-colors font-black shadow-sm" title="刪除此列">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            </button>
+                        </td>
+                        <td class="p-2 border-r border-slate-200"><input type="text" class="w-full text-center font-black text-slate-800 bg-transparent outline-none focus:bg-blue-50 p-1 rounded" value="${c.name}" onchange="updateCustomerData(${index}, 'name', this.value)"></td>
+                        <td class="p-2 border-r border-slate-200"><input type="text" oninput="formatNumberInput(this)" onchange="updateCustomerData(${index}, 'norm_rent', this.value)" class="w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-blue-50 p-1 rounded" value="${fmtInput(c.norm_rent)}"></td>
+                        <td class="p-2 border-r border-slate-200"><input type="text" oninput="formatNumberInput(this)" onchange="updateCustomerData(${index}, 'norm_life', this.value)" class="w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-blue-50 p-1 rounded" value="${fmtInput(c.norm_life)}"></td>
+                        <td class="p-2 border-r border-slate-200"><input type="text" oninput="formatNumberInput(this)" onchange="updateCustomerData(${index}, 'can_life', this.value)" class="w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-blue-50 p-1 rounded" value="${fmtInput(c.can_life)}"></td>
+                        <td class="p-2 border-r border-slate-200"><input type="text" oninput="formatNumberInput(this)" onchange="updateCustomerData(${index}, 'reim_65', this.value)" class="w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-blue-50 p-1 rounded" value="${fmtInput(c.reim_65)}"></td>
+                        <td class="p-2 border-r border-slate-200"><input type="text" oninput="formatNumberInput(this)" onchange="updateCustomerData(${index}, 'reim_75', this.value)" class="w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-blue-50 p-1 rounded" value="${fmtInput(c.reim_75)}"></td>
+                        <td class="p-2 border-r border-slate-200">
+                            <input type="text" oninput="formatNumberInput(this)" onchange="updateCustomerData(${index}, 'reim_life', this.value)" class="w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-blue-50 p-1 rounded" value="${fmtInput(c.reim_life)}">
+                            <div class="h-px w-full bg-slate-200 my-1"></div>
+                            <input type="text" oninput="formatNumberInput(this)" onchange="updateCustomerData(${index}, 'reim_life_total', this.value)" class="w-full text-center font-bold text-cyan-700 bg-transparent outline-none focus:bg-cyan-50 p-1 rounded text-xs" value="${c.reim_life_total ? fmtInput(c.reim_life_total) : ''}">
+                        </td>
+                        <td class="p-2">
+                            <input type="text" oninput="formatNumberInput(this)" onchange="updateCustomerData(${index}, 'reim_75start', this.value)" class="w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-blue-50 p-1 rounded" value="${fmtInput(c.reim_75start)}">
+                            <div class="h-px w-full bg-slate-200 my-1"></div>
+                            <input type="text" oninput="formatNumberInput(this)" onchange="updateCustomerData(${index}, 'reim_75start_total', this.value)" class="w-full text-center font-bold text-cyan-700 bg-transparent outline-none focus:bg-cyan-50 p-1 rounded text-xs" value="${c.reim_75start_total ? fmtInput(c.reim_75start_total) : ''}">
+                        </td>
+                    `;
+                    toolTbody.appendChild(trTool);
+                }
+            });
+            updateCustomerSelect();
+        }
+
+        // 用於處理清單內直接修改後靜默更新，保持輸入框焦點
+        function updateCustomerData(index, field, value) {
+            let val = value;
+            if (field !== 'name') {
+                val = parseInt(value.replace(/,/g, ''), 10) || 0;
+            } else {
+                val = value.trim();
+            }
+            customersData[index][field] = val;
+            updateCustomerSelect();
+        }
+
+        function updateCustomerSelect() {
+            const select = document.getElementById('customer-select');
+            const datalist = document.getElementById('existing-customers-list');
+            const mainDatalist = document.getElementById('main-customer-list');
+            
+            if (select) select.innerHTML = '<option value="">-- 從清單選擇客戶直接帶入 --</option>';
+            if (datalist) datalist.innerHTML = '';
+            if (mainDatalist) mainDatalist.innerHTML = '';
+
+            customersData.forEach((c, i) => {
+                if (select) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.innerText = c.name;
+                    select.appendChild(opt);
+                }
+                if (datalist) {
+                    const dOpt = document.createElement('option');
+                    dOpt.value = c.name;
+                    datalist.appendChild(dOpt);
+                }
+                if (mainDatalist) {
+                    const mOpt = document.createElement('option');
+                    mOpt.value = c.name;
+                    mainDatalist.appendChild(mOpt);
+                }
+            });
+        }
+
+        function handleCustomerSelect(indexStr) {
+            if (indexStr === "") return;
+            applyCustomerData(parseInt(indexStr), false);
+        }
+
+        function handleMainCustomerSearch(name) {
+            if (!name.trim()) return;
+            const index = customersData.findIndex(c => c.name === name.trim());
+            if (index >= 0) {
+                applyCustomerData(index, false);
+                alert(`已自動帶入【${name}】的資料！`);
+            }
+        }
+
+        function applyCustomerData(index, fromModal = false) {
+            const c = customersData[index];
+            if (!c) return;
+            
+            itemUpdate('norm', 'rent', c.norm_rent || 0, 'num');
+            itemUpdate('norm', 'life', c.norm_life || 0, 'num');
+            itemUpdate('can', 'life', c.can_life || 0, 'num');
+            itemUpdate('reim', '65', c.reim_65 || 0, 'num');
+            itemUpdate('reim', '75', c.reim_75 || 0, 'num');
+            itemUpdate('reim', 'life', c.reim_life || 0, 'num');
+            itemUpdate('reim', 'life-total', c.reim_life_total || 0, 'num-only');
+            itemUpdate('reim', '75start', c.reim_75start || 0, 'num');
+            itemUpdate('reim', '75start-total', c.reim_75start_total || 0, 'num-only');
+            
+            // 強制更新所有的合計欄位，確保畫面數字刷新
+            refreshTotals('norm');
+            refreshTotals('can');
+            refreshTotals('reim');
+            
+            if (fromModal) {
+                closeAdminModal();
+                alert(`已成功將【${c.name}】的資料帶入畫面！`);
+                const select = document.getElementById('customer-select');
+                if(select) select.value = index;
+            }
+        }
+
+        function exportCustomers() {
+            if(customersData.length === 0) {
+                alert('目前沒有客戶資料可供匯出');
+                return;
+            }
+
+            // 自動產生民國年月日檔名
+            const today = new Date();
+            const minguoYear = today.getFullYear() - 1911;
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const filename = `${minguoYear}${month}${day}數據備份.json`;
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(customersData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", filename);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importCustomers(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    let addCount = 0;
+                    let updateCount = 0;
+
+                    // 1. 判斷是否為系統原有的陣列備份格式
+                    if (Array.isArray(importedData)) {
+                        importedData.forEach(newC => {
+                            if(!newC.name) return; // 略過格式不對的
+                            const existingIndex = customersData.findIndex(c => c.name === newC.name);
+                            if (existingIndex >= 0) {
+                                customersData[existingIndex] = newC;
+                                updateCount++;
+                            } else {
+                                customersData.push(newC);
+                                addCount++;
+                            }
+                        });
+                    } 
+                    // 2. 判斷是否為保險 CRM 系統的 JSON 格式 (帶有 data 陣列及 customFields)
+                    else if (importedData && Array.isArray(importedData.data)) {
+                        importedData.data.forEach(item => {
+                            if (!item.name) return;
+                            
+                            let parsedC = {
+                                name: item.name.trim(),
+                                norm_rent: 0, norm_life: 0, can_life: 0,
+                                reim_65: 0, reim_75: 0,
+                                reim_life: 0, reim_life_total: 0,
+                                reim_75start: 0, reim_75start_total: 0
+                            };
+
+                            if (item.customFields && Array.isArray(item.customFields)) {
+                                item.customFields.forEach(f => {
+                                    if (!f.value) return;
+                                    let valStr = String(f.value).replace(/,/g, '').trim();
+                                    let valParts = valStr.split(/[/\\]/); // 處理 1000/10000 格式
+                                    let val1 = parseInt(valParts[0], 10) || 0;
+                                    let val2 = valParts.length > 1 ? (parseInt(valParts[1], 10) || 0) : 0;
+
+                                    switch (f.label) {
+                                        case '住院日額-租約': parsedC.norm_rent = val1; break;
+                                        case '住院日額-終身': parsedC.norm_life = val1; break;
+                                        case '癌症險-終身型': parsedC.can_life = val1; break;
+                                        case '實支實付-65歲終止': parsedC.reim_65 = val1; break;
+                                        case '實支實付-75歲終止': parsedC.reim_75 = val1; break;
+                                        case '實支實付-終身帳戶型(每次/上限)': 
+                                            parsedC.reim_life = val1; 
+                                            parsedC.reim_life_total = val2; 
+                                            break;
+                                        case '實支實付-74歲啟動(每次/上限)':
+                                        case '實支實付-75歲啟動(每次/上限)': 
+                                            parsedC.reim_75start = val1; 
+                                            parsedC.reim_75start_total = val2; 
+                                            break;
+                                    }
+                                });
+                            }
+
+                            const existingIndex = customersData.findIndex(c => c.name === parsedC.name);
+                            if (existingIndex >= 0) {
+                                customersData[existingIndex] = parsedC;
+                                updateCount++;
+                            } else {
+                                customersData.push(parsedC);
+                                addCount++;
+                            }
+                        });
+                    } else {
+                        alert('JSON 格式不正確，無法辨識的資料結構。');
+                        return;
+                    }
+
+                    renderCustomerTable();
+                    alert(`匯入成功！共新增 ${addCount} 筆，更新 ${updateCount} 筆資料。`);
+                } catch (error) {
+                    console.error(error);
+                    alert('檔案解析失敗，請確認是否為正確的 JSON 檔案。');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // 重置 file input
+        }
+
+        function deleteCustomer(index) {
+            const c = customersData[index];
+            if (confirm(`確定要永久刪除【${c.name}】的資料嗎？`)) {
+                customersData.splice(index, 1);
+                renderCustomerTable();
+            }
+        }
+
+        // --- 編輯頁面 Modal 顯示與隱藏 ---
+        function openCustomerToolModal() {
+            renderCustomerTable(); // 開啟時確保資料表為最新狀態
+            document.getElementById('customer-tool-modal').classList.remove('hidden');
+        }
+
+        function closeCustomerToolModal() {
+            document.getElementById('customer-tool-modal').classList.add('hidden');
+        }
+
+        // --- 新增：文字解析處理邏輯 ---
+        function formatNumberInput(el) {
+            let val = el.value.replace(/[^\d]/g, '');
+            if (val) {
+                el.value = new Intl.NumberFormat('zh-TW').format(parseInt(val, 10));
+            } else {
+                el.value = '';
+            }
+        }
+
+        function clearParseData() {
+            document.getElementById('parse-textarea').value = '';
+        }
+
+        function appendToVerifyTable(parsedData) {
+            const fmt = (v) => v === 0 ? '0' : new Intl.NumberFormat('zh-TW').format(v);
+            const tbody = document.getElementById('verify-table-body');
+            const tr = document.createElement('tr');
+            tr.className = "border-t border-slate-200 verify-row hover:bg-slate-50 transition-colors";
+            tr.innerHTML = `
+                <td class="p-2 border-r border-slate-200 text-center">
+                    <button onclick="this.closest('tr').remove()" class="w-8 h-8 inline-flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-600 hover:text-white transition-colors font-black shadow-sm" title="刪除此列">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                </td>
+                <td class="p-2 border-r border-slate-200"><input type="text" list="existing-customers-list" class="v-name w-full text-center font-black text-slate-800 bg-transparent outline-none focus:bg-slate-100 p-1 rounded placeholder-slate-400" placeholder="輸入或下拉選擇" value="${parsedData.name}"></td>
+                <td class="p-2 border-r border-slate-200"><input type="text" oninput="formatNumberInput(this)" class="v-norm-rent w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-slate-100 p-1 rounded" value="${fmt(parsedData.norm_rent)}"></td>
+                <td class="p-2 border-r border-slate-200"><input type="text" oninput="formatNumberInput(this)" class="v-norm-life w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-slate-100 p-1 rounded" value="${fmt(parsedData.norm_life)}"></td>
+                <td class="p-2 border-r border-slate-200"><input type="text" oninput="formatNumberInput(this)" class="v-can-life w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-slate-100 p-1 rounded" value="${fmt(parsedData.can_life)}"></td>
+                <td class="p-2 border-r border-slate-200"><input type="text" oninput="formatNumberInput(this)" class="v-reim-65 w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-slate-100 p-1 rounded" value="${fmt(parsedData.reim_65)}"></td>
+                <td class="p-2 border-r border-slate-200"><input type="text" oninput="formatNumberInput(this)" class="v-reim-75 w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-slate-100 p-1 rounded" value="${fmt(parsedData.reim_75)}"></td>
+                <td class="p-2 border-r border-slate-200">
+                    <input type="text" oninput="formatNumberInput(this)" class="v-reim-life w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-slate-100 p-1 rounded" placeholder="每次" value="${fmt(parsedData.reim_life)}">
+                    <div class="h-px w-full bg-slate-200 my-1"></div>
+                    <input type="text" oninput="formatNumberInput(this)" class="v-reim-life-total w-full text-center font-bold text-cyan-700 bg-transparent outline-none focus:bg-cyan-50 p-1 rounded text-xs" placeholder="總額" value="${parsedData.reim_life_total ? fmt(parsedData.reim_life_total) : ''}">
+                </td>
+                <td class="p-2">
+                    <input type="text" oninput="formatNumberInput(this)" class="v-reim-75start w-full text-center font-bold text-slate-700 bg-transparent outline-none focus:bg-slate-100 p-1 rounded" placeholder="每次" value="${fmt(parsedData.reim_75start)}">
+                    <div class="h-px w-full bg-slate-200 my-1"></div>
+                    <input type="text" oninput="formatNumberInput(this)" class="v-reim-75start-total w-full text-center font-bold text-cyan-700 bg-transparent outline-none focus:bg-cyan-50 p-1 rounded text-xs" placeholder="總額" value="${parsedData.reim_75start_total ? fmt(parsedData.reim_75start_total) : ''}">
+                </td>
+            `;
+            tbody.appendChild(tr);
+            document.getElementById('verify-section').classList.remove('hidden');
+        }
+
+        function parseCustomerText() {
+            const text = document.getElementById('parse-textarea').value;
+            if (!text.trim()) { alert("請先貼上資料"); return; }
+
+            // 1. 嘗試以 JSON 格式解析 (支援外部資料檔整包貼上)
+            try {
+                const importedData = JSON.parse(text);
+                if (importedData && Array.isArray(importedData.data)) {
+                    importedData.data.forEach(item => {
+                        if (!item.name) return;
+                        let parsedC = {
+                            name: item.name.trim(),
+                            norm_rent: 0, norm_life: 0, can_life: 0,
+                            reim_65: 0, reim_75: 0,
+                            reim_life: 0, reim_life_total: 0,
+                            reim_75start: 0, reim_75start_total: 0
+                        };
+                        if (item.customFields && Array.isArray(item.customFields)) {
+                            item.customFields.forEach(f => {
+                                if (!f.value) return;
+                                let valStr = String(f.value).replace(/,/g, '').trim();
+                                let valParts = valStr.split(/[/\\]/);
+                                let val1 = parseInt(valParts[0], 10) || 0;
+                                let val2 = valParts.length > 1 ? (parseInt(valParts[1], 10) || 0) : 0;
+                                switch (f.label) {
+                                    case '住院日額-租約': parsedC.norm_rent = val1; break;
+                                    case '住院日額-終身': parsedC.norm_life = val1; break;
+                                    case '癌症險-終身型': parsedC.can_life = val1; break;
+                                    case '實支實付-65歲終止': parsedC.reim_65 = val1; break;
+                                    case '實支實付-75歲終止': parsedC.reim_75 = val1; break;
+                                    case '實支實付-終身帳戶型(每次/上限)': parsedC.reim_life = val1; parsedC.reim_life_total = val2; break;
+                                    case '實支實付-74歲啟動(每次/上限)':
+                                    case '實支實付-75歲啟動(每次/上限)': parsedC.reim_75start = val1; parsedC.reim_75start_total = val2; break;
+                                }
+                            });
+                        }
+                        appendToVerifyTable(parsedC);
+                    });
+                    document.getElementById('parse-textarea').value = '';
+                    return; // 解析成功後結束函式
+                }
+            } catch(e) {
+                // 非 JSON，繼續使用原有的 LINE 文字逐行解析邏輯
+            }
+
+            // 2. 原有的 LINE 逐行解析邏輯
+            let parsedData = {
+                name: "未命名客戶", norm_rent: 0, norm_life: 0, can_life: 0,
+                reim_65: 0, reim_75: 0, reim_life: 0, reim_life_total: 0, 
+                reim_75start: 0, reim_75start_total: 0
+            };
+            
+            const nameMatch = text.match(/(?:^|\n)([^\n:：]+)(?:先生|小姐)\s*[:：]/);
+            if (nameMatch) {
+                parsedData.name = nameMatch[1].trim().replace(/🟩|您目前的.*/g, '').trim();
+            }
+
+            const lines = text.split('\n');
+            lines.forEach(line => {
+                const m = line.match(/[:：]\s*([\d,]+)(?:\s*\/\s*([\d,]+))?/);
+                if (!m) return;
+                const val = parseInt(m[1].replace(/,/g, ''), 10);
+                const valTotal = m[2] ? parseInt(m[2].replace(/,/g, ''), 10) : 0;
+                
+                if (line.includes('租約型')) parsedData.norm_rent = val;
+                else if (line.includes('終身型') && !line.includes('癌症')) parsedData.norm_life = val;
+                else if (line.includes('癌症險') && line.includes('終身型')) parsedData.can_life = val;
+                else if (line.includes('65歲終止')) parsedData.reim_65 = val;
+                else if (line.includes('75歲終止')) parsedData.reim_75 = val;
+                else if (line.includes('終身帳戶型') && line.includes('75歲啟動')) {
+                     parsedData.reim_75start = val;
+                     if(valTotal) parsedData.reim_75start_total = valTotal;
+                }
+                else if (line.includes('終身帳戶型') && !line.includes('75歲啟動')) {
+                     parsedData.reim_life = val;
+                     if(valTotal) parsedData.reim_life_total = valTotal;
+                }
+            });
+
+            appendToVerifyTable(parsedData);
+        }
+
+        function confirmAndApplyParsedData() {
+            const rows = document.querySelectorAll('#verify-table-body .verify-row');
+            if(rows.length === 0) {
+                alert("目前沒有提取的資料可以儲存。");
+                return;
+            }
+
+            let updatedCount = 0;
+            let addedCount = 0;
+
+            rows.forEach(row => {
+                const getVal = (selector) => {
+                    const el = row.querySelector(selector);
+                    if(!el) return 0;
+                    const val = el.value.replace(/,/g, '');
+                    return val ? parseInt(val, 10) : 0;
+                };
+
+                const nameEl = row.querySelector('.v-name');
+                const name = nameEl ? nameEl.value.trim() : "未命名客戶";
+                if(!name) return;
+
+                const newCustomer = {
+                    name: name,
+                    norm_rent: getVal('.v-norm-rent'),
+                    norm_life: getVal('.v-norm-life'),
+                    can_life: getVal('.v-can-life'),
+                    reim_65: getVal('.v-reim-65'),
+                    reim_75: getVal('.v-reim-75'),
+                    reim_life: getVal('.v-reim-life'),
+                    reim_life_total: getVal('.v-reim-life-total'),
+                    reim_75start: getVal('.v-reim-75start'),
+                    reim_75start_total: getVal('.v-reim-75start-total')
+                };
+
+                const existingIndex = customersData.findIndex(c => c.name === name);
+                if (existingIndex >= 0) {
+                    customersData[existingIndex] = newCustomer;
+                    updatedCount++;
+                } else {
+                    customersData.push(newCustomer);
+                    addedCount++;
+                }
+            });
+
+            renderCustomerTable(); 
+            
+            alert(`已成功儲存/更新 ${addedCount + updatedCount} 筆資料！`);
+            
+            document.getElementById('verify-table-body').innerHTML = '';
+            document.getElementById('parse-textarea').value = '';
+            document.getElementById('verify-section').classList.add('hidden');
+        }
 
         function goToStep(step, isBack = false) {
             const activeContent = document.querySelector('.step-content.active');
@@ -1135,6 +1820,7 @@
         }
 
         function itemUpdate(group, item, val, source) {
+            if (val === null || val === undefined) val = 0;
             const cleanVal = val.toString().replace(/,/g, '');
             const finalVal = parseInt(cleanVal) || 0;
             
@@ -1142,24 +1828,33 @@
             const rangeEl = document.getElementById(`range-${group}-${item}`);
             
             if (source === 'num') {
-                rangeEl.value = Math.min(finalVal, rangeEl.max);
-                if (val !== '') {
+                if (rangeEl) rangeEl.value = Math.min(finalVal, parseInt(rangeEl.max) || 0);
+                if (numEl && val !== '') {
                     numEl.value = new Intl.NumberFormat('zh-TW').format(finalVal);
                 }
-            } else {
-                numEl.value = new Intl.NumberFormat('zh-TW').format(finalVal);
+            } else if (source === 'range') {
+                if (numEl) numEl.value = new Intl.NumberFormat('zh-TW').format(finalVal);
+            } else if (source === 'num-only') {
+                if (numEl && val !== '') {
+                    numEl.value = new Intl.NumberFormat('zh-TW').format(finalVal);
+                }
             }
             refreshTotals(group);
         }
 
         function refreshTotals(group) {
-            const getVal = (id) => parseInt(document.getElementById(id).value.replace(/,/g, '')) || 0;
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                if (!el) return 0;
+                return parseInt(el.value.replace(/,/g, '')) || 0;
+            };
 
             if (group === 'norm') {
                 const rent = getVal('num-norm-rent');
                 const life = getVal('num-norm-life');
                 const total = rent + life;
-                document.getElementById('num-norm-total').value = new Intl.NumberFormat('zh-TW').format(total);
+                const normTotalEl = document.getElementById('num-norm-total');
+                if (normTotalEl) normTotalEl.value = new Intl.NumberFormat('zh-TW').format(total);
                 const baseEl = document.getElementById('display-can-base');
                 if (baseEl) baseEl.innerText = '$' + new Intl.NumberFormat('zh-TW').format(total);
                 refreshTotals('can'); 
@@ -1167,14 +1862,16 @@
                 const normTotal = getVal('num-norm-total');
                 const canLife = getVal('num-can-life');
                 const total = normTotal + canLife;
-                document.getElementById('num-can-total').value = new Intl.NumberFormat('zh-TW').format(total);
+                const canTotalEl = document.getElementById('num-can-total');
+                if (canTotalEl) canTotalEl.value = new Intl.NumberFormat('zh-TW').format(total);
             } else if (group === 'reim') {
                 const r65 = getVal('num-reim-65');
                 const r75 = getVal('num-reim-75');
                 const rLife = getVal('num-reim-life');
                 const r75s = getVal('num-reim-75start');
                 const total = r65 + r75 + rLife + r75s;
-                document.getElementById('num-reim-total').value = new Intl.NumberFormat('zh-TW').format(total);
+                const reimTotalEl = document.getElementById('num-reim-total');
+                if (reimTotalEl) reimTotalEl.value = new Intl.NumberFormat('zh-TW').format(total);
             }
         }
 
@@ -1191,19 +1888,36 @@
             document.getElementById('future-success-message').classList.add('hidden');
             document.getElementById('future-action-flow').classList.add('hidden');
 
-            const getVal = (id) => parseInt(document.getElementById(id).value.replace(/,/g, '')) || 0;
+            const getVal = (id) => parseInt((document.getElementById(id) || {value: '0'}).value?.toString().replace(/,/g, '')) || 0;
 
             const normLife = getVal('num-norm-life');
             const canLife = getVal('num-can-life');
             const canTotal = getVal('num-can-total');
             const reimTotal = getVal('num-reim-total');
+            
+            const r65 = getVal('num-reim-65');
+            const r75 = getVal('num-reim-75');
             const rLife = getVal('num-reim-life');
+            const rLifeTotal = getVal('num-reim-life-total');
             const r75s = getVal('num-reim-75start');
+            const r75sTotal = getVal('num-reim-75start-total');
 
             const fmt = (v) => '$' + new Intl.NumberFormat('zh-TW').format(v);
 
+            // ================== 目前 (75歲前) 的計算 ==================
             const currentCanClaimPart = canTotal * totalTimes;
-            const currentReimClaimPart = Math.min(singleMiscCost, reimTotal) * totalTimes;
+            const currentReimClaimPartWithoutLimit = Math.min(singleMiscCost, reimTotal) * totalTimes;
+            
+            // 處理總上限機制：有填寫數字才算作限制，否則(或為0時)不限制(Infinity) 或不參與理賠(若每次額度為0)
+            let maxLifeCap = rLifeTotal > 0 ? rLifeTotal : (rLife > 0 ? Infinity : 0);
+            let max75sCap = r75sTotal > 0 ? r75sTotal : (r75s > 0 ? Infinity : 0);
+            
+            // 將所有險種的 24 次最大極限 或 帳戶總上限進行加總
+            let absoluteMaxCurrent = (r65 * totalTimes) + (r75 * totalTimes) + maxLifeCap + max75sCap;
+            
+            // 取「無上限時應賠金額」與「總帳戶最大剩餘額度」中較小者
+            const currentReimClaimPart = Math.min(currentReimClaimPartWithoutLimit, absoluteMaxCurrent);
+            
             const currentTotalClaim = currentCanClaimPart + currentReimClaimPart;
             const gap = totalCost - currentTotalClaim;
             
@@ -1217,23 +1931,30 @@
             document.getElementById('status-reim').innerHTML = getStatusHtml(currentReimClaimPart, expReimTotal);
             document.getElementById('status-total').innerHTML = getStatusHtml(currentTotalClaim, totalCost);
 
-            document.getElementById('res-gap').innerHTML = gap > 0 ? `<span class="text-red-600">不足 : </span>${fmt(gap)}` : '保額已完全覆蓋 COVERED';
-
             const gapBox = document.getElementById('gap-box');
             const gapIcon = document.getElementById('gap-icon');
             if (gap > 0) {
+                const coverPct = totalCost > 0 ? ((currentTotalClaim / totalCost) * 100).toFixed(1) : 100.0;
+                document.getElementById('res-gap').innerHTML = `<span class="text-red-600">不足 : </span>${fmt(gap)}<span class="text-xl md:text-3xl text-red-500 font-bold block mt-2">(保險覆蓋總支出比例: ${coverPct}%)</span>`;
                 gapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-red-50 text-red-600 border-4 border-red-100 shadow-2xl transition-all';
                 gapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-red-500"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
             } else {
+                document.getElementById('res-gap').innerHTML = '<span class="text-green-600">保額已完全覆蓋 COVERED</span>';
                 gapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-green-50 text-green-600 border-4 border-green-100 shadow-2xl transition-all';
                 gapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-green-500"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>';
             }
 
+            // ================== 75歲以後計算 ==================
             globalFutureCanLimit = normLife + canLife; 
             globalFutureReimLimit = rLife + r75s;      
 
             globalFutureCanClaim = globalFutureCanLimit * totalTimes;
-            globalFutureReimClaim = Math.min(singleMiscCost, globalFutureReimLimit) * totalTimes;
+            const futureReimClaimPartWithoutLimit = Math.min(singleMiscCost, globalFutureReimLimit) * totalTimes;
+            
+            // 未來階段只剩下終身險與75歲啟動型險，上限也是這兩者相加
+            let absoluteMaxFuture = maxLifeCap + max75sCap;
+            globalFutureReimClaim = Math.min(futureReimClaimPartWithoutLimit, absoluteMaxFuture);
+            
             const futureTotalClaim = globalFutureCanClaim + globalFutureReimClaim;
             const futureGap = totalCost - futureTotalClaim;
 
@@ -1247,16 +1968,17 @@
             document.getElementById('future-status-reim').innerHTML = getStatusHtml(globalFutureReimClaim, expReimTotal);
             document.getElementById('future-status-total').innerHTML = getStatusHtml(futureTotalClaim, totalCost);
 
-            document.getElementById('future-res-gap').innerHTML = futureGap > 0 ? `<span class="text-red-600">不足 : </span>${fmt(futureGap)}` : '保額已完全覆蓋 COVERED';
-
             const futureGapBox = document.getElementById('future-gap-box');
             const futureGapIcon = document.getElementById('future-gap-icon');
             if (futureGap > 0) {
+                const futureCoverPct = totalCost > 0 ? ((futureTotalClaim / totalCost) * 100).toFixed(1) : 100.0;
+                document.getElementById('future-res-gap').innerHTML = `<span class="text-red-600">不足 : </span>${fmt(futureGap)}<span class="text-xl md:text-3xl text-red-500 font-bold block mt-2">(保險覆蓋總支出比例: ${futureCoverPct}%)</span>`;
                 futureGapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-red-50 text-red-600 border-4 border-red-100 shadow-2xl transition-all';
                 futureGapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-red-500"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
                 document.getElementById('future-action-btn-text').innerText = `面對 : ${fmt(futureGap)}元的醫療費缺口，我們可以。。。`;
                 document.getElementById('future-action-flow').classList.remove('hidden');
             } else {
+                document.getElementById('future-res-gap').innerHTML = '<span class="text-green-600">保額已完全覆蓋 COVERED</span>';
                 futureGapBox.className = 'p-10 rounded-[35px] flex items-center justify-between bg-green-50 text-green-600 border-4 border-green-100 shadow-2xl transition-all';
                 futureGapIcon.innerHTML = '<svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="text-green-500"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>';
                 document.getElementById('future-success-message').classList.remove('hidden');
@@ -1265,7 +1987,6 @@
             goToStep(2);
         }
 
-        // 建議書按鈕處理邏輯 (單擊開啟 / 連點6次設定)
         function handleProposalClick(e) {
             e.preventDefault();
             proposalClickCount++;
@@ -1273,18 +1994,14 @@
             if (proposalClickTimer) clearTimeout(proposalClickTimer);
 
             if (proposalClickCount >= 6) {
-                // 連按 6 次，進入編輯模式
                 proposalClickCount = 0;
                 openProposalModal();
             } else {
-                // 等待 350ms 判斷是否停止點擊
                 proposalClickTimer = setTimeout(() => {
                     if (proposalClickCount > 0 && proposalClickCount < 6) {
-                        // 單擊/少於6次 執行開啟動作
                         if (proposalData.url) {
                             window.open(proposalData.url, '_blank');
                         } else {
-                            // 尚未設定，提示使用者或直接開啟編輯
                             alert('尚未設定建議書！請連點按鈕 6 次以進入設定模式。');
                         }
                     }
@@ -1348,20 +2065,41 @@
 
             const fmt = (v) => '$' + new Intl.NumberFormat('zh-TW').format(v);
 
+            // 直接讀取當下欄位的數字來重新計算，確保永遠跟隨使用者的修改 (與 Step 3 機制完全一致)
+            const getVal = (id) => parseInt((document.getElementById(id) || {value: '0'}).value?.toString().replace(/,/g, '')) || 0;
+            const normLife = getVal('num-norm-life');
+            const canLife = getVal('num-can-life');
+            const rLife = getVal('num-reim-life');
+            const rLifeTotal = getVal('num-reim-life-total');
+            const r75s = getVal('num-reim-75start');
+            const r75sTotal = getVal('num-reim-75start-total');
+
+            const futureCanLimit = normLife + canLife;
+            const futureCanClaim = futureCanLimit * totalTimes;
+
+            let maxLifeCap = rLifeTotal > 0 ? rLifeTotal : (rLife > 0 ? Infinity : 0);
+            let max75sCap = r75sTotal > 0 ? r75sTotal : (r75s > 0 ? Infinity : 0);
+            let absoluteMaxFuture = maxLifeCap + max75sCap;
+            
+            const futureReimLimit = rLife + r75s;
+            const futureReimClaimPartWithoutLimit = Math.min(singleMiscCost, futureReimLimit) * totalTimes;
+            const futureReimClaim = Math.min(futureReimClaimPartWithoutLimit, absoluteMaxFuture);
+
             document.getElementById('wehs-limit-can').innerHTML = `${fmt(wehsRoomDaily)} / 日<br><span class="text-[12px] opacity-80">(註:74歲前一般日額${fmt(wehsRoomDaily)}+癌症另給付${fmt(wehsCancerDaily)})</span>`;
             document.getElementById('wehs-limit-reim').innerText = `${fmt(wehsMiscLimit)} / 次`;
 
-            document.getElementById('wehs-old-limit-can').innerText = `${fmt(globalFutureCanLimit)} / 日`;
-            document.getElementById('wehs-old-claim-can').innerText = fmt(globalFutureCanClaim);
-            document.getElementById('wehs-old-limit-reim').innerText = `${fmt(globalFutureReimLimit)} / 次`;
-            document.getElementById('wehs-old-claim-reim').innerText = fmt(globalFutureReimClaim);
+            // 正確套用等同 Step 3 的數字
+            document.getElementById('wehs-old-limit-can').innerText = `${fmt(futureCanLimit)} / 日`;
+            document.getElementById('wehs-old-claim-can').innerText = fmt(futureCanClaim);
+            document.getElementById('wehs-old-limit-reim').innerText = `${fmt(futureReimLimit)} / 次`;
+            document.getElementById('wehs-old-claim-reim').innerText = fmt(futureReimClaim);
 
-            const oldDailyRoomClaim = Math.min(singleRoomCost, globalFutureCanLimit);
+            const oldDailyRoomClaim = Math.min(singleRoomCost, futureCanLimit);
             const remainingDailyRoom = Math.max(0, singleRoomCost - oldDailyRoomClaim);
             const wehsDailyRoomClaim = Math.min(remainingDailyRoom, wehsRoomDaily);
             const wehsTotalRoomClaim = wehsDailyRoomClaim * totalTimes;
             
-            const oldTimeMiscClaim = Math.min(singleMiscCost, globalFutureReimLimit);
+            const oldTimeMiscClaim = Math.min(singleMiscCost, futureReimLimit);
             const remainingTimeMisc = Math.max(0, singleMiscCost - oldTimeMiscClaim);
             const wehsTimeMiscClaim = Math.min(remainingTimeMisc, wehsMiscLimit);
             const wehsTotalMiscClaim = wehsTimeMiscClaim * totalTimes;
@@ -1369,7 +2107,7 @@
             document.getElementById('wehs-claim-can').innerText = fmt(wehsTotalRoomClaim);
             document.getElementById('wehs-claim-reim').innerText = fmt(wehsTotalMiscClaim);
 
-            const oldTotalClaim = globalFutureCanClaim + globalFutureReimClaim;
+            const oldTotalClaim = futureCanClaim + futureReimClaim;
             const wehsTotalClaimSum = wehsTotalRoomClaim + wehsTotalMiscClaim;
             
             const combinedTotalClaim = oldTotalClaim + wehsTotalClaimSum;
@@ -1377,7 +2115,6 @@
             document.getElementById('wehs-old-total-claim').innerText = fmt(oldTotalClaim);
             document.getElementById('wehs-new-total-claim').innerText = fmt(wehsTotalClaimSum);
             
-            // 填入預估支出合計
             document.getElementById('wehs-total-exp').innerText = fmt(totalCost);
 
             const finalBalance = combinedTotalClaim - totalCost;
@@ -1403,12 +2140,13 @@
             const gapIcon = document.getElementById('wehs-final-icon');
 
             if (finalBalance < 0) {
-                document.getElementById('wehs-final-gap').innerHTML = `<span class="text-red-600">不足 : </span>${fmt(Math.abs(finalBalance))}`;
+                const wehsCoverPct = totalCost > 0 ? ((combinedTotalClaim / totalCost) * 100).toFixed(1) : 100.0;
+                document.getElementById('wehs-final-gap').innerHTML = `<span class="text-red-600">不足 : ${fmt(Math.abs(finalBalance))}</span><span class="text-xl md:text-3xl text-red-500 font-bold block mt-2">(保險覆蓋總支出比例: ${wehsCoverPct}%)</span>`;
                 document.getElementById('wehs-gap-title').className = 'text-sm md:text-base font-black uppercase tracking-widest mb-2 text-red-500';
                 gapBox.className = 'mt-10 p-8 md:p-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 bg-red-50 border-red-200';
                 gapIcon.innerHTML = '<span class="emoji-sad text-5xl md:text-7xl">😢</span>';
             } else {
-                document.getElementById('wehs-final-gap').innerHTML = '<span class="text-green-600">保額已完全覆蓋</span>';
+                document.getElementById('wehs-final-gap').innerHTML = `<span class="text-green-600 text-3xl md:text-4xl font-black">增加WEHS-計畫${plan}，保額已完全覆蓋! 🎉<br><span class="text-2xl mt-3 inline-block text-emerald-700">恭喜您！</span></span>`;
                 document.getElementById('wehs-gap-title').className = 'text-sm md:text-base font-black uppercase tracking-widest mb-2 text-green-600';
                 gapBox.className = 'mt-10 p-8 md:p-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 bg-green-50 border-green-200';
                 gapIcon.innerHTML = '<span class="stamp-win">勝</span>';
