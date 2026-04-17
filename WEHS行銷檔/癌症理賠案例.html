@@ -330,7 +330,7 @@
                 <div class="bg-white/20 p-3 rounded-2xl shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
                 </div>
-                <p class="text-lg md:text-2xl font-black leading-tight">
+                <p class="text-lg md:text-2xl font-black leading-tight mt-1">
                     您目前的住院日額及實支實付限額保障(預估值)如下:
                 </p>
             </div>
@@ -884,7 +884,7 @@
                 <div class="flex flex-col items-center">
                     <button onclick="goToStep(10)" class="w-full max-w-2xl py-8 rounded-3xl font-black text-2xl md:text-3xl bg-blue-600 text-white hover:bg-green-600 shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-4 btn-hover-scale">
                         <span class="btn-text">別放棄! 聽聽看保險公司怎麼說...</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-text translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-text translate-x-1"><path d="m9 18 6-6-6-6"/></svg>
                     </button>
                 </div>
             </div>
@@ -903,6 +903,10 @@
                             <a href="WEHS-商品簡介-2026年3月A版.pdf" target="_blank" class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-full text-sm md:text-base font-bold transition-all hover:-translate-y-1 shadow-lg backdrop-blur-sm">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                                 商品簡介
+                            </a>
+                            <a href="https://drive.google.com/file/d/1mXZRxqxjNhqwgHCPydiSdvp5nCXg9q32/view?usp=drive_link" target="_blank" class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-full text-sm md:text-base font-bold transition-all hover:-translate-y-1 shadow-lg backdrop-blur-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                保單條款
                             </a>
                         </div>
                     </div>
@@ -1074,8 +1078,12 @@
                             </table>
                         </div>
 
-                        <div id="wehs-final-gap-box" class="mt-10 p-8 md:p-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4">
-                            <div class="flex-1 w-full">
+                        <div id="wehs-final-gap-box" class="mt-10 p-8 md:p-10 pt-16 md:pt-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 relative">
+                            <button onclick="handleProposalClick(event)" class="absolute top-4 right-4 md:top-6 md:right-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-full font-black text-xs md:text-sm hover:from-blue-500 hover:to-blue-400 shadow-[0_4px_10px_rgba(37,99,235,0.3)] transition-all transform active:scale-95 flex items-center gap-2 z-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                                我想進一步了解
+                            </button>
+                            <div class="flex-1 w-full mt-4 md:mt-0">
                                 <p class="text-sm md:text-base font-black uppercase tracking-widest mb-2 opacity-80 text-black" id="wehs-gap-title">規劃後最終自付缺口</p>
                                 <p class="text-4xl md:text-6xl font-black tracking-tighter" id="wehs-final-gap"></p>
                                 
@@ -2143,12 +2151,12 @@
                 const wehsCoverPct = totalCost > 0 ? ((combinedTotalClaim / totalCost) * 100).toFixed(1) : 100.0;
                 document.getElementById('wehs-final-gap').innerHTML = `<span class="text-red-600">不足 : ${fmt(Math.abs(finalBalance))}</span><span class="text-xl md:text-3xl text-red-500 font-bold block mt-2">(保險覆蓋總支出比例: ${wehsCoverPct}%)</span>`;
                 document.getElementById('wehs-gap-title').className = 'text-sm md:text-base font-black uppercase tracking-widest mb-2 text-red-500';
-                gapBox.className = 'mt-10 p-8 md:p-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 bg-red-50 border-red-200';
+                gapBox.className = 'mt-10 p-8 md:p-10 pt-16 md:pt-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 bg-red-50 border-red-200 relative';
                 gapIcon.innerHTML = '<span class="emoji-sad text-5xl md:text-7xl">😢</span>';
             } else {
                 document.getElementById('wehs-final-gap').innerHTML = `<span class="text-green-600 text-3xl md:text-4xl font-black">增加WEHS-計畫${plan}，保額已完全覆蓋! 🎉<br><span class="text-2xl mt-3 inline-block text-emerald-700">恭喜您！</span></span>`;
                 document.getElementById('wehs-gap-title').className = 'text-sm md:text-base font-black uppercase tracking-widest mb-2 text-green-600';
-                gapBox.className = 'mt-10 p-8 md:p-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 bg-green-50 border-green-200';
+                gapBox.className = 'mt-10 p-8 md:p-10 pt-16 md:pt-10 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 shadow-xl border-4 bg-green-50 border-green-200 relative';
                 gapIcon.innerHTML = '<span class="stamp-win">勝</span>';
             }
         }
