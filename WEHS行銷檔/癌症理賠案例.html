@@ -190,7 +190,10 @@
             transform: scale(1.1);
         }
 
-        /* 卡片翻轉隱藏區特效 (移除Hover，改為僅靠 class 控制) */
+        /* 卡片翻轉隱藏區特效 (Grid 排版自動調整高度) */
+        .feature-card {
+            display: grid;
+        }
         .feature-card .front-content {
             transition: opacity 0.4s ease;
         }
@@ -252,7 +255,7 @@
                         </ul>
                     </div>
                     <div class="flex items-center justify-center">
-                        <a href="./_1140318住院卵巢癌住院1天.pdf" target="_blank" class="bg-white p-5 rounded-2xl shadow-md border border-slate-200 transform md:rotate-1 hover:rotate-0 hover:shadow-lg transition-all duration-300 w-full flex flex-col items-center justify-center group h-32 md:h-44 hover:bg-red-50">
+                        <a href="./卵巢癌住院1天.pdf" target="_blank" class="bg-white p-5 rounded-2xl shadow-md border border-slate-200 transform md:rotate-1 hover:rotate-0 hover:shadow-lg transition-all duration-300 w-full flex flex-col items-center justify-center group h-32 md:h-44 hover:bg-red-50">
                             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500 mb-3 group-hover:scale-110 group-hover:text-red-700 transition-all"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
                             <span class="text-red-600 font-black text-lg md:text-xl border-b-2 border-red-200 group-hover:border-red-600 transition-colors">點擊查看收據摘要</span>
                             <span class="text-xs text-slate-500 mt-2 font-bold uppercase tracking-widest group-hover:text-slate-700">PDF 檔案</span>
@@ -315,7 +318,7 @@
                 </p>
             </div>
 
-            <!-- 客戶資料快速帶入與解析工具 (改為方形編輯按鈕) -->
+            <!-- 客戶資料快速帶入與解析工具 -->
             <div class="mb-10 animate-in slide-in-from-top-6 flex justify-end">
                 <button onclick="openCustomerToolModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-black py-3 px-8 rounded flex items-center gap-2 shadow-md transition-colors text-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
@@ -340,17 +343,17 @@
                 <div class="input-group-card">
                     <div class="group-header">
                         <h3 class="font-black text-green-900 text-xl">一般住院日額合計:</h3>
-                        <div class="flex items-center gap-1 text-green-800">
+                        <div class="flex items-center gap-1 text-green-800 ml-auto">
                             <span class="font-bold text-2xl">$</span>
                             <input type="text" id="num-norm-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl text-green-900">
                             <span class="text-sm font-black opacity-80">/ 日</span>
                         </div>
                     </div>
-                    <div class="sub-items-area">
+                    <div class="sub-items-area space-y-4">
                         <div class="sub-input-row">
-                            <div class="flex justify-between items-center">
-                                <span class="text-base font-black text-black uppercase tracking-widest">🚫 租約型</span>
-                                <div class="flex items-center gap-2">
+                            <div class="flex justify-between items-center w-full">
+                                <span class="text-base font-black text-black uppercase tracking-widest text-left">🚫 租約型</span>
+                                <div class="flex justify-end items-center gap-2">
                                     <div class="tooltip-trigger">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400 cursor-help"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                                         <div class="tooltip-box">您也可以自行輸入數字 !<div class="tooltip-arrow"></div></div>
@@ -363,9 +366,9 @@
                             </div>
                         </div>
                         <div class="sub-input-row">
-                            <div class="flex justify-between items-center">
-                                <span class="text-base font-black text-black uppercase tracking-widest">♾️ 終身型</span>
-                                <div class="flex items-center gap-2">
+                            <div class="flex justify-between items-center w-full">
+                                <span class="text-base font-black text-black uppercase tracking-widest text-left">♾️ 終身型</span>
+                                <div class="flex justify-end items-center gap-2">
                                     <div class="tooltip-trigger">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400 cursor-help"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                                         <div class="tooltip-box">您也可以自行輸入數字 !<div class="tooltip-arrow"></div></div>
@@ -384,21 +387,21 @@
                 <div class="input-group-card">
                     <div class="group-header">
                         <h3 class="font-black text-green-900 text-xl">癌症住院日額合計:</h3>
-                        <div class="flex items-center gap-1 text-green-800">
+                        <div class="flex items-center gap-1 text-green-800 ml-auto">
                             <span class="font-bold text-2xl">$</span>
                             <input type="text" id="num-can-total" value="0" readonly class="read-only-total w-32 md:w-40 text-2xl md:text-4xl text-green-900">
                             <span class="text-sm font-black opacity-80">/ 日</span>
                         </div>
                     </div>
-                    <div class="sub-items-area">
-                        <div class="flex justify-between items-center px-4 py-2 mb-2">
-                            <span class="text-sm font-black text-green-800 uppercase tracking-widest">一般住院日額合計(含):</span>
-                            <span id="display-can-base" class="font-black text-green-900 text-2xl">$0</span>
+                    <div class="sub-items-area space-y-4">
+                        <div class="flex justify-between items-center px-4 py-2 mb-2 w-full">
+                            <span class="text-sm font-black text-green-800 uppercase tracking-widest text-left">一般住院日額合計(含):</span>
+                            <span id="display-can-base" class="font-black text-green-900 text-2xl text-right flex-1">$0</span>
                         </div>
                         <div class="sub-input-row">
-                            <div class="flex justify-between items-center">
-                                <span class="text-base font-black text-black uppercase tracking-widest">♾️ 癌症險-終身型</span>
-                                <div class="flex items-center gap-2">
+                            <div class="flex justify-between items-center w-full">
+                                <span class="text-base font-black text-black uppercase tracking-widest text-left">♾️ 癌症險-終身型</span>
+                                <div class="flex justify-end items-center gap-2">
                                     <div class="tooltip-trigger">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400 cursor-help"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                                         <div class="tooltip-box">您也可以自行輸入數字 !<div class="tooltip-arrow"></div></div>
@@ -417,22 +420,23 @@
                 <div class="input-group-card">
                     <div class="group-header">
                         <h3 class="font-black text-green-900 text-xl text-left">住院實支實付合計上限:</h3>
-                        <div class="flex items-center gap-1 text-green-800">
+                        <div class="flex items-center gap-1 text-green-800 ml-auto">
                             <span class="font-bold text-2xl">$</span>
                             <input type="text" id="num-reim-total" value="0" readonly class="read-only-total w-36 md:w-48 text-2xl md:text-4xl text-green-900">
                             <span class="text-sm font-black opacity-80">元</span>
                         </div>
                     </div>
-                    <div class="sub-items-area grid grid-cols-1 md:grid-cols-2 gap-8 space-y-0">
+                    <!-- 移除雙欄 Grid，改為單欄 stack 確保輸入框全靠右對齊 -->
+                    <div class="sub-items-area space-y-4">
                         <div class="sub-input-row justify-center">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm font-black text-black uppercase">🚫 65歲終止</span>
+                            <div class="flex justify-between items-center w-full">
+                                <span class="text-sm font-black text-black uppercase text-left">🚫 65歲終止</span>
                                 <input type="text" inputmode="numeric" id="num-reim-65" value="0" oninput="itemUpdate('reim', '65', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                             </div>
                         </div>
                         <div class="sub-input-row justify-center">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm font-black text-black uppercase">🚫 75歲終止</span>
+                            <div class="flex justify-between items-center w-full">
+                                <span class="text-sm font-black text-black uppercase text-left">🚫 75歲終止</span>
                                 <input type="text" inputmode="numeric" id="num-reim-75" value="0" oninput="itemUpdate('reim', '75', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                             </div>
                         </div>
@@ -440,16 +444,16 @@
                         <!-- 終身帳戶型 (加入總上限) -->
                         <div class="sub-input-row justify-center relative">
                             <div class="flex flex-col gap-2 w-full">
-                                <div class="flex justify-between items-center">
-                                    <div class="text-left">
+                                <div class="flex justify-between items-center w-full">
+                                    <div class="text-left flex flex-col">
                                         <span class="text-sm font-black text-black uppercase">♾️ 終身帳戶型</span>
                                         <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
                                     </div>
                                     <input type="text" inputmode="numeric" id="num-reim-life" value="0" oninput="itemUpdate('reim', 'life', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                                 </div>
-                                <div class="flex justify-between items-center mt-1 pl-3 border-l-4 border-cyan-100 bg-cyan-50/50 p-1.5 rounded-r-lg">
-                                    <span class="text-[11px] font-black text-cyan-800 tracking-wider">🔒 帳戶總上限:</span>
-                                    <div class="flex items-center gap-1">
+                                <div class="flex justify-between items-center mt-1 pl-3 border-l-4 border-cyan-100 bg-cyan-50/50 p-1.5 rounded-r-lg w-full">
+                                    <span class="text-[11px] font-black text-cyan-800 tracking-wider text-left">🔒 帳戶總上限:</span>
+                                    <div class="flex items-center gap-1 justify-end">
                                         <span class="text-xs font-bold text-slate-400">$</span>
                                         <input type="text" inputmode="numeric" id="num-reim-life-total" value="0" oninput="itemUpdate('reim', 'life-total', this.value, 'num-only')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-cyan-100 rounded-lg px-2 py-1 hover:border-cyan-400 transition-all text-sm">
                                     </div>
@@ -460,16 +464,16 @@
                         <!-- 75歲啟動型 (加入總上限) -->
                         <div class="sub-input-row justify-center relative">
                             <div class="flex flex-col gap-2 w-full">
-                                <div class="flex justify-between items-center">
-                                    <div class="text-left">
+                                <div class="flex justify-between items-center w-full">
+                                    <div class="text-left flex flex-col">
                                         <span class="text-sm font-black text-black uppercase">♾️ 75歲啟動型</span>
                                         <p class="text-[10px] text-black font-bold">(輸入每次上限)</p>
                                     </div>
                                     <input type="text" inputmode="numeric" id="num-reim-75start" value="0" oninput="itemUpdate('reim', '75start', this.value, 'num')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-green-100 rounded-2xl px-3 py-2 hover:border-cyan-400 transition-all text-lg">
                                 </div>
-                                <div class="flex justify-between items-center mt-1 pl-3 border-l-4 border-cyan-100 bg-cyan-50/50 p-1.5 rounded-r-lg">
-                                    <span class="text-[11px] font-black text-cyan-800 tracking-wider">🔒 帳戶總上限:</span>
-                                    <div class="flex items-center gap-1">
+                                <div class="flex justify-between items-center mt-1 pl-3 border-l-4 border-cyan-100 bg-cyan-50/50 p-1.5 rounded-r-lg w-full">
+                                    <span class="text-[11px] font-black text-cyan-800 tracking-wider text-left">🔒 帳戶總上限:</span>
+                                    <div class="flex items-center gap-1 justify-end">
                                         <span class="text-xs font-bold text-slate-400">$</span>
                                         <input type="text" inputmode="numeric" id="num-reim-75start-total" value="0" oninput="itemUpdate('reim', '75start-total', this.value, 'num-only')" class="w-28 text-right font-black text-cyan-700 focus:outline-none bg-white border-2 border-cyan-100 rounded-lg px-2 py-1 hover:border-cyan-400 transition-all text-sm">
                                     </div>
@@ -491,7 +495,6 @@
         <!-- STEP 2: 結果分析 -->
         <div id="step-2" class="step-content">
             <div class="bg-white p-6 md:p-12 rounded-[40px] shadow-2xl border border-blue-50 overflow-hidden relative">
-                <div class="absolute top-0 right-0 bg-blue-600 text-white px-10 py-3 rounded-bl-[40px] font-black text-xs md:text-sm tracking-widest shadow-lg uppercase">精算報告</div>
                 
                 <h3 class="text-xl md:text-3xl font-black mb-12 tracking-tighter leading-tight text-left">
                     <span class="bg-blue-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-xl inline-block shadow-md">針對此癌症療程 (24次住院)</span>
@@ -502,7 +505,7 @@
                         <div class="p-8 bg-green-600 border-b-4 border-green-700 flex items-center justify-between">
                             <p class="text-xl md:text-2xl font-black text-white flex items-center gap-4">
                                 <span class="w-4 h-4 bg-white rounded-full"></span>
-                                現有保險理賠計算明細
+                                保險理賠(預估值)
                             </p>
                         </div>
                         <div class="overflow-x-auto">
@@ -587,13 +590,12 @@
         <!-- STEP 3: 75歲以後 -->
         <div id="step-3" class="step-content">
             <div class="bg-white p-6 md:p-12 rounded-[40px] shadow-2xl border border-slate-200 overflow-hidden relative">
-                <div class="absolute top-0 right-0 bg-slate-800 text-white px-10 py-3 rounded-bl-[40px] font-black text-xs md:text-sm tracking-widest shadow-lg uppercase">75歲後風險報告</div>
                 
                 <h3 class="text-xl md:text-3xl font-black text-black mb-10 pr-24 tracking-tighter leading-tight">75歲後相同癌症療程 (24次住院)</h3>
                 
                 <div class="space-y-12">
                     <div class="p-6 bg-red-50 border-l-8 border-red-500 rounded-r-2xl shadow-sm flex items-start gap-4">
-                        <span class="text-red-500 text-3xl">⚠️</span>
+                        <span class="text-red-500 text-3xl inline-block origin-left scale-50">⚠️</span>
                         <div>
                             <p class="text-red-800 font-black text-lg md:text-xl">租約型與定期險已終止</p>
                             <p class="text-black mt-2 font-bold leading-relaxed text-sm md:text-base">
@@ -606,7 +608,7 @@
                         <div class="p-8 bg-red-50 border-b-4 border-red-200 flex items-center justify-between">
                             <p class="text-xl md:text-2xl font-black text-red-900 flex items-center gap-4">
                                 <span class="w-4 h-4 bg-red-500 rounded-full animate-pulse"></span>
-                                75歲後理賠重新計算明細
+                                75歲後理賠(預估值)
                             </p>
                         </div>
                         <div class="overflow-x-auto">
@@ -712,7 +714,7 @@
                     </button>
                     <button onclick="goToStep(10)" class="w-full py-6 md:py-8 bg-blue-600 hover:bg-green-600 text-white rounded-3xl shadow-lg transition-all transform active:scale-95 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left px-8 btn-hover-scale">
                         <span class="text-4xl btn-text">🛡️</span>
-                        <span class="font-black text-lg md:text-xl flex-1 btn-text">B: 聽聽保險怎麼說...</span>
+                        <span class="font-black text-lg md:text-xl flex-1 btn-text" style="font-size: 110%;">B: 聽聽保險怎麼說...</span>
                     </button>
                 </div>
             </div>
@@ -790,7 +792,7 @@
                         <span class="btn-text">A: 想全部靠自己努力</span>
                     </button>
                     <button onclick="goToStep(10)" class="w-full py-8 rounded-3xl font-black text-xl md:text-2xl bg-blue-600 text-white hover:bg-green-600 shadow-lg transform active:scale-95 transition-all btn-hover-scale">
-                        <span class="btn-text">B: 聽聽保險怎麼說...</span>
+                        <span class="btn-text" style="font-size: 110%;">B: 聽聽保險怎麼說...</span>
                     </button>
                 </div>
             </div>
@@ -849,80 +851,80 @@
                         </div>
                     </div>
 
+                    <!-- 使用 CSS Grid 自動動態調整每張卡片高度以完整顯示內部最長文字 -->
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5">
                         <!-- Card 1 -->
-                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-all shadow-lg" onclick="toggleFeatureCard(this)">
-                            <div class="front-content z-10">
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 cursor-pointer overflow-hidden grid transition-all shadow-lg min-h-[14rem]" onclick="toggleFeatureCard(this)">
+                            <div class="front-content z-10 col-start-1 row-start-1 flex flex-col justify-center items-center text-center p-4 w-full h-full">
                                 <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-green-300 drop-shadow">0~70歲均可保</h4>
                                 <p class="text-xs md:text-sm text-blue-100 mt-2">保障至100歲保單年度末</p>
                             </div>
-                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                            <div class="hidden-desc z-20 col-start-1 row-start-1 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center w-full h-full">
                                 <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
                                 <p class="text-base md:text-lg font-black text-slate-900 leading-snug">就不用擔心年紀大買不到保險啦！只要一張保單，就能擁有一輩子安安心心的醫療防護網哦。</p>
                             </div>
                         </div>
 
                         <!-- Card 2 -->
-                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-all shadow-lg" onclick="toggleFeatureCard(this)">
-                            <div class="front-content z-10">
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 cursor-pointer overflow-hidden grid transition-all shadow-lg min-h-[14rem]" onclick="toggleFeatureCard(this)">
+                            <div class="front-content z-10 col-start-1 row-start-1 flex flex-col justify-center items-center text-center p-4 w-full h-full">
                                 <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-green-300 drop-shadow">靈活選擇</h4>
                                 <p class="text-[11px] md:text-xs text-blue-100 mt-2">提供10/20/30年繳費年期<br>及投保計劃10/20/30</p>
                             </div>
-                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                            <div class="hidden-desc z-20 col-start-1 row-start-1 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center w-full h-full">
                                 <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
                                 <p class="text-base md:text-lg font-black text-slate-900 leading-snug">我們可以根據目前的財務狀況與預算，自由搭配最適合自己的繳費負擔與保障額度。</p>
                             </div>
                         </div>
 
                         <!-- Card 3 -->
-                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-all shadow-lg" onclick="toggleFeatureCard(this)">
-                            <div class="front-content z-10">
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 cursor-pointer overflow-hidden grid transition-all shadow-lg min-h-[14rem]" onclick="toggleFeatureCard(this)">
+                            <div class="front-content z-10 col-start-1 row-start-1 flex flex-col justify-center items-center text-center p-4 w-full h-full">
                                 <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-cyan-300 drop-shadow">醫療雙帳戶</h4>
                                 <p class="text-[11px] md:text-xs text-blue-100 mt-2">74歲前後獨立給付<br>各最高達750萬</p>
                             </div>
-                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                            <div class="hidden-desc z-20 col-start-1 row-start-1 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center w-full h-full">
                                 <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
                                 <p class="text-base md:text-lg font-black text-slate-900 leading-snug">這樣就不怕年輕時看病把額度用光光！等於是幫我們人生的不同階段，各自準備了專屬的小金庫呢。</p>
                             </div>
                         </div>
 
                         <!-- Card 4 -->
-                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-all shadow-lg" onclick="toggleFeatureCard(this)">
-                            <div class="front-content z-10">
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 cursor-pointer overflow-hidden grid transition-all shadow-lg min-h-[14rem]" onclick="toggleFeatureCard(this)">
+                            <div class="front-content z-10 col-start-1 row-start-1 flex flex-col justify-center items-center text-center p-4 w-full h-full">
                                 <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-blue-300 drop-shadow">補足缺口</h4>
                                 <p class="text-[11px] md:text-xs text-blue-100 mt-2">74歲前定額給付<br>74歲後實支實付</p>
                             </div>
-                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                            <div class="hidden-desc z-20 col-start-1 row-start-1 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center w-full h-full">
                                 <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
                                 <p class="text-base md:text-lg font-black text-slate-900 leading-snug">剛好可以完美搭配我們舊的保單！年輕生病能補貼不能上班的損失，老了之後的實支實付還能幫我們扛下超貴的自費藥（像是標靶藥物）。</p>
                             </div>
                         </div>
 
                         <!-- Card 5 -->
-                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-all shadow-lg" onclick="toggleFeatureCard(this)">
-                            <div class="front-content z-10">
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 cursor-pointer overflow-hidden grid transition-all shadow-lg min-h-[14rem]" onclick="toggleFeatureCard(this)">
+                            <div class="front-content z-10 col-start-1 row-start-1 flex flex-col justify-center items-center text-center p-4 w-full h-full">
                                 <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-indigo-300 drop-shadow">強化保障</h4>
                                 <p class="text-[11px] md:text-xs text-blue-100 mt-2">強化癌症/加護暨燒燙傷<br>病房相關醫療保障</p>
                             </div>
-                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                            <div class="hidden-desc z-20 col-start-1 row-start-1 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center w-full h-full">
                                 <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
                                 <p class="text-base md:text-lg font-black text-slate-900 leading-snug">萬一碰到最花錢的重症，理賠金還會加倍給哦！讓我們在遇到大難關的時候，背後能有最強大的靠山的。</p>
                             </div>
                         </div>
 
                         <!-- Card 6 -->
-                        <div class="feature-card relative bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 cursor-pointer overflow-hidden flex flex-col justify-center items-center text-center h-48 md:h-64 transition-all shadow-lg" onclick="toggleFeatureCard(this)">
-                            <div class="front-content z-10">
+                        <div class="feature-card relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 cursor-pointer overflow-hidden grid transition-all shadow-lg min-h-[14rem]" onclick="toggleFeatureCard(this)">
+                            <div class="front-content z-10 col-start-1 row-start-1 flex flex-col justify-center items-center text-center p-4 w-full h-full">
                                 <h4 class="font-black text-white text-lg md:text-xl tracking-wide text-purple-300 drop-shadow">身故/祝壽金</h4>
                                 <p class="text-[11px] md:text-xs text-blue-100 mt-2">保費有去有回<br>機會享健康促進增額</p>
                             </div>
-                            <div class="hidden-desc absolute inset-0 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center z-20">
+                            <div class="hidden-desc z-20 col-start-1 row-start-1 bg-yellow-400 p-4 flex flex-col justify-center items-center text-center w-full h-full">
                                 <span class="text-xs md:text-sm font-black text-blue-900 mb-2 border-b border-blue-900/30 pb-1 w-full uppercase tracking-widest">對您而言💡:</span>
                                 <p class="text-base md:text-lg font-black text-slate-900 leading-snug">如果健健康康沒用到理賠，這筆錢也能當作給自己的長壽大紅包，或是留給家人，繳出去的保費絕對不會白白浪費掉哦！</p>
                             </div>
                         </div>
                     </div>
-                    <p class="text-center text-white/50 text-[11px] mt-4 font-bold tracking-widest">👆 請點擊卡片查看對您的好處！</p>
                 </div>
                 
                 <div class="w-full h-px bg-white/20 mb-12"></div>
