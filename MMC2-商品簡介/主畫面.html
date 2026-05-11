@@ -35,6 +35,7 @@
         }
 
         img {
+            display: block;
             max-width: 100%;
             height: auto;
             border: 1px solid #e2e8f0;
@@ -51,8 +52,8 @@
 
     <div class="container">
         <div class="image-wrapper">
-            <!-- 確保圖片名稱與您的檔案名稱一致 -->
-            <img src="MMC-2主畫面.png" usemap="#image-map" alt="MMC-2主畫面" onerror="this.alt='找不到圖片檔案，請確認圖片檔名是否為 MMC-2主畫面.png 並與此 HTML 放在同一資料夾'; this.style.padding='50px'; this.style.background='#eee'; this.style.lineHeight='1.5'; this.style.textAlign='center';">
+            <!-- 加入 id="target-img" 供腳本辨識 -->
+            <img id="target-img" src="MMC-2主畫面.png" usemap="#image-map" alt="MMC-2主畫面" onerror="this.alt='找不到圖片檔案'; this.style.padding='50px';">
 
             <map name="image-map">
                 <area target="_blank" alt="商品簡介" title="商品簡介" href="https://drive.google.com/file/d/1HtzybMG5gerV7A3VzAvRBf51loQ-2cBW/view?usp=sharing" coords="742,594,598,548" shape="rect">
@@ -61,6 +62,48 @@
             </map>
         </div>
     </div>
+
+    <script>
+        /**
+         * 自動縮放 Image Map 座標的腳本
+         */
+        function makeMapResponsive() {
+            const map = document.querySelector('map[name="image-map"]');
+            const img = document.getElementById('target-img');
+            const areas = map.getElementsByTagName('area');
+            
+            // 儲存原始座標（只在第一次執行時存入 data-coords）
+            for (let area of areas) {
+                if (!area.dataset.coords) {
+                    area.dataset.coords = area.getAttribute('coords');
+                }
+            }
+
+            function resize() {
+                // 取得目前圖片顯示寬度與原始圖片寬度的比例
+                const ratio = img.offsetWidth / img.naturalWidth;
+                
+                if (ratio === 0) return; // 圖片尚未載入完全
+
+                for (let area of areas) {
+                    const coords = area.dataset.coords.split(',');
+                    const scaledCoords = coords.map(c => Math.round(parseInt(c) * ratio));
+                    area.setAttribute('coords', scaledCoords.join(','));
+                }
+            }
+
+            // 監聽圖片載入與視窗縮放事件
+            if (img.complete) {
+                resize();
+            } else {
+                img.onload = resize;
+            }
+            window.addEventListener('resize', resize);
+        }
+
+        // 啟動腳本
+        window.onload = makeMapResponsive;
+    </script>
 
 </body>
 </html>
