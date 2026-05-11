@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMC-2 主畫面互動地圖</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            max-width: fit-content;
+        }
+
+        .image-wrapper {
+            position: relative;
+            line-height: 0;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+
+        area {
+            cursor: pointer;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="image-wrapper">
+            <!-- 確保圖片名稱與您的檔案名稱一致 -->
+            <img src="MMC-2主畫面.png" usemap="#image-map" alt="MMC-2主畫面" onerror="this.alt='找不到圖片檔案，請確認圖片檔名是否為 MMC-2主畫面.png 並與此 HTML 放在同一資料夾'; this.style.padding='50px'; this.style.background='#eee'; this.style.lineHeight='1.5'; this.style.textAlign='center';">
+
+            <map name="image-map">
+                <area target="_blank" alt="商品簡介" title="商品簡介" href="https://drive.google.com/file/d/1HtzybMG5gerV7A3VzAvRBf51loQ-2cBW/view?usp=sharing" coords="742,594,598,548" shape="rect">
+                <area target="_blank" alt="影片介紹" title="影片介紹" href="https://drive.google.com/file/d/1xX8-ESHmyYPgej7Y962gg2QNIgAVylMo/view?usp=drive_link" coords="602,615,742,656" shape="rect">
+                <area target="_blank" alt="保單條款" title="保單條款" href="https://drive.google.com/file/d/1VmQTlk20AeZN8GfAHcwIz-ZTRkK5_6c6/view?usp=drive_link" coords="525,785,647,897" shape="rect">
+            </map>
+        </div>
+    </div>
+
+</body>
+</html>
