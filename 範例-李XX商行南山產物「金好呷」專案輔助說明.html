@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>李XX商行南山產物「金好呷」專案輔助說明</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        .tooltip-content { 
+            opacity: 0; 
+            visibility: hidden; 
+            transform: translateY(10px); 
+            transition: all 0.3s ease; 
+        }
+        
+        .coverage-card.show-tooltip .tooltip-content, 
+        .clause-item.show-tooltip .tooltip-content { 
+            opacity: 1; 
+            visibility: visible; 
+            transform: translateY(0); 
+        }
+        
+        .coverage-card { 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            cursor: pointer; 
+        }
+        .coverage-card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); 
+        }
+        
+        .hidden-view { display: none !important; }
+
+        @keyframes text-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        button:hover i, button:hover span:not(.tooltip-content *),
+        a:hover i, a:hover span:not(.tooltip-content *),
+        label:hover i, label:hover span {
+            display: inline-block;
+            animation: text-bounce 0.4s ease infinite alternate;
+        }
+
+        .bounce-char {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-gray-800">
+    <nav class="bg-blue-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center h-16">
+                <i class="fa-solid fa-shield-halved text-2xl mr-3 text-yellow-400"></i>
+                <span class="font-bold text-base md:text-xl tracking-wider">南山產物「金好呷」專案輔助說明</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+        
+        <!-- 頂部標題列 -->
+        <div class="bg-white p-5 rounded-xl shadow-md border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <h1 class="text-lg md:text-2xl font-extrabold text-blue-900 tracking-wider">
+                    <span>李XX商行南山產物「金好呷」專案輔助說明</span>
+                </h1>
+                <a href="https://drive.google.com/file/d/1mkRJXqpjPgFix7gbn0nso1DYTBhMZFDi/view?usp=drive_link" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors flex items-center shadow-sm">
+                    <i class="fa-solid fa-book-open mr-1.5"></i> <span>專案型錄</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 獨立文件控制與展開收闔操作列 -->
+        <div class="flex justify-between items-center bg-slate-100 p-3 rounded-lg border border-slate-200">
+            <span class="text-xs text-slate-500 font-bold"><i class="fa-solid fa-circle-info mr-1"></i> 專屬合約導覽面板</span>
+            <button id="toggleAllBtn" onclick="toggleAllAccordions()" class="hover-bounce text-white font-bold px-4 py-2 rounded-lg shadow-sm text-sm transition-all flex items-center gap-1.5">
+            </button>
+        </div>
+
+        <!-- 3大主區塊：風琴式（Accordion）展示 -->
+        <div class="space-y-4 w-full">
+            
+            <!-- 區塊 1: 被保險人資料 -->
+            <div class="border border-gray-200 rounded-xl overflow-hidden shadow-md bg-white">
+                <button type="button" onclick="toggleAccordion(1)" class="w-full flex justify-between items-center px-6 py-4 text-left font-bold text-lg text-white bg-blue-600 hover:bg-red-600 transition-colors duration-200 focus:outline-none select-none">
+                    <span class="flex items-center"><i class="fa-solid fa-id-card mr-3"></i><span>被保險人資料</span></span>
+                    <i id="accordion-icon-1" class="fa-solid fa-chevron-down transition-transform duration-200"></i>
+                </button>
+                <div id="accordion-content-1" class="hidden p-6 border-t border-gray-100 bg-white">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="border-b border-gray-100 pb-2">
+                            <p class="text-xs font-bold text-gray-400">報價單號 / 保單號碼</p>
+                            <p class="text-sm font-medium text-gray-800">123456789</p>
+                        </div>
+                        <div class="border-b border-gray-100 pb-2">
+                            <p class="text-xs font-bold text-gray-400">被保險產品</p>
+                            <p class="text-sm font-medium text-gray-800">便當</p>
+                        </div>
+                        <div class="border-b border-gray-100 pb-2">
+                            <p class="text-xs font-bold text-gray-400">要保人</p>
+                            <p class="text-sm font-medium text-gray-800">李XX (身分證號: F123456789)</p>
+                        </div>
+                        <div class="border-b border-gray-100 pb-2">
+                            <p class="text-xs font-bold text-gray-400">被保險人 (公司名稱)</p>
+                            <p class="text-sm font-bold text-blue-800">李XX商行 (統編: F123456789)</p>
+                        </div>
+                        <div class="border-b border-gray-100 pb-2">
+                            <p class="text-xs font-bold text-gray-400">代表人 / 聯絡電話</p>
+                            <p class="text-sm font-medium text-gray-800">李XX / 09123456789</p>
+                        </div>
+                        <div class="border-b border-gray-100 pb-2">
+                            <p class="text-xs font-bold text-gray-400">聯絡地址</p>
+                            <p class="text-sm font-medium text-gray-800">台北市大安區</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <p class="text-xs font-bold text-gray-400">保險期間</p>
+                            <p class="text-sm font-medium text-gray-800">115年5月1日至116年4月30日</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 區塊 2: 已附加條款 -->
+            <div class="border border-gray-200 rounded-xl overflow-hidden shadow-md bg-white">
+                <button type="button" onclick="toggleAccordion(2)" class="w-full flex justify-between items-center px-6 py-4 text-left font-bold text-lg text-white bg-orange-500 hover:bg-red-600 transition-colors duration-200 focus:outline-none select-none">
+                    <span class="flex items-center"><i class="fa-solid fa-file-shield mr-3"></i><span>已附加條款</span></span>
+                    <i id="accordion-icon-2" class="fa-solid fa-chevron-down transition-transform duration-200"></i>
+                </button>
+                <div id="accordion-content-2" class="hidden p-6 border-t border-gray-100 bg-white">
+                    <div class="flex items-center justify-between mb-4 border-b pb-2">
+                        <h2 class="text-sm font-bold text-gray-500">已附加條款內容</h2>
+                        <span class="text-xs bg-blue-100 text-blue-800 py-1 px-3 rounded-full font-medium"><i class="fa-solid fa-hand-pointer mr-1"></i><span>單擊顯示說明 / 雙擊開啟條款</span></span>
+                    </div>
+                    <div id="clausesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+            </div>
+
+            <!-- 區塊 3: 承保範圍與保險金額 -->
+            <div class="border border-gray-200 rounded-xl overflow-hidden shadow-md bg-white">
+                <button type="button" onclick="toggleAccordion(3)" class="w-full flex justify-between items-center px-6 py-4 text-left font-bold text-lg text-white bg-emerald-600 hover:bg-red-600 transition-colors duration-200 focus:outline-none select-none">
+                    <span class="flex items-center"><i class="fa-solid fa-shield-halved mr-3"></i><span>承保範圍與保險金額</span></span>
+                    <i id="accordion-icon-3" class="fa-solid fa-chevron-down transition-transform duration-200"></i>
+                </button>
+                <div id="accordion-content-3" class="hidden p-6 border-t border-gray-100 bg-white">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h2 class="text-sm font-bold text-gray-500">承保保障與額度設定</h2>
+                        <span class="text-xs bg-blue-100 text-blue-800 py-1 px-3 rounded-full font-medium shadow-sm"><i class="fa-solid fa-hand-pointer mr-1"></i> <span>單擊顯示說明 / 雙擊開啟條款</span></span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="coverageGrid"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const currentClientData = {"policyNo":"123456789","applicantName":"李XX","applicantId":"F123456789","clientName":"李XX商行","clientId":"F123456789","representative":"李XX","phone":"09123456789","address":"台北市大安區","product":"便當","period":"115年5月1日至116年4月30日","coverages":[{"id":"perPerson","title":"每一個人身體傷亡","amount":"2,000,000","icon":"fa-user-injured","color":"text-rose-500","bgColor":"bg-rose-50","borderColor":"border-rose-200","link":"https://drive.google.com/file/d/1irMHF19wTJ7-3tP63npPmVa8XWNQf7Y2/view?usp=drive_link","desc":"1. 保障對象：第三人（如餐廳顧客、路人）。\n2. 事故條件：必須為單一意外事故。\n3. 損害類型：身體受傷、殘廢或死亡。\n4. 理賠範圍：醫療費用、慰撫金等依法應賠償之金額。\n5. 給付限制：此金額為對「每一位」受害者的最高理賠上限。","example":"顧客食用便當後發生嚴重食物中毒就醫，產生醫療費用與薪資損失，向店家求償。本項目最高可賠付該名顧客 200 萬元。"},{"id":"perAccidentInjury","title":"每一意外事故身體傷亡","amount":"10,000,000","icon":"fa-users","color":"text-orange-500","bgColor":"bg-orange-50","borderColor":"border-orange-200","link":"https://drive.google.com/file/d/1irMHF19wTJ7-3tP63npPmVa8XWNQf7Y2/view?usp=drive_link","desc":"1. 事故條件：同一件意外事故（如集體食物中毒）。\n2. 保障對象：該次事故中「所有」受傷的第三人。\n3. 給付限制：該次事故體傷理賠的總額上限。\n4. 注意事項：個別受害者的理賠仍受「每一個人身體傷亡」保額限制。\n5. 目的：管控單一重大事故造成的無限理賠風險。","example":"因食材保存不當，導致 10 名顧客集體食物中毒。雖然每人最高理賠 200 萬，但這 10 人的理賠總和，不能超過此項目的 1,000 萬元。"},{"id":"perAccidentDamage","title":"每一意外事故財物損失","amount":"0","icon":"fa-car-burst","color":"text-gray-500","bgColor":"bg-gray-50","borderColor":"border-gray-200","link":"https://drive.google.com/file/d/1irMHF19wTJ7-3tP63npPmVa8XWNQf7Y2/view?usp=drive_link","desc":"1. 事故條件：因被保險產品之缺陷所導致之單一意外。\n2. 損害對象：第三人（顧客或他人）。\n3. 損害類型：財物受損（如衣物、車輛損壞）。\n4. 承保狀態：若額度為 0 則表示未承保此項目。\n5. 給付限制：為該次事故所有財物損失的最高理賠上限。","example":"（目前設定額度為 0 元，即未承保此項目）。若有投保，例如：外送員運送湯品包裝破裂，高溫湯汁毀損顧客的名牌包，即屬此保障範圍。"},{"id":"aggregateLimit","title":"保險期間內累計保險金額","amount":"20,000,000","icon":"fa-money-check-dollar","color":"text-emerald-600","bgColor":"bg-emerald-50","borderColor":"border-emerald-200","link":"https://drive.google.com/file/d/1irMHF19wTJ7-3tP63npPmVa8XWNQf7Y2/view?usp=drive_link","desc":"1. 時間範圍：整年度的保單有效期間內。\n2. 適用狀況：無論期間內發生多少次獨立的意外事故。\n3. 計算方式：將所有事故的理賠金額加總累積計算。\n4. 給付限制：保險公司整年度理賠的最大極限總額。\n5. 續保提醒：若累計理賠已達上限，建議需辦理加保以維持保障。","example":"若上半年發生事故理賠了 800 萬，下半年發生事故理賠了 1,000 萬，累計 1,800 萬未超過本保額 2,000 萬，皆在保障範圍內。"},{"id":"deductible","title":"每一事故自負額","amount":"2,500","icon":"fa-hand-holding-dollar","color":"text-amber-600","bgColor":"bg-amber-50","borderColor":"border-amber-200","link":"https://drive.google.com/file/d/1LgbDMGqb6Rfs77AVdj58XwL7-SHZg7Db/view?usp=drive_link","desc":"1. 觸發時機：每次發生需要理賠的意外事故時。\n2. 扣除原則：被保險人（店家）必須先「自行吸收」的金額。\n3. 給付條件：實際損失總額超過此自負額時，保險公司才啟動理賠。\n4. 賠付金額：保險公司僅賠付扣除自負額後的餘額。\n5. 目的：減少微小損失的理賠頻率，降低整體保費負擔。","example":"顧客因食物問題輕微腹瀉就醫，求償醫藥費 3,000 元。扣除自負額 2,500 元後，保險公司實際理賠金額為 500 元。"}],"clauses":[{"title":"恐怖主義除外附加條款","link":"https://drive.google.com/file/d/1uGFZNuaE5t8NtHcJWAlRlfZcP1p914TA/view?usp=drive_link","desc":"1. 條款性質：屬於除外不保事項。\n2. 行為定義：任何人或團體為政治、宗教等目的所使用之武力或暴力。\n3. 排除範圍：因恐怖主義行為所造成之任何損失。\n4. 影響程度：無論是直接或間接導致之體傷 or 財損，皆不予理賠。\n5. 政府行動：為制止恐怖主義所採取之行動造成的損失亦不在理賠範圍。","example":"若餐廳所在商場遭受恐怖攻擊，波及店面並導致顧客受傷，此極端事故所致之體傷將不在保險公司的理賠範圍內。"},{"title":"延長被保險人受賠償請求期間附加條款","link":"https://drive.google.com/file/d/1E2jW1BzFl4zC3QEZ2a3P7KR7r87--GVe/view?usp=drive_link","desc":"1. 條款性質：索賠基礎保單之補充保障。\n2. 發生時間：意外事故必須發生在「保單有效期間」或「追溯日之後」。\n3. 條款功能：提供保單期滿後額外的請求寬限時間。\n4. 保障效益：讓潛伏期較長、較晚發現的求償案件仍可獲受理。\n5. 注意事項：僅延長提出索賠的期限，不延長保險有效期間。","example":"顧客於保單到期前一天食用便當引發慢性腸胃炎，於保單到期後一個月才確定病因並向店家求償，此條款可延長請求期間，讓店家仍能申請理賠。"},{"title":"懲罰性賠償金附加條款","link":"https://drive.google.com/file/d/1enGrOXN02at-cQoqRwfI-qStPzS_J0Ix/view?usp=drive_link","desc":"1. 條款性質：將特定除外責任納入承保範圍。\n2. 法源依據：依《消費者保護法》第51條規定所生之賠償。\n3. 賠償原因：針對企業經營者之故意或過失所加收之懲罰金。\n4. 啟動條件：法院判決被保險人須給付懲罰性賠償金時。\n5. 理賠限制：理賠金額須受保單約定之次限額規範。","example":"店家因重大過失導致嚴重食物中毒，法院判決除需填補顧客實際醫療損害外，另重罰需給付懲罰性賠償金，保險公司將依限額理賠此懲罰性賠款。"},{"title":"食品附加條款","link":"https://drive.google.com/file/d/1_bpCNZm3yGm5XLZ3jzz_io5uaRNjnCea/view?usp=drive_link","desc":"1. 條款性質：專為餐飲及食品相關行業設計之特別保障。\n2. 適用範圍：承保產品為食品或飲料。\n3. 承保事故：食品中含有異物，或因製造、調配、包裝發生錯誤。\n4. 損害類型：導致消費者或第三人身體受傷或生病（如食物中毒）。\n5. 責任歸屬：依法應由被保險人負擔之損害賠償責任。","example":"排骨便當內不慎混入碎骨頭，導致顧客食用時咬斷牙齒就醫，其植牙或醫療費用可透過此條款獲得理賠。"},{"title":"訴訟及理賠費用附加條款","link":"https://drive.google.com/file/d/1Vcep3U_kR8FCSgAzmKbixreURJc-TM5O/view?usp=drive_link","desc":"1. 條款性質：責任險中針對法律防禦成本之保障。\n2. 啟動條件：被保險人因承保事故遭受第三人求償並面臨訴訟。\n3. 涵蓋範圍：包含律師費、訴訟費、鑑定費及理賠調查費用。\n4. 必要程序：上述費用之支出須事先經過保險公司同意。\n5. 保障效益：減輕店家面對天價求償時的法律防禦經濟壓力。","example":"顧客疑似因食用便當不適而提出天價求償並提告，店家需聘請律師進行訴訟防禦，保險公司將支付其合理的律師與訴訟費用。"},{"title":"自負額附加條款","link":"https://drive.google.com/file/d/1LgbDMGqb6Rfs77AVdj58XwL7-SHZg7Db/view?usp=drive_link","desc":"1. 條款性質：約定風險分擔機制。\n2. 扣除方式：約定每次事故店家須先自行負擔一定金額。\n3. 賠付原則：保險公司僅就超過自負額之部分進行理賠。\n4. 計收標準：依每一次意外事故獨立計算一次自負額。\n5. 目的效益：與被保險人共同分擔風險，有助於降低保險費率。","example":"顧客索賠 10,000 元，保單約定自負額 2,500 元，店家須自行吸收 2,500 元，保險公司則賠付剩餘的 7,500 元。"},{"title":"經濟制裁除外附加條款","link":"https://drive.google.com/file/d/1QzTAC-n2K88DchA9oBEarPPlA8GfiXrN/view?usp=drive_link","desc":"1. 條款性質：遵循國際防制洗錢與打擊資恐規範之聲明。\n2. 限制對象：受聯合國、美國或歐盟等國際經濟制裁之對象、實體或國家。\n3. 條款效力：若理賠會導致保險公司違反上述制裁，保險公司有權拒賠。\n4. 適用範圍：包含給付賠款、提供服務 or 任何保險利益。\n5. 目的：確保保險業務不觸犯國際金融制裁與反洗錢法規。","example":"若受款顧客或企業被列入國際防制洗錢或恐怖份子的制裁黑名單，保險公司依法將無法支付賠款給該對象。"}]};
+        let clickTimeout = null;
+        let isAllExpanded = false;
+
+        function toggleAccordion(id) {
+            for (let i = 1; i <= 3; i++) {
+                const content = document.getElementById('accordion-content-' + i);
+                const icon = document.getElementById('accordion-icon-' + i);
+                if (i === id) {
+                    if (content.classList.contains('hidden')) {
+                        content.classList.remove('hidden');
+                        icon.classList.add('rotate-180');
+                    } else {
+                        content.classList.add('hidden');
+                        icon.classList.remove('rotate-180');
+                    }
+                } else {
+                    content.classList.add('hidden');
+                    icon.classList.remove('rotate-180');
+                }
+            }
+            isAllExpanded = false;
+            updateToggleAllBtn();
+        }
+
+        function toggleAllAccordions() {
+            isAllExpanded = !isAllExpanded;
+            for (let i = 1; i <= 3; i++) {
+                const content = document.getElementById('accordion-content-' + i);
+                const icon = document.getElementById('accordion-icon-' + i);
+                if (content && icon) {
+                    if (isAllExpanded) {
+                        content.classList.remove('hidden');
+                        icon.classList.add('rotate-180');
+                    } else {
+                        content.classList.add('hidden');
+                        icon.classList.remove('rotate-180');
+                    }
+                }
+            }
+            updateToggleAllBtn();
+        }
+
+        function updateToggleAllBtn() {
+            const btn = document.getElementById('toggleAllBtn');
+            const text = isAllExpanded ? "全部收闔" : "全部展開";
+            const iconClass = isAllExpanded ? "fa-compress" : "fa-expand";
+            
+            if (isAllExpanded) {
+                btn.className = "hover-bounce bg-black hover:bg-neutral-800 text-white font-bold px-4 py-2 rounded-lg shadow-sm text-sm transition-all flex items-center gap-1.5";
+            } else {
+                btn.className = "hover-bounce bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg shadow-sm text-sm transition-all flex items-center gap-1.5";
+            }
+            
+            let htmlStr = '<i class="fa-solid ' + iconClass + ' bounce-char inline-block"></i> ';
+            let delay = 0;
+            for (let i = 0; i < text.length; i++) {
+                htmlStr += '<span class="bounce-char inline-block" style="animation-delay: ' + delay + 's">' + text[i] + '</span>';
+                delay += 0.05;
+            }
+            btn.innerHTML = htmlStr;
+        }
+
+        function handleItemClick(type, index, element) {
+            if (clickTimeout !== null) {
+                clearTimeout(clickTimeout);
+                clickTimeout = null;
+                let item = type === 'coverage' ? currentClientData.coverages[index] : currentClientData.clauses[index];
+                if(item && item.link) window.open(item.link, '_blank');
+            } else {
+                clickTimeout = setTimeout(() => {
+                    clickTimeout = null;
+                    document.querySelectorAll('.show-tooltip').forEach(el => {
+                        if (el !== element) el.classList.remove('show-tooltip');
+                    });
+                    element.classList.toggle('show-tooltip');
+                }, 250); 
+            }
+        }
+
+        function closeTooltip(event, element) {
+            event.stopPropagation();
+            const parent = element.closest('.coverage-card') || element.closest('.clause-item');
+            if (parent) parent.classList.remove('show-tooltip');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.coverage-card') && !e.target.closest('.clause-item')) {
+                document.querySelectorAll('.show-tooltip').forEach(el => el.classList.remove('show-tooltip'));
+            }
+        });
+
+        function renderCoverageCards() {
+            const grid = document.getElementById('coverageGrid');
+            let html = '';
+            currentClientData.coverages.forEach((item, index) => {
+                html += '<div class="coverage-card relative bg-white border ' + item.borderColor + ' rounded-xl p-6 h-full flex flex-col justify-between" onclick="handleItemClick(\'coverage\', ' + index + ', this)" title="單擊顯示說明，雙擊開啟條款">';
+                html += '<div class="flex items-center mb-4"><div class="w-12 h-12 rounded-full ' + item.bgColor + ' flex items-center justify-center mr-4 shadow-inner"><i class="fa-solid ' + item.icon + ' text-2xl ' + item.color + '"></i></div><h3 class="text-base font-bold text-gray-800">' + item.title + '</h3></div>';
+                html += '<div class="mt-2"><p class="text-xs text-gray-500 mb-1">保險金額 (NT$)</p><div class="text-2xl font-black ' + item.color + ' tracking-tight">' + (item.amount === '0' || item.amount === '未承保' ? '<span class="text-gray-400">未承保</span>' : item.amount + ' <span class="text-sm font-medium text-gray-500">元</span>') + '</div></div>';
+                html += '<div class="tooltip-content absolute z-50 left-0 top-full mt-2 w-full bg-slate-800 text-white p-4 rounded-lg shadow-2xl border border-slate-700 text-xs" onclick="closeTooltip(event, this)"><div class="mb-2"><span class="bg-blue-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">保障說明</span><p class="mt-1 text-slate-200 leading-relaxed whitespace-pre-line">' + item.desc + '</p></div><div class="pt-2 border-t border-slate-600"><span class="bg-amber-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider text-slate-900">理賠案例</span><p class="mt-1 text-sm text-amber-100 leading-relaxed">' + item.example + '</p></div><div class="absolute w-4 h-4 bg-slate-800 transform rotate-45 -top-2 left-8 border-t border-l border-slate-700"></div></div>';
+                html += '</div>';
+            });
+            grid.innerHTML = html;
+        }
+
+        function renderClauses() {
+            const container = document.getElementById('clausesContainer');
+            let html = '';
+            currentClientData.clauses.forEach((item, index) => {
+                html += '<div class="clause-item relative bg-gray-50 border border-gray-200 hover:border-blue-400 hover:bg-blue-50 rounded-lg p-3 cursor-pointer transition-all duration-200" onclick="handleItemClick(\'clause\', ' + index + ', this)" title="單擊顯示說明，雙擊開啟條款">';
+                html += '<div class="flex items-center text-xs font-bold text-gray-700"><i class="fa-solid fa-file-signature text-blue-600 mr-2"></i>' + item.title + '</div>';
+                html += '<div class="tooltip-content absolute z-[60] left-0 md:left-auto md:right-0 lg:left-full lg:ml-2 top-full md:top-0 mt-2 md:mt-8 lg:mt-0 w-72 bg-slate-800 text-white p-4 rounded-lg shadow-2xl border border-slate-700 text-xs" onclick="closeTooltip(event, this)"><div class="mb-2"><span class="bg-blue-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">條款說明</span><p class="mt-1 text-slate-200 leading-relaxed whitespace-pre-line">' + item.desc + '</p></div><div class="pt-2 border-t border-slate-600"><span class="bg-amber-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider text-slate-900">理賠案例</span><p class="mt-1 text-sm text-amber-100 leading-relaxed">' + item.example + '</p></div><div class="absolute w-4 h-4 bg-slate-800 transform rotate-45 -top-2 left-6 lg:top-4 lg:-left-2 border-t border-l lg:border-t-0 lg:border-l lg:border-b border-slate-700"></div></div>';
+                html += '</div>';
+            });
+            container.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCoverageCards();
+            renderClauses();
+            updateToggleAllBtn();
+        });
+    </script>
+</body>
+</html>
