@@ -1,0 +1,320 @@
+
+                <!DOCTYPE html>
+                <html lang="zh-TW">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>30WEHS</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+                    <style>
+        :root { 
+            --primary-color: #0d6efd; 
+            --bg-color: #f4f7f9; 
+            --ai-purple: #6f42c1; 
+            --ai-teal: #17a2b8; 
+            --case-bg: #fffceb; 
+            --hover-green: #198754; 
+            --dark-green: #1b5e20; 
+            --coffee-color: #8B4513;
+            --pale-green: #d1e7dd; 
+            --pale-red: #f8d7da;
+            --logic-orange: #fd7e14;
+            --gray-btn: #e9ecef;
+            --deep-gray: #6c757d;
+            --hover-red: #dc3545; 
+        }
+        
+        body { 
+            background-color: var(--bg-color); 
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif; 
+            overflow-x: hidden; 
+            color: #000;
+        }
+
+        .main-content { padding: 2rem; }
+        .data-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; overflow: hidden; margin-bottom: 2rem; }
+        .ai-header { color: white; padding: 2rem; border-radius: 12px 12px 0 0; }
+        .bg-analysis { background: linear-gradient(135deg, #17a2b8, #0d6efd); }
+        .bg-lab { background: linear-gradient(135deg, #6f42c1, #0d6efd); }
+        .bg-logic { background: linear-gradient(135deg, var(--logic-orange), #d63384); }
+        
+        .btn:hover, .btn-analysis:hover, .btn-case:hover, .btn-view-case:hover, .btn-custom-pale:hover, .btn-warning:hover {
+            background-color: var(--hover-red) !important;
+            color: #ffffff !important;
+            border-color: var(--hover-red) !important;
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-view-case {
+            background-color: var(--pale-green) !important;
+            color: #000 !important;
+            border: 1px solid #badbcc !important;
+            font-weight: bold;
+        }
+
+        .upload-zone { border: 2px dashed #dee2e6; border-radius: 12px; padding: 1.5rem; text-align: center; transition: all 0.3s; background: #fff; cursor: pointer; }
+        .upload-zone:hover { border-color: var(--ai-purple); background: #f8f0ff; }
+        
+        .table td, .table th { 
+            white-space: normal !important; 
+            word-break: break-all !important; 
+            overflow-wrap: break-word !important;
+            vertical-align: top;
+            padding: 12px 8px !important;
+        }
+
+        .duplicate-highlight {
+            background-color: var(--pale-red) !important;
+            color: #842029 !important;
+            border-radius: 4px;
+        }
+
+        .kw-list-tag {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            background: #f1f3f5;
+            border: 1px solid #dee2e6;
+            border-radius: 50px;
+            margin-right: 4px;
+            margin-bottom: 4px;
+            display: inline-block;
+            color: #495057;
+        }
+
+        .kw-tag { 
+            font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; margin-right: 4px; display: inline-block; margin-bottom: 4px; border: 1px solid transparent; font-weight: bold;
+        }
+        .kw-hit { background-color: var(--pale-green) !important; color: #0f5132 !important; border-color: #badbcc !important; }
+        .kw-miss { background-color: var(--pale-red) !important; color: #842029 !important; border-color: #f5c2c7 !important; }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 10000; color: white; flex-direction: column; text-align: center; padding: 20px; }
+        
+        .info-modal { 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            background: white; 
+            color: #333; 
+            padding: 2.5rem; 
+            border-radius: 20px; 
+            box-shadow: 0 25px 80px rgba(0,0,0,0.5); 
+            z-index: 12000; 
+            width: 95%; 
+            max-width: 900px; 
+            max-height: 85vh; 
+            overflow-y: auto; 
+            text-align: left; 
+            border-top: 10px solid var(--primary-color); 
+        }
+        .info-modal h5 { color: var(--primary-color); font-weight: 800; border-bottom: 2px solid #eee; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .hover-tooltip {
+            position: absolute;
+            background: #ffffff;
+            color: #333;
+            border: 2px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 20000;
+            max-width: 350px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            line-height: 1.5;
+        }
+
+        .confirm-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; color: #333; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 15000; width: 90%; max-width: 400px; text-align: center; }
+
+        .btn-analysis { background-color: var(--ai-teal); color: white; border: none; font-weight: bold; }
+        .btn-case { background-color: #ffc107; color: #000; border: none; font-weight: bold; font-size: 0.8rem; transition: all 0.3s; }
+        
+        .recognition-text, .case-body { 
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif !important; 
+            color: #000 !important; 
+            line-height: 1.7;
+        }
+        
+        .case-body table { width: 100%; background: white; margin: 15px 0; border-radius: 8px; overflow: hidden; border-collapse: collapse; font-size: 0.9rem; border: 1px solid #dee2e6; }
+        .case-body th, .case-body td { padding: 12px; border: 1px solid #dee2e6; text-align: left; color: #000 !important; }
+        .case-body th { background: #f8f9fa; color: var(--dark-green) !important; font-weight: 700; }
+        
+        .info-trigger { color: #0d6efd !important; text-decoration: underline dashed; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .info-trigger:hover { color: #dc3545 !important; background-color: rgba(220, 53, 69, 0.1); border-radius: 2px; }
+
+        .summary-wrapper { background: #fff; border: 2px solid #0d6efd; border-radius: 12px; padding: 2.5rem; margin-top: 3rem; position: relative; }
+        .summary-wrapper h3 { color: var(--coffee-color) !important; font-weight: 800 !important; }
+
+        .logic-card { border-left: 5px solid var(--logic-orange); }
+        .logic-label { font-weight: bold; color: var(--logic-orange); margin-bottom: 0.5rem; display: block; font-size: 0.9rem; }
+        .logic-textarea { font-family: 'Consolas', 'Monaco', monospace; font-size: 0.85rem; line-height: 1.5; background-color: #fcfcfc; }
+
+        .reminder-box { border: 2px solid var(--logic-orange); background: #fff9f5; border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem; }
+        .reminder-title { color: var(--logic-orange); font-weight: 800; font-size: 0.85rem; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; }
+
+        .knowledge-frame { border: 2px solid var(--ai-purple); background-color: #f8f0ff; border-radius: 12px; padding: 1.5rem; margin-top: 2rem; }
+        .knowledge-title { color: var(--ai-purple); font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; }
+        .conflict-warning { color: #dc3545 !important; font-weight: 900; background: #fff5f5; padding: 10px; border-radius: 6px; border: 1px solid #ffc1c1; margin-bottom: 15px; font-size: 0.9rem; }
+
+        .ai-hint-box { background-color: #e7f3ff; border: 1px solid #b6d4fe; border-radius: 8px; padding: 12px; margin-bottom: 15px; }
+        .ai-hint-title { color: #084298; font-weight: bold; font-size: 0.85rem; margin-bottom: 5px; }
+
+        .msg-box-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); display: flex; align-items: center;
+            justify-content: center; z-index: 20000;
+        }
+        .msg-box {
+            background: white; padding: 2rem; border-radius: 12px;
+            max-width: 400px; width: 90%; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .btn-copy-float { position: absolute; top: 15px; right: 15px; }
+        
+        /* 輔助類別 */
+        .x-small { font-size: 0.8rem; }
+        .btn-custom-pale { background-color: var(--pale-green); color: #0f5132; }
+        .btn-no-link { background-color: #eee; color: #999; cursor: not-allowed; }
+
+        .api-input-group {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ffeeba;
+        }
+    </style>
+                </head>
+                <body class="case-body" style="padding: 2rem;">
+                    <h1 style="color: #8B4513;">南山人壽實健溢百住院醫療終身保險：計畫30</h1>
+
+<div style="margin: 20px 0 10px 0;"><span style="color: white; background-color: #0d6efd; padding: 4px 12px; border-radius: 4px; font-weight: bold;">假設情境 : </span></div>
+<div style="background-color: #fffceb; padding: 15px; border: 1px solid #e0e0e0; border-radius: 5px;">
+    王小明，75歲，因膝關節半月軟骨損傷住院10天，其中3天入住加護病房。住院期間進行了膝關節半月軟骨修補術，並因心臟問題植入一個心臟支架。病房費差額每天5000元，雜費手術費37萬，看護費每天3000元。出院後2周內門診2次，每次800元，超過2周也門診2次，每次800元。
+</div>
+
+<div style="margin: 20px 0 10px 0;"><span style="color: white; background-color: #0d6efd; padding: 4px 12px; border-radius: 4px; font-weight: bold;">二、理賠分析</span></div>
+<div style="margin-left: 15px;">
+    <div>1. <span class="info-trigger" data-info="&lt;div style=&quot;padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; max-width: 600px; margin: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1);&quot;&gt;&lt;h4 style=&quot;color: #0d6efd; margin-top: 0;&quot;&gt;每日病房費用保險金詳情&lt;/h4&gt;&lt;p style=&quot;font-size: 14px; line-height: 1.6;&quot;&gt;根據「南山人壽實健溢百住院醫療終身保險」條款，被保險人於74歲(含)後住院，每日病房費用保險金採實支實付型。若曾入住加護病房，計畫30每日限額為6,000元。給付金額為【限額x住院日數】和【實際支出費用】兩者取其中較小者。&lt;/p&gt;&lt;table style=&quot;width: 100%; border-collapse: collapse; margin-top: 15px;&quot;&gt;&lt;thead&gt;&lt;tr style=&quot;background-color: #0d6efd; color: white;&quot;&gt;&lt;th style=&quot;padding: 8px; border: 1px solid #ddd; text-align: left;&quot;&gt;項目&lt;/th&gt;&lt;th style=&quot;padding: 8px; border: 1px solid #ddd; text-align: left;&quot;&gt;比例/限額&lt;/th&gt;&lt;th style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right;&quot;&gt;預估金額&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;住院天數&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;10天&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;每日病房費差額&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;5,000元&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;計畫30每日病房費用限額 (曾入住加護病房)&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;6,000元&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr style=&quot;background-color: #f8d7da;&quot;&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; font-weight: bold;&quot;&gt;每日病房費用保險金&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;10天 X 5,000元&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right; font-weight: bold;&quot;&gt;50,000元&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;">每日病房費用保險金</span>：50,000元</div>
+    <div>2. <span class="info-trigger" data-info="&lt;div style=&quot;padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; max-width: 600px; margin: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1);&quot;&gt;&lt;h4 style=&quot;color: #0d6efd; margin-top: 0;&quot;&gt;住院/門診手術費用保險金 (雜費及手術費) 詳情&lt;/h4&gt;&lt;p style=&quot;font-size: 14px; line-height: 1.6;&quot;&gt;根據「南山人壽實健溢百住院醫療終身保險」條款，被保險人於74歲(含)後住院，雜費及手術費採實支實付型。計畫30雜費及手術費限額為60萬元。給付金額為【限額】和【實際支出費用】兩者取其中較小者。&lt;/p&gt;&lt;table style=&quot;width: 100%; border-collapse: collapse; margin-top: 15px;&quot;&gt;&lt;thead&gt;&lt;tr style=&quot;background-color: #0d6efd; color: white;&quot;&gt;&lt;th style=&quot;padding: 8px; border: 1px solid #ddd; text-align: left;&quot;&gt;項目&lt;/th&gt;&lt;th style=&quot;padding: 8px; border: 1px solid #ddd; text-align: left;&quot;&gt;比例/限額&lt;/th&gt;&lt;th style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right;&quot;&gt;預估金額&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;實際雜費及手術費&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;370,000元&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;計畫30雜費及手術費限額&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;600,000元&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr style=&quot;background-color: #f8d7da;&quot;&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; font-weight: bold;&quot;&gt;雜費及手術費保險金&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;實際支出與限額取小&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right; font-weight: bold;&quot;&gt;370,000元&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;">住院/門診手術費用保險金 (雜費及手術費)</span>：370,000元</div>
+    <div>3. <span class="info-trigger" data-info="&lt;div style=&quot;padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; max-width: 600px; margin: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1);&quot;&gt;&lt;h4 style=&quot;color: #0d6efd; margin-top: 0;&quot;&gt;住院前後門診費用保險金詳情&lt;/h4&gt;&lt;p style=&quot;font-size: 14px; line-height: 1.6;&quot;&gt;根據「南山人壽實健溢百住院醫療終身保險」條款，被保險人於74歲(含)後，住院前後門診費用採實支實付型，每次限額500元，且僅給付住院前2周及出院後2周的門診，每天限給付1次。給付金額為【限額】和【實際支出費用】兩者取其中較小者。&lt;/p&gt;&lt;table style=&quot;width: 100%; border-collapse: collapse; margin-top: 15px;&quot;&gt;&lt;thead&gt;&lt;tr style=&quot;background-color: #0d6efd; color: white;&quot;&gt;&lt;th style=&quot;padding: 8px; border: 1px solid #ddd; text-align: left;&quot;&gt;項目&lt;/th&gt;&lt;th style=&quot;padding: 8px; border: 1px solid #ddd; text-align: left;&quot;&gt;比例/限額&lt;/th&gt;&lt;th style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right;&quot;&gt;預估金額&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;出院後2周內門診次數&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;2次&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;每次實際門診費用&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;800元&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;每次門診費用限額&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;500元&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right;&quot;&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr style=&quot;background-color: #f8d7da;&quot;&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; font-weight: bold;&quot;&gt;住院前後門診費用保險金&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd;&quot;&gt;2次 X 500元&lt;/td&gt;&lt;td style=&quot;padding: 8px; border: 1px solid #ddd; text-align: right; font-weight: bold;&quot;&gt;1,000元&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;">住院前後門診費用保險金</span>：1,000元</div>
+    <div style="margin-top: 15px;">總理賠金額：421,000元</div>
+    <div style="margin-top: 15px; color: red;">理賠排除告知：</div>
+    <div style="margin-left: 15px; color: red;">
+        <div>1. 看護費：每日3,000元，此險種不提供看護費用給付。</div>
+        <div>2. 出院後超過2周門診費用：2次，每次800元，此費用已超出保單約定之給付期間（出院後2周內），故不予給付。</div>
+    </div>
+</div>
+
+<div style="margin: 20px 0 10px 0;"><span style="color: white; background-color: #0d6efd; padding: 4px 12px; border-radius: 4px; font-weight: bold;">三、各理賠項目計算式</span></div>
+<div style="margin-left: 15px;">
+    <div>
+        <p style="font-weight: bold;">1. 每日病房費用保險金</p>
+        <div style="margin-left: 15px;">
+            <p style="font-weight: bold;">理賠分析：</p>
+            <div>1. 被保險人王小明為75歲，適用74歲(含)後實支實付型醫療保障。</div>
+            <div>2. 王小明住院10天，其中3天入住加護病房，每日病房費差額為5,000元。</div>
+            <div>3. 根據保單條款，若曾入住加護病房，計畫30的每日病房費用限額為6,000元。</div>
+            <div>4. 每日病房費用保險金給付金額為實際支出與限額兩者取較小者。</div>
+            <p style="font-weight: bold;">計算式：</p>
+            <div>1. 每日病房費用保險金 = 住院天數 X 每日病房費差額</div>
+            <div>2. 每日病房費用保險金 = 10天 X 5,000元 = 50,000元</div>
+            <div>3. 因實際支出5,000元小於每日限額6,000元，故給付50,000元。</div>
+        </div>
+    </div>
+    <div style="margin-top: 20px;">
+        <p style="font-weight: bold;">2. 住院/門診手術費用保險金 (雜費及手術費)</p>
+        <div style="margin-left: 15px;">
+            <p style="font-weight: bold;">理賠分析：</p>
+            <div>1. 被保險人王小明為75歲，適用74歲(含)後實支實付型醫療保障。</div>
+            <div>2. 王小明住院期間進行膝關節半月軟骨修補術並植入心臟支架，雜費手術費共37萬元。</div>
+            <div>3. 根據保單條款，計畫30的雜費及手術費限額為60萬元。</div>
+            <div>4. 雜費及手術費保險金給付金額為實際支出與限額兩者取較小者。</div>
+            <p style="font-weight: bold;">計算式：</p>
+            <div>1. 雜費及手術費保險金 = 實際雜費手術費</div>
+            <div>2. 雜費及手術費保險金 = 370,000元</div>
+            <div>3. 因實際支出370,000元小於限額600,000元，故給付370,000元。</div>
+        </div>
+    </div>
+    <div style="margin-top: 20px;">
+        <p style="font-weight: bold;">3. 住院前後門診費用保險金</p>
+        <div style="margin-left: 15px;">
+            <p style="font-weight: bold;">理賠分析：</p>
+            <div>1. 被保險人王小明為75歲，適用74歲(含)後實支實付型醫療保障。</div>
+            <div>2. 王小明出院後2周內門診2次，每次費用800元。</div>
+            <div>3. 根據保單條款，74歲(含)後住院前後門診費用採實支實付，每次限額500元，且僅給付住院前2周及出院後2周的門診，每天限給付1次。</div>
+            <div>4. 出院後超過2周的門診不予給付。</div>
+            <p style="font-weight: bold;">計算式：</p>
+            <div>1. 住院前後門診費用保險金 = 出院後2周內門診次數 X 每次門診費用限額</div>
+            <div>2. 住院前後門診費用保險金 = 2次 X 500元 = 1,000元</div>
+            <div>3. 因每次實際支出800元大於每次限額500元，故以限額計算。</div>
+            <div>4. 超過2周的門診不符合給付條件，不予計算。</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const triggers = document.querySelectorAll('.info-trigger');
+        let popup = null;
+
+        triggers.forEach(trigger => {
+            trigger.style.cursor = 'pointer';
+            trigger.style.textDecoration = 'underline';
+            trigger.style.color = '#0d6efd'; // Make it look clickable
+
+            trigger.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent click from propagating to document
+
+                if (popup) {
+                    popup.remove();
+                    popup = null;
+                }
+
+                const infoHtml = this.getAttribute('data-info');
+                popup = document.createElement('div');
+                popup.style.position = 'fixed';
+                popup.style.top = '50%';
+                popup.style.left = '50%';
+                popup.style.transform = 'translate(-50%, -50%)';
+                popup.style.zIndex = '1000';
+                popup.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; // Dark overlay
+                popup.style.width = '100%';
+                popup.style.height = '100%';
+                popup.style.display = 'flex';
+                popup.style.justifyContent = 'center';
+                popup.style.alignItems = 'center';
+                popup.innerHTML = infoHtml;
+                document.body.appendChild(popup);
+
+                // Close popup on double click outside content
+                popup.addEventListener('dblclick', function() {
+                    if (popup) {
+                        popup.remove();
+                        popup = null;
+                    }
+                });
+            });
+        });
+    });
+</script>
+                    <div id="exported-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:99999;">
+                        <div style="background:white;padding:2.5rem;border-radius:20px;max-width:900px;width:95%;max-height:85vh;overflow-y:auto;border-top:10px solid #0d6efd;position:relative;">
+                             <h5 style="color:#0d6efd;font-weight:800;border-bottom:2px solid #eee;padding-bottom:12px;margin-bottom:20px;">詳情展示</h5>
+                             <div id="exported-content" class="case-body"></div>
+                        </div>
+                    </div>
+                    <script>
+                        document.addEventListener('click', function(e) {
+                            const t = e.target.closest('.info-trigger');
+                            if(t) {
+                                document.getElementById('exported-content').innerHTML = t.getAttribute('data-info');
+                                document.getElementById('exported-overlay').style.display = 'flex';
+                            }
+                        });
+                        document.addEventListener('dblclick', function() { document.getElementById('exported-overlay').style.display = 'none'; });
+                    </script>
+                </body>
+                </html>
+            
