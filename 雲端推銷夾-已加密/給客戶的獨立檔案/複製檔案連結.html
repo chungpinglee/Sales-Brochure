@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>複製檔案連結</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', 'Noto Sans TC', sans-serif; transition: font-size 0.2s ease-out; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.25s ease-out forwards; }
+        .btn-hover-effect { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-hover-effect:hover { color: #ffffff !important; background-color: #ef4444 !important; transform: scale(1.10) !important; }
+        .gear-spin-hover { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .gear-button-container:hover .gear-spin-hover { transform: rotate(180deg); }
+    </style>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+    <div id="root"></div>
+    <script type="text/babel" id="main-script">
+
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        function AutoTextarea({ value, onChange, placeholder, className = "" }) {
+            const textareaRef = useRef(null);
+
+            useEffect(() => {
+                if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto';
+                    textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+                }
+            }, [value]);
+
+            const handleKeyDown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            };
+
+            return (
+                <textarea
+                    ref={textareaRef}
+                    rows={1}
+                    value={value || ''}
+                    onChange={onChange}
+                    onKeyDown={handleKeyDown}
+                    placeholder={placeholder}
+                    className={`w-full bg-transparent resize-none overflow-hidden focus:outline-none transition-all ${className}`}
+                />
+            );
+        }
+
+        function Icon({ name, className = "w-4 h-4" }) {
+            const icons = {
+                database: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                        <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"></path>
+                    </svg>
+                ),
+                folder: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                ),
+                folderPlus: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        <line x1="12" y1="11" x2="12" y2="17"></line>
+                        <line x1="9" y1="14" x2="15" y2="14"></line>
+                    </svg>
+                ),
+                search: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                ),
+                trash: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                ),
+                "trash-2": (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                ),
+                edit: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                ),
+                "download-cloud": (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="8 17 12 21 16 17"></polyline>
+                        <line x1="12" y1="12" x2="12" y2="21"></line>
+                        <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path>
+                    </svg>
+                ),
+                plus: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                ),
+                "external-link": (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                ),
+                copy: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                ),
+                x: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                ),
+                "alert-circle": (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                ),
+                aperture: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
+                        <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
+                        <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
+                        <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
+                        <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
+                        <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
+                    </svg>
+                ),
+                chevronRight: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                ),
+                type: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                        <line x1="9" y1="20" x2="15" y2="20"></line>
+                        <line x1="12" y1="4" x2="12" y2="20"></line>
+                    </svg>
+                ),
+                helpCircle: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                ),
+                settings: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                ),
+                lock: (
+                    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                )
+            };
+            return icons[name] || null;
+        }
+
+        // === DATA_START ===
+        const INITIAL_FOLDERS = [
+  "南山人壽資料",
+  "南山產物資料"
+];
+        const INITIAL_FILE_DATA = [
+  {
+    "id": "row-1",
+    "folder": "南山人壽資料",
+    "filename": "TED35與TED比較",
+    "date": "2026/7/31"
+  },
+  {
+    "id": "row-2",
+    "folder": "南山人壽資料",
+    "filename": "WEHS主畫面",
+    "date": "2026/7/31"
+  },
+  {
+    "id": "row-3",
+    "folder": "南山人壽資料",
+    "filename": "WEHS-理賠情境分析",
+    "date": "2026/7/31"
+  },
+  {
+    "id": "row-4",
+    "folder": "南山人壽資料",
+    "filename": "WEHS-費率及保障查詢 - 業務員版",
+    "date": "2026/7/31"
+  },
+  {
+    "id": "row-5",
+    "folder": "南山人壽資料",
+    "filename": "長照簡報-長期照顧險商品",
+    "date": "2026/7/31"
+  },
+  {
+    "id": "row-6",
+    "folder": "南山人壽資料",
+    "filename": "終身增值型壽險優點",
+    "date": "2026/7/31"
+  },
+  {
+    "id": "row-7",
+    "folder": "南山人壽資料",
+    "filename": "癌症險與重大傷病險",
+    "date": "2026/7/31"
+  },
+  {
+    "id": "row-8",
+    "folder": "南山產物資料",
+    "filename": "住宅火險輔助說明",
+    "date": "2026/7/31"
+  },
+  {
+    "id": "row-9",
+    "folder": "南山產物資料",
+    "filename": "車險輔助說明",
+    "date": "2026/7/31"
+  },
+  {
+    "id": "row-10",
+    "folder": "南山產物資料",
+    "filename": "金平安6.0商品與保障概覽",
+    "date": "2026/7/31"
+  },
+  {
+    "id": "row-11",
+    "folder": "南山產物資料",
+    "filename": "範例-李XX商行南山產物「金好呷」專案輔助說明",
+    "date": "2026/7/31"
+  },
+  {
+    "id": "row-1785482095192",
+    "folder": "南山產物資料",
+    "filename": "aa",
+    "date": "2026/7/31"
+  }
+];
+        const INITIAL_COLUMNS = [
+  {
+    "id": "folder",
+    "label": "歸屬資料夾",
+    "width": 160
+  },
+  {
+    "id": "filename",
+    "label": "檔案名稱 (不需輸入 .html)",
+    "width": 880
+  },
+  {
+    "id": "date",
+    "label": "修改日期",
+    "width": 130
+  }
+];
+        const INITIAL_GITHUB_BASE = "https://chungpinglee.github.io/policyholder/";
+        // === DATA_END ===
+
+        function App() {
+            const [showBackend, setShowBackend] = useState(false);
+            const [githubBaseUrl, setGithubBaseUrl] = useState(INITIAL_GITHUB_BASE);
+            const [folders, setFolders] = useState(INITIAL_FOLDERS);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedFile, setSelectedFile] = useState(null);
+            const [showTooltip, setShowTooltip] = useState(false);
+            const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+            const [isInputHovered, setIsInputHovered] = useState(false);
+            
+            const [fontSize, setFontSize] = useState(() => localStorage.getItem('claim_font_size') || 'normal');
+            
+            const [failedAttempts, setFailedAttempts] = useState(() => Number(localStorage.getItem('claim_failed_attempts') || 0));
+            const [lockoutUntil, setLockoutUntil] = useState(() => Number(localStorage.getItem('claim_lockout_until') || 0));
+            const [showPasswordModal, setShowPasswordModal] = useState(false);
+            const [showLockoutModal, setShowLockoutModal] = useState(false);
+            const [passwordInput, setPasswordInput] = useState('');
+            const [passwordError, setPasswordError] = useState('');
+
+            const [columns, setColumns] = useState(INITIAL_COLUMNS);
+            const [rows, setRows] = useState(INITIAL_FILE_DATA);
+
+            const getFullUrl = (file) => {
+                if (!file) return '';
+                const filename = typeof file === 'string' ? file : file.filename;
+                const folder = typeof file === 'object' ? file.folder : '';
+                
+                const name = (filename || '').trim();
+                if (!name) return '';
+                
+                let base = githubBaseUrl.trim();
+                if (!base.endsWith('/')) base += '/';
+                
+                const folderPath = folder && folder.trim() ? `${encodeURIComponent(folder.trim())}/` : '';
+                let namePath = name;
+                if (!namePath.includes('.')) {
+                    namePath += '.html';
+                }
+                namePath = encodeURIComponent(namePath);
+                
+                return `${base}${folderPath}${namePath}`;
+            };
+
+            useEffect(() => {
+                const rootHtml = document.documentElement;
+                if (fontSize === 'normal') rootHtml.style.fontSize = '16px';
+                else if (fontSize === 'large') rootHtml.style.fontSize = '19px';
+                else if (fontSize === 'xlarge') rootHtml.style.fontSize = '22px';
+                localStorage.setItem('claim_font_size', fontSize);
+            }, [fontSize]);
+
+            const triggerNotification = (message, type = 'success') => {
+                setNotification({ show: true, message, type });
+                setTimeout(() => setNotification(prev => ({ ...prev, show: false })), 3000);
+            };
+
+            const menuSuggestions = useMemo(() => {
+                if (!searchTerm.trim()) return rows;
+                const term = searchTerm.toLowerCase();
+                return rows.filter(row => 
+                    (row.filename || '').toLowerCase().includes(term) ||
+                    (row.folder || '').toLowerCase().includes(term)
+                );
+            }, [searchTerm, rows]);
+
+            const showSuggestionsDropdown = useMemo(() => {
+                if (isInputHovered) return true;
+                if (!searchTerm.trim()) return false;
+                if (selectedFile && selectedFile.filename === searchTerm) return false;
+                return true;
+            }, [isInputHovered, searchTerm, selectedFile]);
+
+            const handleSearchChange = (value) => {
+                setSearchTerm(value);
+                if (selectedFile && selectedFile.filename !== value) {
+                    setSelectedFile(null);
+                }
+            };
+
+            const handleSelectFile = (file) => {
+                setSelectedFile(file);
+                setSearchTerm(file.filename);
+                setIsInputHovered(false);
+                triggerNotification(`已選取檔案：「${file.filename}」(${file.folder || '未歸類'})`);
+            };
+
+            const handleCopyLink = () => {
+                if (!selectedFile) return;
+                const url = getFullUrl(selectedFile);
+                
+                const textArea = document.createElement("textarea");
+                textArea.value = url;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    if (document.execCommand('copy')) {
+                        triggerNotification(`📋 連結已成功複製！可直接傳給客戶。`, "success");
+                    } else {
+                        triggerNotification("複製失敗，請手動複製", "error");
+                    }
+                } catch (err) {
+                    triggerNotification("無法複製連結，請重試", "error");
+                }
+                document.body.removeChild(textArea);
+            };
+
+            const handleAddFolder = () => {
+                const name = prompt("請輸入新增資料夾名稱（例如：南山人壽資料）：");
+                if (name && name.trim()) {
+                    const clean = name.trim();
+                    if (folders.includes(clean)) {
+                        alert("該資料夾已存在！");
+                        return;
+                    }
+                    setFolders([...folders, clean]);
+                    triggerNotification(`已新增資料夾：「${clean}」`);
+                }
+            };
+
+            const handleRenameFolder = (oldName) => {
+                const newName = prompt(`請輸入資料夾「${oldName}」的新名稱：`, oldName);
+                if (newName && newName.trim() && newName.trim() !== oldName) {
+                    const clean = newName.trim();
+                    setFolders(folders.map(f => f === oldName ? clean : f));
+                    setRows(rows.map(r => r.folder === oldName ? { ...r, folder: clean } : r));
+                    triggerNotification(`資料夾改名為：「${clean}」`);
+                }
+            };
+
+            const handleDeleteFolder = (folderName) => {
+                if (confirm(`確定要刪除資料夾「${folderName}」嗎？\n注意：原屬於該資料夾的檔案將會取消歸類。`)) {
+                    setFolders(folders.filter(f => f !== folderName));
+                    setRows(rows.map(r => r.folder === folderName ? { ...r, folder: '' } : r));
+                    triggerNotification(`已刪除資料夾：「${folderName}」`, "warning");
+                }
+            };
+
+            const handleGearClick = () => {
+                const now = Date.now();
+                if (lockoutUntil && now < lockoutUntil) {
+                    setShowLockoutModal(true);
+                    return;
+                }
+                
+                if (showBackend) {
+                    setShowBackend(false);
+                    triggerNotification("已退出後台管理台", "success");
+                } else {
+                    setPasswordInput('');
+                    setPasswordError('');
+                    setShowPasswordModal(true);
+                }
+            };
+
+            const handlePasswordSubmit = (e) => {
+                e.preventDefault();
+                if (passwordInput === "362963") {
+                    setFailedAttempts(0);
+                    setLockoutUntil(0);
+                    localStorage.removeItem('claim_failed_attempts');
+                    localStorage.removeItem('claim_lockout_until');
+                    setShowPasswordModal(false);
+                    setShowBackend(true);
+                    triggerNotification("成功進入後台管理台！", "success");
+                } else {
+                    const newAttempts = failedAttempts + 1;
+                    setFailedAttempts(newAttempts);
+                    localStorage.setItem('claim_failed_attempts', String(newAttempts));
+
+                    if (newAttempts >= 3) {
+                        const lockTime = Date.now() + 12 * 60 * 60 * 1000;
+                        setLockoutUntil(lockTime);
+                        localStorage.setItem('claim_lockout_until', String(lockTime));
+                        setShowPasswordModal(false);
+                        setShowLockoutModal(true);
+                        triggerNotification("錯誤達 3 次！系統已鎖定 12 小時", "error");
+                    } else {
+                        setPasswordError(`密碼不正確，剩餘 ${3 - newAttempts} 次機會。`);
+                    }
+                }
+            };
+
+            const addRow = () => {
+                const defaultFolder = folders.length > 0 ? folders[0] : '';
+                const today = new Date();
+                const todayStr = `${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`;
+                
+                const newRow = { 
+                    id: `row-${Date.now()}`,
+                    folder: defaultFolder,
+                    filename: '',
+                    date: todayStr
+                };
+                setRows([...rows, newRow]);
+                triggerNotification("已新增空白檔案紀錄。");
+            };
+
+            const deleteRow = (id) => {
+                setRows(rows.filter(row => row.id !== id));
+                triggerNotification("已刪除該筆記錄。");
+            };
+
+            const handleCellChange = (rowId, colId, value) => {
+                setRows(rows.map(row => {
+                    if (row.id === rowId) {
+                        const today = new Date();
+                        const todayStr = `${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`;
+                        return { ...row, [colId]: value, date: todayStr };
+                    }
+                    return row;
+                }));
+            };
+
+            const saveAsNewHtmlFile = () => {
+                const serializedRows = JSON.stringify(rows, null, 2);
+                const serializedFolders = JSON.stringify(folders, null, 2);
+                const serializedColumns = JSON.stringify(columns, null, 2);
+                const serializedGithub = JSON.stringify(githubBaseUrl);
+
+                const rawCode = document.getElementById('main-script').textContent;
+
+                const dataSegment = `// === DATA_START ===
+        const INITIAL_FOLDERS = ${serializedFolders};
+        const INITIAL_FILE_DATA = ${serializedRows};
+        const INITIAL_COLUMNS = ${serializedColumns};
+        const INITIAL_GITHUB_BASE = ${serializedGithub};
+        // === DATA_END ===`;
+
+                const outputCode = rawCode.replace(/\/\/ === DATA_START ===[\s\S]*?\/\/ === DATA_END ===/, dataSegment);
+
+                const outputHtml = `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>複製檔案連結</title>
+    <script src="https://cdn.tailwindcss.com"></${'script'}>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </${'script'}>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', 'Noto Sans TC', sans-serif; transition: font-size 0.2s ease-out; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.25s ease-out forwards; }
+        .btn-hover-effect { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-hover-effect:hover { color: #ffffff !important; background-color: #ef4444 !important; transform: scale(1.10) !important; }
+        .gear-spin-hover { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .gear-button-container:hover .gear-spin-hover { transform: rotate(180deg); }
+    </style>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></${'script'}>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></${'script'}>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></${'script'}>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+    <div id="root"></div>
+    <script type="text/babel" id="main-script">
+${outputCode}
+    </${'script'}>
+</body>
+</html>`;
+
+                const blob = new Blob([outputHtml], { type: 'text/html;charset=utf-8;' });
+                const downloadUrl = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = downloadUrl;
+                link.setAttribute("download", "複製檔案連結.html"); 
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                triggerNotification("💾 資料與資料夾架構已更新，並另存新檔為「複製檔案連結.html」！", "success");
+            };
+
+            return (
+                <div className="flex flex-col min-h-screen">
+                    
+                    {/* Floating Toast Notification */}
+                    {notification.show && (
+                        <div className={`fixed top-4 right-4 z-50 flex items-center p-4 rounded-xl shadow-xl transition-all duration-300 transform translate-y-0 ${
+                            notification.type === 'error' ? 'bg-rose-500 text-white' : 
+                            notification.type === 'warning' ? 'bg-amber-500 text-white' : 'bg-blue-600 text-white'
+                        }`}>
+                            <span className="font-semibold text-sm">{notification.message}</span>
+                        </div>
+                    )}
+
+                    {/* Password Verification Modal */}
+                    {showPasswordModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                            <form onSubmit={handlePasswordSubmit} className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-fade-in space-y-4">
+                                <div className="flex items-center gap-2 text-indigo-900">
+                                    <Icon name="lock" className="w-5 h-5" />
+                                    <h3 className="text-lg font-bold">進入後台安全驗證</h3>
+                                </div>
+                                <p className="text-xs text-slate-500">請輸入管理密碼以管理資料夾與檔案：</p>
+                                
+                                <div>
+                                    <input 
+                                        type="password"
+                                        className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600 transition-all font-mono"
+                                        placeholder="請輸入密碼..."
+                                        value={passwordInput}
+                                        onChange={(e) => setPasswordInput(e.target.value)}
+                                        autoFocus
+                                    />
+                                    {passwordError && (
+                                        <p className="text-xs font-semibold text-rose-500 mt-2 flex items-center gap-1">
+                                            <Icon name="alert-circle" className="w-3.5 h-3.5" />
+                                            {passwordError}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center justify-end gap-3 pt-2">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowPasswordModal(false)}
+                                        className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700 bg-slate-100 rounded-lg"
+                                    >
+                                        取消
+                                    </button>
+                                    <button 
+                                        type="submit"
+                                        className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-md"
+                                    >
+                                        驗證提交
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
+                    {/* Lockout Modal */}
+                    {showLockoutModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-fade-in text-center space-y-4">
+                                <div className="inline-block p-3 bg-rose-50 text-rose-600 rounded-full animate-pulse">
+                                    <Icon name="lock" className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900">安全防護鎖定中</h3>
+                                <p className="text-xs text-slate-600 leading-relaxed">
+                                    密碼輸入錯誤達 3 次。為確保系統安全，目前暫時自動鎖定管理通道。
+                                </p>
+                                <div className="flex items-center justify-center pt-2">
+                                    <button 
+                                        onClick={() => setShowLockoutModal(false)}
+                                        className="px-6 py-2.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-950 rounded-xl shadow-md"
+                                    >
+                                        關閉
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Top Bar Header */}
+                    <header className="bg-gradient-to-r from-amber-100 via-yellow-50 to-white text-slate-800 shadow-sm border-b border-amber-200/50">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-teal-500/10 p-2 rounded-xl border border-teal-500/20">
+                                    <Icon name="database" className="w-6 h-6 text-teal-600" />
+                                </div>
+                                <div>
+                                    <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-teal-600 via-cyan-600 to-teal-500 bg-clip-text text-transparent drop-shadow-sm">
+                                        複製檔案連結
+                                    </h1>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <div className="relative inline-block gear-button-container">
+                                    <button
+                                        onClick={handleGearClick}
+                                        className={`flex items-center justify-center p-2.5 rounded-full shadow-lg transition-all active:scale-95 ${
+                                            showBackend 
+                                                ? 'bg-amber-500 text-white border border-amber-600/30' 
+                                                : 'bg-teal-600 hover:bg-rose-600 text-white'
+                                        }`}
+                                        title={showBackend ? "關閉後台" : "後台管理與資料夾編輯"}
+                                    >
+                                        <Icon name="settings" className="w-5 h-5 gear-spin-hover" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content Area */}
+                    <main className="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-4 space-y-6">
+
+                        {/* Front-end Search & Quick Link Actions */}
+                        <div className="space-y-6 animate-fade-in max-w-3xl mx-auto pt-4 sm:pt-6">
+                            <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-8 shadow-xl space-y-6 relative">
+                                
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                                    <div className="relative flex items-center gap-2">
+                                        <h2 
+                                            onMouseEnter={() => setShowTooltip(true)}
+                                            onMouseLeave={() => setShowTooltip(false)}
+                                            className="cursor-help flex items-center gap-2"
+                                        >
+                                            <span className="text-lg sm:text-xl font-black text-white bg-gradient-to-r from-teal-600 to-cyan-600 px-4 py-1.5 rounded-xl shadow-sm inline-block">
+                                                檔案關鍵字檢索
+                                            </span>
+                                            <Icon name="helpCircle" className="w-5 h-5 text-slate-400 hover:text-teal-600" />
+                                        </h2>
+                                        
+                                        {showTooltip && (
+                                            <div className="absolute z-20 bottom-full left-1/2 transform -translate-x-1/2 mb-3 w-72 p-4 bg-slate-900/95 text-white text-xs rounded-2xl shadow-2xl leading-relaxed animate-fade-in">
+                                                請輸入商品名稱或關鍵字（系統自動搜尋所有資料夾下的檔案）。點選待選檔案後，即可直接複製或開啟該檔案的 GitHub 連結。
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Font Size Adjustment */}
+                                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/60 shrink-0">
+                                        <span className="text-slate-400 p-1 shrink-0"><Icon name="type" className="w-4 h-4" /></span>
+                                        <button onClick={() => setFontSize('normal')} className={`btn-font-hover-effect px-3 py-1 text-xs font-bold rounded-lg ${fontSize === 'normal' ? 'bg-teal-600 text-white shadow' : 'text-slate-600'}`}>標準</button>
+                                        <button onClick={() => setFontSize('large')} className={`btn-font-hover-effect px-3 py-1 text-xs font-bold rounded-lg ${fontSize === 'large' ? 'bg-teal-600 text-white shadow' : 'text-slate-600'}`}>大</button>
+                                        <button onClick={() => setFontSize('xlarge')} className={`btn-font-hover-effect px-3 py-1 text-xs font-bold rounded-lg ${fontSize === 'xlarge' ? 'bg-teal-600 text-white shadow' : 'text-slate-600'}`}>再大</button>
+                                    </div>
+                                </div>
+
+                                {/* Search Bar & Action Buttons */}
+                                <div 
+                                    className="space-y-4"
+                                    onMouseEnter={() => setIsInputHovered(true)}
+                                    onMouseLeave={() => setIsInputHovered(false)}
+                                >
+                                    <div className="flex flex-col md:flex-row gap-3 items-stretch w-full">
+                                        <div className="relative flex-grow flex items-center bg-slate-50 border-2 border-slate-200 rounded-2xl focus-within:border-teal-500 focus-within:bg-gradient-to-r focus-within:from-red-100 focus-within:to-yellow-200 transition-all shadow-inner min-h-[52px]">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <Icon name="search" className="w-5 h-5 text-slate-400" />
+                                            </div>
+                                            
+                                            <input
+                                                type="text"
+                                                className="block w-full pl-11 pr-11 py-3.5 bg-transparent border-0 focus:outline-none text-slate-800 text-sm font-semibold rounded-2xl"
+                                                placeholder="請輸入關鍵字（例如：WEHS、火險、長照...）"
+                                                value={searchTerm}
+                                                onChange={(e) => handleSearchChange(e.target.value)}
+                                                onFocus={() => setIsInputHovered(true)}
+                                            />
+
+                                            {searchTerm && (
+                                                <button 
+                                                    onClick={() => { setSearchTerm(''); setSelectedFile(null); }}
+                                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-rose-500"
+                                                >
+                                                    <Icon name="x" className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {selectedFile && (
+                                            <div className="flex items-center gap-2 shrink-0 animate-fade-in w-full md:w-auto">
+                                                <a
+                                                    href={getFullUrl(selectedFile)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="btn-hover-effect flex-1 md:flex-none inline-flex items-center justify-center gap-2 bg-blue-600 text-white font-bold text-sm py-3.5 px-5 rounded-2xl shadow-md whitespace-nowrap min-h-[52px]"
+                                                >
+                                                    <Icon name="external-link" className="w-4 h-4" />
+                                                    開啟連結 ↗
+                                                </a>
+                                                
+                                                <button
+                                                    onClick={handleCopyLink}
+                                                    className="btn-hover-effect flex-1 md:flex-none inline-flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold text-sm py-3.5 px-5 rounded-2xl shadow-md whitespace-nowrap min-h-[52px]"
+                                                >
+                                                    <Icon name="copy" className="w-4 h-4" />
+                                                    複製連結 📋
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {selectedFile && (
+                                        <div className="p-3 bg-teal-50 border border-teal-200 rounded-2xl text-xs sm:text-sm text-teal-900 space-y-1 animate-fade-in">
+                                            <div className="flex items-center gap-2 font-bold">
+                                                <span className="px-2 py-0.5 bg-teal-600 text-white rounded text-xs">{selectedFile.folder || '未歸類資料夾'}</span>
+                                                <span>已選取檔案：{selectedFile.filename}</span>
+                                            </div>
+                                            <p className="text-[11px] text-teal-700 font-mono truncate">
+                                                路徑：{getFullUrl(selectedFile)}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Dynamic Suggestions Dropdown */}
+                                    {showSuggestionsDropdown && rows.length > 0 && (
+                                        <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white divide-y divide-slate-100 shadow-xl animate-fade-in max-w-xl mx-auto">
+                                            {menuSuggestions.length === 0 ? (
+                                                <div className="px-4 py-6 text-center text-rose-500 font-bold text-sm">
+                                                    找不到符合條件的檔案
+                                                </div>
+                                            ) : (
+                                                <div className="max-h-64 overflow-y-auto no-scrollbar">
+                                                    {menuSuggestions.map(item => {
+                                                        const isSelected = selectedFile?.id === item.id;
+                                                        return (
+                                                            <button
+                                                                key={item.id}
+                                                                onClick={() => handleSelectFile(item)}
+                                                                className={`w-full text-left px-4 py-3 transition-all flex items-center justify-between text-xs sm:text-sm font-semibold ${
+                                                                    isSelected 
+                                                                        ? 'bg-yellow-300 text-black font-bold' 
+                                                                        : 'text-slate-700 hover:bg-blue-600 hover:text-white'
+                                                                }`}
+                                                            >
+                                                                <div className="flex items-center gap-2.5 truncate">
+                                                                    <span className="px-2 py-0.5 bg-slate-200 text-slate-700 rounded text-[11px] font-medium shrink-0">
+                                                                        📁 {item.folder || '未分類'}
+                                                                    </span>
+                                                                    <span className="truncate">{item.filename}</span>
+                                                                </div>
+                                                                <Icon name="chevronRight" className="w-4 h-4 opacity-60 shrink-0" />
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {/* Backend Management Console */}
+                        {showBackend && (
+                            <div className="border border-slate-200 bg-white rounded-3xl p-4 sm:p-6 shadow-xl space-y-6 animate-fade-in">
+                                
+                                <div className="bg-slate-800 text-white -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 p-5 rounded-t-3xl flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-lg font-bold flex items-center gap-2">
+                                            <Icon name="aperture" className="w-5 h-5 text-teal-400" />
+                                            後台管理：資料夾架構與檔案對照設定
+                                        </h2>
+                                        <p className="text-xs text-slate-400">可增加或減少資料夾、修改資料夾名稱，以及管理各資料夾內的檔案清單。</p>
+                                    </div>
+                                </div>
+
+                                {/* Folder Management Section */}
+                                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                            <Icon name="folder" className="w-4 h-4 text-teal-600" />
+                                            現有資料夾清單管理：
+                                        </h3>
+                                        <button
+                                            onClick={handleAddFolder}
+                                            className="px-3 py-1.5 bg-teal-600 text-white font-bold text-xs rounded-lg hover:bg-teal-700 flex items-center gap-1 shadow"
+                                        >
+                                            <Icon name="folderPlus" className="w-3.5 h-3.5" />
+                                            手動新增資料夾
+                                        </button>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 pt-1">
+                                        {folders.map((folder) => (
+                                            <div key={folder} className="flex items-center gap-1.5 bg-white border border-slate-300 rounded-xl px-3 py-1.5 shadow-sm">
+                                                <span className="text-xs font-bold text-slate-800">📁 {folder}</span>
+                                                <button 
+                                                    onClick={() => handleRenameFolder(folder)}
+                                                    className="p-1 hover:text-teal-600 text-slate-400"
+                                                    title="修改資料夾名稱"
+                                                >
+                                                    <Icon name="edit" className="w-3 h-3" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeleteFolder(folder)}
+                                                    className="p-1 hover:text-rose-600 text-slate-400"
+                                                    title="刪除資料夾"
+                                                >
+                                                    <Icon name="trash" className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* GitHub Base URL Settings */}
+                                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
+                                    <div className="text-xs font-bold text-slate-700">GitHub Pages 網站根目錄基底網址：</div>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono"
+                                        value={githubBaseUrl}
+                                        onChange={(e) => setGithubBaseUrl(e.target.value)}
+                                        placeholder="例如：https://username.github.io/repository/"
+                                    />
+                                </div>
+
+                                {/* File Data Table */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={addRow}
+                                                className="btn-hover-effect bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1 shadow"
+                                            >
+                                                <Icon name="plus" className="w-3.5 h-3.5" />
+                                                新增一筆檔案列
+                                            </button>
+                                            <button
+                                                onClick={saveAsNewHtmlFile}
+                                                className="btn-hover-effect bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1 shadow"
+                                            >
+                                                <Icon name="download-cloud" className="w-3.5 h-3.5" />
+                                                另存html檔
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-inner">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left border-collapse text-xs table-fixed">
+                                                <thead>
+                                                    <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                                                        <th className="px-3 py-3 w-[20%] whitespace-normal break-words">歸屬資料夾</th>
+                                                        <th className="px-3 py-3 w-[30%] whitespace-normal break-words">檔案名稱 (不需輸入 .html)</th>
+                                                        <th className="px-3 py-3 w-[10%] whitespace-normal break-words">最後修改日期</th>
+                                                        <th className="px-3 py-3 w-[40%] whitespace-normal break-all">GitHub 生成完整超連結預覽</th>
+                                                        <th className="px-3 py-3 w-[50px] text-center">操作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-100">
+                                                    {rows.map((row) => {
+                                                        const fullUrl = getFullUrl(row);
+                                                        return (
+                                                            <tr key={row.id} className="transition-colors hover:bg-emerald-400 hover:text-black group">
+                                                                <td className="px-2 py-2 whitespace-normal break-words">
+                                                                    <select
+                                                                        className="w-full bg-white text-slate-800 border border-slate-300 rounded px-2 py-1 text-xs font-semibold group-hover:text-black"
+                                                                        value={row.folder || ''}
+                                                                        onChange={(e) => handleCellChange(row.id, 'folder', e.target.value)}
+                                                                    >
+                                                                        <option value="">-- 無歸類 --</option>
+                                                                        {folders.map(f => (
+                                                                            <option key={f} value={f}>{f}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </td>
+
+                                                                <td className="px-2 py-2 whitespace-normal break-words">
+                                                                    <AutoTextarea
+                                                                        className="w-full bg-white border border-slate-200 rounded px-2 py-1 font-bold text-slate-800 group-hover:text-black"
+                                                                        value={row.filename || ''}
+                                                                        onChange={(e) => handleCellChange(row.id, 'filename', e.target.value)}
+                                                                        placeholder="輸入檔案名稱..."
+                                                                    />
+                                                                </td>
+
+                                                                <td className="px-3 py-2 text-slate-500 group-hover:text-black whitespace-normal break-words">{row.date}</td>
+
+                                                                <td className="px-3 py-2 font-mono text-[11px] text-blue-600 group-hover:text-black whitespace-normal break-all">
+                                                                    <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="hover:underline block w-full break-all whitespace-normal leading-relaxed">
+                                                                        {fullUrl}
+                                                                    </a>
+                                                                </td>
+
+                                                                <td className="px-2 py-2 text-center">
+                                                                    <button
+                                                                        onClick={() => deleteRow(row.id)}
+                                                                        className="btn-hover-effect p-1 text-slate-400 hover:text-rose-600 group-hover:text-black rounded-lg"
+                                                                        title="刪除此筆記錄"
+                                                                    >
+                                                                        <Icon name="trash-2" className="w-4 h-4 mx-auto" />
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        )}
+
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    
+    </script>
+</body>
+</html>
