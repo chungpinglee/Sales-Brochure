@@ -221,68 +221,74 @@
   {
     "id": "row-1",
     "folder": "南山人壽資料",
-    "filename": "TED35與TED比較",
+    "filename": "TED35與TED比較.html",
     "date": "2026/7/31"
   },
   {
     "id": "row-2",
     "folder": "南山人壽資料",
-    "filename": "WEHS主畫面",
+    "filename": "WEHS主畫面.html",
     "date": "2026/7/31"
   },
   {
     "id": "row-3",
     "folder": "南山人壽資料",
-    "filename": "WEHS-理賠情境分析",
+    "filename": "WEHS-理賠情境分析.html",
     "date": "2026/7/31"
   },
   {
     "id": "row-4",
     "folder": "南山人壽資料",
-    "filename": "WEHS-費率及保障查詢 - 業務員版",
+    "filename": "WEHS-費率及保障查詢 - 業務員版.html",
     "date": "2026/7/31"
   },
   {
     "id": "row-5",
     "folder": "南山人壽資料",
-    "filename": "長照簡報-長期照顧險商品",
+    "filename": "長照簡報-長期照顧險商品.html",
     "date": "2026/7/31"
   },
   {
     "id": "row-6",
     "folder": "南山人壽資料",
-    "filename": "終身增值型壽險優點",
+    "filename": "終身增值型壽險優點.html",
     "date": "2026/7/31"
   },
   {
     "id": "row-7",
     "folder": "南山人壽資料",
-    "filename": "癌症險與重大傷病險",
+    "filename": "癌症險與重大傷病險.html",
     "date": "2026/7/31"
   },
   {
     "id": "row-8",
     "folder": "南山產物資料",
-    "filename": "住宅火險輔助說明",
+    "filename": "住宅火險輔助說明.html",
     "date": "2026/7/31"
   },
   {
     "id": "row-9",
     "folder": "南山產物資料",
-    "filename": "車險輔助說明",
+    "filename": "車險輔助說明.html",
     "date": "2026/7/31"
   },
   {
     "id": "row-10",
     "folder": "程式-金平安PRO6.0",
-    "filename": "金平安6.0商品與保障概覽",
+    "filename": "金平安6.0商品與保障概覽.html",
     "date": "2026/7/31"
   },
   {
     "id": "row-11",
     "folder": "南山產物資料",
-    "filename": "範例-李XX商行南山產物「金好呷」專案輔助說明",
+    "filename": "範例-李XX商行南山產物「金好呷」專案輔助說明.html",
     "date": "2026/7/31"
+  },
+  {
+    "id": "row-1786268240674",
+    "folder": "南山人壽資料",
+    "filename": "免貼郵票回函新生南路版-3樓.pdf",
+    "date": "2026/8/9"
   }
 ];
         const INITIAL_COLUMNS = [
@@ -293,7 +299,7 @@
   },
   {
     "id": "filename",
-    "label": "檔案名稱 (不需輸入 .html)",
+    "label": "檔案名稱 (請含副檔名，如 .html, .pdf)",
     "width": 880
   },
   {
@@ -327,6 +333,7 @@
             const [columns, setColumns] = useState(INITIAL_COLUMNS);
             const [rows, setRows] = useState(INITIAL_FILE_DATA);
 
+            // 修正：不再強制於檔名後方補上 .html，直接依據使用者輸入的檔案名稱（包含副檔名如 .pdf, .html 等）生成完整 URL
             const getFullUrl = (file) => {
                 if (!file) return '';
                 const filename = typeof file === 'string' ? file : file.filename;
@@ -339,13 +346,7 @@
                 if (!base.endsWith('/')) base += '/';
                 
                 const folderPath = folder && folder.trim() ? `${encodeURIComponent(folder.trim())}/` : '';
-                let namePath = name;
-                
-                // 修正：檢查是否以 .html 結尾，而非檢查是否包含句號
-                if (!namePath.toLowerCase().endsWith('.html')) {
-                    namePath += '.html';
-                }
-                namePath = encodeURIComponent(namePath);
+                const namePath = encodeURIComponent(name);
                 
                 return `${base}${folderPath}${namePath}`;
             };
@@ -950,7 +951,7 @@ ${outputCode}
                                                 <thead>
                                                     <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                                                         <th className="px-3 py-3 w-[20%] whitespace-normal break-words">歸屬資料夾</th>
-                                                        <th className="px-3 py-3 w-[30%] whitespace-normal break-words">檔案名稱 (不需輸入 .html)</th>
+                                                        <th className="px-3 py-3 w-[30%] whitespace-normal break-words">檔案名稱 (請含副檔名，如 .html, .pdf)</th>
                                                         <th className="px-3 py-3 w-[10%] whitespace-normal break-words">最後修改日期</th>
                                                         <th className="px-3 py-3 w-[40%] whitespace-normal break-all">GitHub 生成完整超連結預覽</th>
                                                         <th className="px-3 py-3 w-[50px] text-center">操作</th>
@@ -979,7 +980,7 @@ ${outputCode}
                                                                         className="w-full bg-white border border-slate-200 rounded px-2 py-1 font-bold text-slate-800 group-hover:text-black"
                                                                         value={row.filename || ''}
                                                                         onChange={(e) => handleCellChange(row.id, 'filename', e.target.value)}
-                                                                        placeholder="輸入檔案名稱..."
+                                                                        placeholder="輸入檔案名稱 (含 .html, .pdf 等)..."
                                                                     />
                                                                 </td>
 
